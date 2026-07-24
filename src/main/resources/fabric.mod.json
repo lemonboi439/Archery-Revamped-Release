@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "archery-revamped",
+  "version": "${version}",
+  "name": "Archery-Revamped",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/archery-revamped/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "me.lemonboi439.archeryRevamped.client.ArcheryRevampedDataGenerator"
+    ],
+    "client": [
+      "me.lemonboi439.archeryRevamped.client.ArcheryRevampedClient"
+    ],
+    "main": [
+      "me.lemonboi439.archeryRevamped.ArcheryRevamped"
+    ]
+  },
+  "mixins": [
+    "archery-revamped.mixins.json",
+    {
+      "config": "archery-revamped.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
