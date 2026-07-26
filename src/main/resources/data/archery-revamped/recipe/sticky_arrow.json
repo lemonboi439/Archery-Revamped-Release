@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:arrow",
+    "minecraft:honeycomb"
+  ],
+  "result": {
+    "id": "archery-revamped:sticky_arrow",
+    "count": 4
+  }
+}

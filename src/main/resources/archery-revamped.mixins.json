@@ -4,6 +4,11 @@
   "package": "me.lemonboi439.archeryRevamped.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "RangedWeaponItemMixin",
+    "PersistentProjectileEntityAccessor"
+  ],
+  "client": [
+    "CameraMixin"
   ],
   "injectors": {
     "defaultRequire": 1

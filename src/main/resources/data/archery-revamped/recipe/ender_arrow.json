@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:arrow",
+    "minecraft:ender_pearl"
+  ],
+  "result": {
+    "id": "archery-revamped:ender_arrow",
+    "count": 4
+  }
+}

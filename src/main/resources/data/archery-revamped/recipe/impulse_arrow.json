@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:arrow",
+    "minecraft:feather"
+  ],
+  "result": {
+    "id": "archery-revamped:impulse_arrow",
+    "count": 4
+  }
+}

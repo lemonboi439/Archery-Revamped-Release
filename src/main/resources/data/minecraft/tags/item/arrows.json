@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "archery-revamped:ender_arrow",
+    "archery-revamped:impulse_arrow",
+    "archery-revamped:explosive_arrow",
+    "archery-revamped:sticky_arrow"
+  ]
+}

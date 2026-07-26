@@ -1,0 +1,20 @@
+{
+  "description": {
+    "translate": "enchantment.archery-revamped.ricochet"
+  },
+  "supported_items": "#minecraft:enchantable/bow",
+  "weight": 2,
+  "max_level": 5,
+  "min_cost": {
+    "base": 10,
+    "per_level_above_first": 10
+  },
+  "max_cost": {
+    "base": 30,
+    "per_level_above_first": 10
+  },
+  "anvil_cost": 4,
+  "slots": [
+    "mainhand"
+  ]
+}
