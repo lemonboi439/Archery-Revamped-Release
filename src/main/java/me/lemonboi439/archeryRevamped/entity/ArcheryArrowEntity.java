@@ -21,6 +21,7 @@ import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class ArcheryArrowEntity extends PersistentProjectileEntity {
@@ -65,6 +66,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private double fractureReleaseSpeed;
     private boolean fractureReleaseSpeedCaptured;
     private boolean spawnPositionCaptured;
+    private Vec3d releaseVelocity;
 
     public ArcheryArrowEntity(World world) {
         super(ModEntities.ARCHERY_ARROW, world);
@@ -92,6 +94,13 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
 
     @Override
     public void tick() {
+        // RangedWeaponItem.createArrowEntity is called before vanilla applies
+        // the bow's release velocity. Capture it on the first entity tick so
+        // burst shots can reuse the actual shot speed and direction.
+        if (this.releaseVelocity == null && this.getVelocity().lengthSquared() > 1.0E-7D) {
+            this.releaseVelocity = this.getVelocity();
+        }
+
         this.captureFractureReleaseSpeedIfNeeded();
 
         if (!this.spawnPositionCaptured) {
@@ -115,6 +124,10 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
                 ArrowBehaviorRegistry.getBehavior(this.arrowType).onTick(this);
             }
         }
+    }
+
+    public Vec3d getReleaseVelocity() {
+        return this.releaseVelocity;
     }
 
     public ArrowType getArrowType() {

@@ -32,5 +32,8 @@
   "fractureMinSplitDelayTicks": 1,
   "fractureMaxSplitDelayTicks": 40,
   "fractureSplitAngleDegrees": 15.0,
-  "burstStaggerDelayTicks": 8
+  "burstStaggerDelayTicks": 3,
+  "sharpshooterLevel1ReductionPercent": 70.0,
+  "sharpshooterLevel2ReductionPercent": 40.0,
+  "sharpshooterLevel3ReductionPercent": 10.0
 }

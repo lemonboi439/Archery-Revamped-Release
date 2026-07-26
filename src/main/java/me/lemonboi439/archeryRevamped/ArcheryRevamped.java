@@ -13,6 +13,7 @@ import me.lemonboi439.archeryRevamped.overdraw.OverdrawHandler;
 import me.lemonboi439.archeryRevamped.fracture.FractureScheduler;
 import me.lemonboi439.archeryRevamped.burst.BurstArrowHandler;
 import me.lemonboi439.archeryRevamped.arrow.RicochetBehavior;
+import me.lemonboi439.archeryRevamped.sharpshooter.SharpshooterHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 
@@ -31,6 +32,7 @@ public class ArcheryRevamped implements ModInitializer {
         OverdrawHandler.register();
         FractureScheduler.register();
         BurstArrowHandler.register();
+        SharpshooterHandler.register();
         ServerLifecycleEvents.SERVER_STARTED.register(server -> ConfigManager.load());
     }
 }

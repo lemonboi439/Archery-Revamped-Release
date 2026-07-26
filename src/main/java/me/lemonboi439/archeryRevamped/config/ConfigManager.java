@@ -193,6 +193,14 @@ public final class ConfigManager {
         return config.burstStaggerDelayTicks;
     }
 
+    public static double getSharpshooterReductionPercent(int level) {
+        return switch (Math.max(1, Math.min(level, 3))) {
+            case 1 -> config.sharpshooterLevel1ReductionPercent;
+            case 2 -> config.sharpshooterLevel2ReductionPercent;
+            default -> config.sharpshooterLevel3ReductionPercent;
+        };
+    }
+
     private static final class PhysicsConfig {
         private double gravity = 0.05D;
         private double drag = 0.99D;
@@ -227,7 +235,10 @@ public final class ConfigManager {
         private int fractureMinSplitDelayTicks = 1;
         private int fractureMaxSplitDelayTicks = 40;
         private double fractureSplitAngleDegrees = 15.0D;
-        private int burstStaggerDelayTicks = 8;
+        private int burstStaggerDelayTicks = 3;
+        private double sharpshooterLevel1ReductionPercent = 70.0D;
+        private double sharpshooterLevel2ReductionPercent = 40.0D;
+        private double sharpshooterLevel3ReductionPercent = 10.0D;
 
         private static PhysicsConfig fromJson(JsonObject json) {
             PhysicsConfig result = new PhysicsConfig();
@@ -280,6 +291,12 @@ public final class ConfigManager {
             result.fractureSplitAngleDegrees = getDouble(json,
                     "fractureSplitAngleDegrees", result.fractureSplitAngleDegrees);
             result.burstStaggerDelayTicks = getInt(json, "burstStaggerDelayTicks", result.burstStaggerDelayTicks);
+            result.sharpshooterLevel1ReductionPercent = getDouble(json,
+                    "sharpshooterLevel1ReductionPercent", result.sharpshooterLevel1ReductionPercent);
+            result.sharpshooterLevel2ReductionPercent = getDouble(json,
+                    "sharpshooterLevel2ReductionPercent", result.sharpshooterLevel2ReductionPercent);
+            result.sharpshooterLevel3ReductionPercent = getDouble(json,
+                    "sharpshooterLevel3ReductionPercent", result.sharpshooterLevel3ReductionPercent);
             return result;
         }
 
