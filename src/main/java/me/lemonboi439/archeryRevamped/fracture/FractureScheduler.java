@@ -1,10 +1,16 @@
 package me.lemonboi439.archeryRevamped.fracture;
 
+import me.lemonboi439.archeryRevamped.ammo.ArrowAmmoManager;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
+import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,6 +52,23 @@ public final class FractureScheduler {
             ArcheryArrowEntity parent = pending.parent;
             if (!parent.isRemoved() && !parent.isArrowInGround()
                     && parent.getEntityWorld() instanceof ServerWorld serverWorld) {
+                if (parent.getOwner() instanceof ServerPlayerEntity shooter
+                        && !parent.isExtraAmmoFree()
+                        && !ArrowAmmoManager.consumeExtraArrows(
+                        shooter, parent.getItemStack(), pending.childCount - 1)) {
+                    // Keep the original arrow alive and paid for. A split is
+                    // cancelled rather than producing uncharged children.
+                    iterator.remove();
+                    continue;
+                }
+
+                // The parent is the original paid-for arrow. A successful
+                // fracture replaces it with exactly childCount arrows.
+                Vec3d splitPosition = new Vec3d(parent.getX(), parent.getY(), parent.getZ());
+                EffectManager.spawnParticles(serverWorld, splitPosition, ParticleTypes.PORTAL, 24);
+                EffectManager.playSound(serverWorld, splitPosition,
+                        SoundEvents.ENTITY_CHICKEN_EGG, 0.45F, 1.35F);
+                parent.discard();
                 if (pending.childCount == 2) {
                     spawnChild(serverWorld, parent, -pending.angleDegrees);
                     spawnChild(serverWorld, parent, pending.angleDegrees);

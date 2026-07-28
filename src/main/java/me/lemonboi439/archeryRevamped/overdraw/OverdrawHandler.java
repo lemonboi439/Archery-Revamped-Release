@@ -1,6 +1,7 @@
 package me.lemonboi439.archeryRevamped.overdraw;
 
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
+import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.enchantment.OverdrawEnchantment;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -10,8 +11,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,8 +78,9 @@ public final class OverdrawHandler {
 
         if (state.overdrawDuration > 0 && state.overdrawDuration % 10 == 0) {
             float pitch = 0.8F + Math.min(0.8F, (float) (state.damageBonus / Math.max(cap, 0.01D)) * 0.8F);
-            player.getEntityWorld().playSound(null, player.getX(), player.getY(), player.getZ(),
-                    SoundEvents.ITEM_CROSSBOW_LOADING_MIDDLE, SoundCategory.PLAYERS, 0.35F, pitch);
+            EffectManager.playSound(player.getEntityWorld(),
+                    new Vec3d(player.getX(), player.getY(), player.getZ()),
+                    SoundEvents.ITEM_CROSSBOW_LOADING_MIDDLE, 0.35F, pitch);
         }
 
         if (!state.punishmentApplied

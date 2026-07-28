@@ -12,6 +12,7 @@ import me.lemonboi439.archeryRevamped.item.ModItems;
 import me.lemonboi439.archeryRevamped.mixin.PersistentProjectileEntityAccessor;
 import me.lemonboi439.archeryRevamped.overdraw.OverdrawHandler;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -82,6 +83,9 @@ public abstract class RangedWeaponItemMixin {
         arrow.setFractureReleaseSpeed(originalArrow.getVelocity().length());
         arrow.setCritical(originalArrow.isCritical());
         arrow.setNoClip(originalArrow.isNoClip());
+        boolean extraAmmoFree = shooter.isInCreativeMode()
+                || projectileStack.contains(DataComponentTypes.INTANGIBLE_PROJECTILE);
+        arrow.setExtraAmmoFree(extraAmmoFree);
         if (shooter instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
             BurstArrowHandler.schedule(arrow, serverPlayer, weaponStack, burstLevel);
         }

@@ -14,8 +14,14 @@ import me.lemonboi439.archeryRevamped.fracture.FractureScheduler;
 import me.lemonboi439.archeryRevamped.burst.BurstArrowHandler;
 import me.lemonboi439.archeryRevamped.arrow.RicochetBehavior;
 import me.lemonboi439.archeryRevamped.sharpshooter.SharpshooterHandler;
+import me.lemonboi439.archeryRevamped.screen.FletchingTableScreenHandler;
+import me.lemonboi439.archeryRevamped.screen.ModScreenHandlers;
+import me.lemonboi439.archeryRevamped.command.ArcheryCommand;
+import me.lemonboi439.archeryRevamped.debug.TrajectoryVisualizer;
+import me.lemonboi439.archeryRevamped.trade.VillagerTradeManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 public class ArcheryRevamped implements ModInitializer {
     public static final String MOD_ID = "archery-revamped";
@@ -24,6 +30,8 @@ public class ArcheryRevamped implements ModInitializer {
     public void onInitialize() {
         ModEntities.register();
         ModItems.register();
+        VillagerTradeManager.register();
+        ModScreenHandlers.register();
         ArrowBehaviorRegistry.register(ArrowType.NORMAL, new RicochetBehavior());
         ArrowBehaviorRegistry.register(ArrowType.ENDER, new EnderArrowBehavior());
         ArrowBehaviorRegistry.register(ArrowType.IMPULSE, new ImpulseArrowBehavior());
@@ -33,6 +41,9 @@ public class ArcheryRevamped implements ModInitializer {
         FractureScheduler.register();
         BurstArrowHandler.register();
         SharpshooterHandler.register();
+        ServerTickEvents.END_SERVER_TICK.register(FletchingTableScreenHandler::tickServer);
         ServerLifecycleEvents.SERVER_STARTED.register(server -> ConfigManager.load());
+        ArcheryCommand.register();
+        TrajectoryVisualizer.register();
     }
 }

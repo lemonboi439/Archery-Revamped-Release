@@ -1,11 +1,10 @@
 package me.lemonboi439.archeryRevamped.arrow;
 
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
+import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -28,6 +27,10 @@ public final class ImpulseArrowBehavior implements ArrowBehavior {
     }
 
     private static void triggerBlast(ArcheryArrowEntity arrow) {
+        if (!ConfigManager.isImpulseArrowEnabled()) {
+            return;
+        }
+
         World world = arrow.getEntityWorld();
         if (world.isClient()) {
             return;
@@ -58,21 +61,9 @@ public final class ImpulseArrowBehavior implements ArrowBehavior {
             entity.addVelocity(knockback.x, knockback.y, knockback.z);
         }
 
-        if (world instanceof ServerWorld serverWorld) {
-            serverWorld.spawnParticles(
-                    ParticleTypes.EXPLOSION,
-                    impact.x, impact.y, impact.z,
-                    1, 0.0D, 0.0D, 0.0D, 0.0D
-            );
-        }
-        world.playSound(
-                null,
-                impact.x, impact.y, impact.z,
-                SoundEvents.ENTITY_PLAYER_SPLASH,
-                SoundCategory.PLAYERS,
-                0.45F,
-                1.15F
-        );
+        EffectManager.spawnParticles(world, impact, ParticleTypes.EXPLOSION, 1);
+        EffectManager.playSound(world, impact,
+                SoundEvents.ENTITY_PLAYER_SPLASH, 0.45F, 1.15F);
         arrow.discard();
     }
 }

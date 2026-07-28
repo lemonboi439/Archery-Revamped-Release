@@ -4,13 +4,15 @@ import me.lemonboi439.archeryRevamped.arrow.ArrowBehaviorRegistry;
 import me.lemonboi439.archeryRevamped.arrow.ArrowType;
 import me.lemonboi439.archeryRevamped.arrow.RicochetBehavior;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
+import me.lemonboi439.archeryRevamped.effect.EffectManager;
+import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import me.lemonboi439.archeryRevamped.physics.ArrowPhysicsEngine;
 import me.lemonboi439.archeryRevamped.mixin.PersistentProjectileEntityAccessor;
 import me.lemonboi439.archeryRevamped.fracture.FractureScheduler;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -44,6 +46,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private static final String SPLIT_TIMER_KEY = "splitTimer";
     private static final String HAS_SPREAD_KEY = "hasSpread";
     private static final String FRACTURE_RELEASE_SPEED_KEY = "fractureReleaseSpeed";
+    private static final String EXTRA_AMMO_FREE_KEY = "extraAmmoFree";
 
     private ArrowType arrowType = ArrowType.NORMAL;
     private int ricochetLevel;
@@ -65,6 +68,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private boolean hasSpread;
     private double fractureReleaseSpeed;
     private boolean fractureReleaseSpeedCaptured;
+    private boolean extraAmmoFree;
     private boolean spawnPositionCaptured;
     private Vec3d releaseVelocity;
 
@@ -185,6 +189,14 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         }
     }
 
+    public void setExtraAmmoFree(boolean extraAmmoFree) {
+        this.extraAmmoFree = extraAmmoFree;
+    }
+
+    public boolean isExtraAmmoFree() {
+        return this.extraAmmoFree;
+    }
+
     public int getFractureLevel() {
         return this.fractureLevel;
     }
@@ -196,7 +208,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         ArcheryArrowEntity child = new ArcheryArrowEntity(this.getEntityWorld());
 
         child.setOwner(this.getOwner());
-        child.setProjectileStack(this.getItemStack().copy());
+        child.setProjectileStack(this.createChildPickupStack());
         child.setPosition(this.getX(), this.getY(), this.getZ());
         child.setVelocity(this.getVelocity().rotateY((float) Math.toRadians(angleDegrees)));
         child.setCritical(this.isCritical());
@@ -225,6 +237,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         child.hasSpread = true;
         child.fractureReleaseSpeed = this.fractureReleaseSpeed;
         child.fractureReleaseSpeedCaptured = this.fractureReleaseSpeedCaptured;
+        child.extraAmmoFree = this.extraAmmoFree;
         return child;
     }
 
@@ -232,7 +245,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         ArcheryArrowEntity child = new ArcheryArrowEntity(this.getEntityWorld());
 
         child.setOwner(this.getOwner());
-        child.setProjectileStack(this.getItemStack().copy());
+        child.setProjectileStack(this.createChildPickupStack());
         child.setPosition(this.getX(), this.getY(), this.getZ());
         child.setVelocity(this.getVelocity());
         child.setCritical(this.isCritical());
@@ -250,6 +263,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         child.fractureLevel = this.fractureLevel;
         child.fractureReleaseSpeed = this.fractureReleaseSpeed;
         child.fractureReleaseSpeedCaptured = this.fractureReleaseSpeedCaptured;
+        child.extraAmmoFree = this.extraAmmoFree;
         child.splitTimer = 0;
         child.hasSpread = false;
         child.spawnPositionCaptured = false;
@@ -264,6 +278,18 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         if (!this.fractureReleaseSpeedCaptured) {
             this.setFractureReleaseSpeed(this.getVelocity().length());
         }
+    }
+
+    /**
+     * The intangible-projectile component is a firing/ammo marker used by
+     * vanilla for creative and Infinity shots. It must not be copied to a
+     * child arrow's pickup stack, otherwise a child can become permanently
+     * unpickable even when the original arrow was a normal pickup arrow.
+     */
+    private ItemStack createChildPickupStack() {
+        ItemStack pickupStack = this.getItemStack().copy();
+        pickupStack.remove(DataComponentTypes.INTANGIBLE_PROJECTILE);
+        return pickupStack;
     }
 
     private int getFractureSplitDelayTicks() {
@@ -302,11 +328,11 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         if (!this.longshot32Triggered
                 && this.distanceTravelled >= ConfigManager.getLongshot32Threshold()) {
             this.longshot32Triggered = true;
-            serverWorld.spawnParticles(ParticleTypes.HAPPY_VILLAGER,
-                    this.getX(), this.getY(), this.getZ(), 12,
-                    0.25D, 0.25D, 0.25D, 0.05D);
-            this.getEntityWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
-                    SoundEvents.BLOCK_NOTE_BLOCK_PLING, SoundCategory.PLAYERS, 0.6F, 0.65F);
+            Vec3d effectPosition = new Vec3d(this.getX(), this.getY(), this.getZ());
+            EffectManager.spawnParticles(this.getEntityWorld(), effectPosition,
+                    ParticleTypes.HAPPY_VILLAGER, 12);
+            EffectManager.playSound(this.getEntityWorld(), effectPosition,
+                    SoundEvents.BLOCK_NOTE_BLOCK_PLING, 0.6F, 0.65F);
         }
 
         if (!this.longshot48Triggered
@@ -317,11 +343,11 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         if (!this.longshot64Triggered
                 && this.distanceTravelled >= ConfigManager.getLongshot64Threshold()) {
             this.longshot64Triggered = true;
-            serverWorld.spawnParticles(ParticleTypes.WAX_ON,
-                    this.getX(), this.getY(), this.getZ(), 16,
-                    0.3D, 0.3D, 0.3D, 0.08D);
-            this.getEntityWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
-                    SoundEvents.BLOCK_NOTE_BLOCK_PLING, SoundCategory.PLAYERS, 0.75F, 1.3F);
+            Vec3d effectPosition = new Vec3d(this.getX(), this.getY(), this.getZ());
+            EffectManager.spawnParticles(this.getEntityWorld(), effectPosition,
+                    new DustParticleEffect(0xFFD700, 1.0F), 16);
+            EffectManager.playSound(this.getEntityWorld(), effectPosition,
+                    SoundEvents.BLOCK_NOTE_BLOCK_PLING, 0.75F, 1.3F);
         }
     }
 
@@ -386,6 +412,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         tag.putInt(SPLIT_TIMER_KEY, this.splitTimer);
         tag.putBoolean(HAS_SPREAD_KEY, this.hasSpread);
         tag.putDouble(FRACTURE_RELEASE_SPEED_KEY, this.fractureReleaseSpeed);
+        tag.putBoolean(EXTRA_AMMO_FREE_KEY, this.extraAmmoFree);
     }
 
     protected void loadSyncData(NbtCompound tag) {
@@ -408,6 +435,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         this.splitTimer = tag.getInt(SPLIT_TIMER_KEY).orElse(0);
         this.hasSpread = tag.getBoolean(HAS_SPREAD_KEY).orElse(false);
         this.fractureReleaseSpeed = tag.getDouble(FRACTURE_RELEASE_SPEED_KEY).orElse(0.0D);
+        this.extraAmmoFree = tag.getBoolean(EXTRA_AMMO_FREE_KEY).orElse(false);
         this.fractureReleaseSpeedCaptured = this.fractureReleaseSpeed > 1.0E-6D;
         this.spawnPositionCaptured = tag.contains(SPAWN_X_KEY)
                 || tag.contains(SPAWN_Y_KEY)
@@ -436,6 +464,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         view.putInt(SPLIT_TIMER_KEY, this.splitTimer);
         view.putBoolean(HAS_SPREAD_KEY, this.hasSpread);
         view.putDouble(FRACTURE_RELEASE_SPEED_KEY, this.fractureReleaseSpeed);
+        view.putBoolean(EXTRA_AMMO_FREE_KEY, this.extraAmmoFree);
     }
 
     @Override
@@ -460,6 +489,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         this.splitTimer = view.getInt(SPLIT_TIMER_KEY, 0);
         this.hasSpread = view.getBoolean(HAS_SPREAD_KEY, false);
         this.fractureReleaseSpeed = view.getDouble(FRACTURE_RELEASE_SPEED_KEY, 0.0D);
+        this.extraAmmoFree = view.getBoolean(EXTRA_AMMO_FREE_KEY, false);
         this.fractureReleaseSpeedCaptured = this.fractureReleaseSpeed > 1.0E-6D;
         this.spawnPositionCaptured = view.getOptionalString(ARROW_TYPE_KEY).isPresent();
     }

@@ -8,6 +8,8 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.UseEffectsComponent;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
@@ -39,6 +41,11 @@ public final class SharpshooterHandler {
             return;
         }
 
+        if (!ConfigManager.isSharpshooterEnabled()) {
+            movementAttribute.removeModifier(MOVEMENT_MODIFIER_ID);
+            return;
+        }
+
         int level = isDrawingRangedWeapon(player) ? getSharpshooterLevel(player) : 0;
         movementAttribute.removeModifier(MOVEMENT_MODIFIER_ID);
         if (level <= 0) {
@@ -50,9 +57,20 @@ public final class SharpshooterHandler {
             return;
         }
 
+        ItemStack activeItem = player.getActiveItem();
+        double useSpeedMultiplier = activeItem
+                .getOrDefault(DataComponentTypes.USE_EFFECTS, UseEffectsComponent.DEFAULT)
+                .speedMultiplier();
+        double clampedReduction = Math.max(0.0D, Math.min(100.0D, reduction)) / 100.0D;
+        double targetSpeedMultiplier = useSpeedMultiplier
+                + (1.0D - useSpeedMultiplier) * clampedReduction;
+        double attributeModifier = useSpeedMultiplier > 1.0E-6D
+                ? targetSpeedMultiplier / useSpeedMultiplier - 1.0D
+                : 0.0D;
+
         movementAttribute.addTemporaryModifier(new EntityAttributeModifier(
                 MOVEMENT_MODIFIER_ID,
-                reduction / 100.0D,
+                attributeModifier,
                 EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
         ));
     }

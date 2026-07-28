@@ -1,15 +1,19 @@
 package me.lemonboi439.archeryRevamped.burst;
 
+import me.lemonboi439.archeryRevamped.ammo.ArrowAmmoManager;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
+import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.enchantment.BurstEnchantment;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
@@ -35,10 +39,15 @@ public final class BurstArrowHandler {
         // Burst I fires two arrows total, Burst II fires three, and Burst III
         // fires four. The first arrow is already in the world, so only the
         // enchantment level needs to be scheduled here.
-        int additionalArrows = Math.max(0, Math.min(burstLevel, BurstEnchantment.MAX_LEVEL));
+        int arrowsPerLevel = Math.max(1, ConfigManager.getBurstArrowsPerLevel());
+        int additionalArrows = Math.max(0, Math.min(
+                burstLevel * arrowsPerLevel, BurstEnchantment.MAX_LEVEL * arrowsPerLevel));
         if (additionalArrows <= 0) {
             return;
         }
+
+        int staggerDelay = Math.max(1, ConfigManager.getBurstStaggerDelayTicks());
+        shooter.getItemCooldownManager().set(weaponStack, additionalArrows * staggerDelay + 1);
 
         PENDING_BURSTS.add(new PendingBurst(
                 firstArrow,
@@ -46,7 +55,7 @@ public final class BurstArrowHandler {
                 shooter,
                 weaponStack,
                 additionalArrows,
-                Math.max(1, ConfigManager.getBurstStaggerDelayTicks())
+                staggerDelay
         ));
     }
 
@@ -71,6 +80,15 @@ public final class BurstArrowHandler {
                 continue;
             }
 
+            if (!pending.template.isExtraAmmoFree()
+                    && !ArrowAmmoManager.consumeExtraArrows(
+                    pending.shooter, pending.template.getItemStack(), 1)) {
+                // The first arrow was already paid for by vanilla. Do not
+                // create any free burst arrows when no extra ammo remains.
+                iterator.remove();
+                continue;
+            }
+
             ArcheryArrowEntity child = pending.template.createBurstChild();
             Vec3d spawnPosition = pending.shooter.getEyePos().subtract(0.0D, 0.1D, 0.0D);
             Vec3d direction = pending.shooter.getRotationVector();
@@ -86,6 +104,10 @@ public final class BurstArrowHandler {
             ProjectileUtil.setRotationFromVelocity(child, 0.0F);
             child.setAngles(child.getYaw(), child.getPitch());
             pending.world.spawnEntity(child);
+            Vec3d effectPosition = new Vec3d(child.getX(), child.getY(), child.getZ());
+            EffectManager.spawnParticles(pending.world, effectPosition, ParticleTypes.END_ROD, 6);
+            EffectManager.playSound(pending.world, effectPosition,
+                    SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, 0.35F, 1.45F);
             pending.weaponStack.damage(1, pending.shooter, EquipmentSlot.MAINHAND);
 
             pending.arrowsRemaining--;

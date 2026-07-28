@@ -1,12 +1,11 @@
 package me.lemonboi439.archeryRevamped.arrow;
 
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
+import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -93,30 +92,8 @@ public final class EnderArrowBehavior implements ArrowBehavior {
     }
 
     private static void spawnEffects(World world, Vec3d position) {
-        if (!(world instanceof ServerWorld serverWorld)) {
-            return;
-        }
-
-        serverWorld.spawnParticles(
-                ParticleTypes.PORTAL,
-                position.x,
-                position.y,
-                position.z,
-                32,
-                0.5D,
-                0.5D,
-                0.5D,
-                0.2D
-        );
-        world.playSound(
-                null,
-                position.x,
-                position.y,
-                position.z,
-                SoundEvents.ENTITY_ENDERMAN_TELEPORT,
-                SoundCategory.PLAYERS,
-                1.0F,
-                1.0F
-        );
+        EffectManager.spawnParticles(world, position, ParticleTypes.PORTAL, 32);
+        EffectManager.playSound(world, position,
+                SoundEvents.ENTITY_ENDERMAN_TELEPORT, 1.0F, 1.0F);
     }
 }
