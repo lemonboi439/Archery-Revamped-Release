@@ -5,6 +5,7 @@ import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
@@ -24,11 +25,13 @@ public final class FractureScheduler {
 
     public static void register() {
         ServerTickEvents.END_SERVER_TICK.register(FractureScheduler::tick);
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> PENDING_SPLITS.clear());
     }
 
     public static void schedule(ArcheryArrowEntity parent) {
         if (parent.isRemoved() || parent.isArrowInGround()
                 || !(parent.getEntityWorld() instanceof ServerWorld serverWorld)) {
+            parent.setFractureScheduled(false);
             return;
         }
 
@@ -57,7 +60,10 @@ public final class FractureScheduler {
                         && !ArrowAmmoManager.consumeExtraArrows(
                         shooter, parent.getItemStack(), pending.childCount - 1)) {
                     // Keep the original arrow alive and paid for. A split is
-                    // cancelled rather than producing uncharged children.
+                    // cancelled rather than producing uncharged children. It
+                    // is marked complete so it cannot retry every tick.
+                    parent.setHasSpread(true);
+                    parent.setFractureScheduled(false);
                     iterator.remove();
                     continue;
                 }
@@ -68,6 +74,8 @@ public final class FractureScheduler {
                 EffectManager.spawnParticles(serverWorld, splitPosition, ParticleTypes.PORTAL, 24);
                 EffectManager.playSound(serverWorld, splitPosition,
                         SoundEvents.ENTITY_CHICKEN_EGG, 0.45F, 1.35F);
+                parent.setHasSpread(true);
+                parent.setFractureScheduled(false);
                 parent.discard();
                 if (pending.childCount == 2) {
                     spawnChild(serverWorld, parent, -pending.angleDegrees);

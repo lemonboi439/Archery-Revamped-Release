@@ -8,12 +8,14 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.debug.TrajectoryVisualizer;
+import me.lemonboi439.archeryRevamped.debug.TrajectoryNetworking;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.permission.Permission;
 import net.minecraft.command.permission.PermissionLevel;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 /** Admin/debug commands for Archery Revamped. */
 public final class ArcheryCommand {
@@ -34,6 +36,9 @@ public final class ArcheryCommand {
                         .executes(ArcheryCommand::reload))
                 .then(CommandManager.literal("config")
                         .executes(ArcheryCommand::config))
+                .then(CommandManager.literal("help")
+                        .executes(ArcheryCommand::help))
+                .then(createRegularCommand())
                 .then(createPhysicsCommand())
                 .then(CommandManager.literal("trajectory")
                         .executes(ArcheryCommand::showTrajectory)
@@ -41,9 +46,19 @@ public final class ArcheryCommand {
                                 .executes(ArcheryCommand::setTrajectory)));
     }
 
+    private static LiteralArgumentBuilder<ServerCommandSource> createRegularCommand() {
+        return CommandManager.literal("regular")
+                .then(CommandManager.literal("infinite_levels")
+                        .executes(ArcheryCommand::showInfiniteLevels)
+                        .then(CommandManager.argument("enabled", BoolArgumentType.bool())
+                                .executes(ArcheryCommand::setInfiniteLevels)));
+    }
+
     private static LiteralArgumentBuilder<ServerCommandSource> createPhysicsCommand() {
         return CommandManager.literal("physics")
                 .executes(ArcheryCommand::showPhysics)
+                .then(CommandManager.literal("get")
+                        .executes(ArcheryCommand::showPhysics))
                 .then(CommandManager.literal("reset")
                         .executes(ArcheryCommand::resetPhysics))
                 .then(CommandManager.literal("gravity")
@@ -66,8 +81,48 @@ public final class ArcheryCommand {
                                 .executes(ArcheryCommand::setLifetime)));
     }
 
+    private static int help(CommandContext<ServerCommandSource> context) {
+        ServerCommandSource source = context.getSource();
+        helpHeader(source, "Archery Revamped commands");
+        helpHeader(source, "General");
+        helpLine(source, "/archeryrevamped help", "show this colour-coded command guide");
+        helpLine(source, "/archeryrevamped reload", "reload the JSON configuration");
+        helpLine(source, "/archeryrevamped config", "explain how to open the optional Cloth Config screen");
+
+        helpHeader(source, "Physics");
+        helpLine(source, "/archeryrevamped physics get", "show the current physics values");
+        helpLine(source, "/archeryrevamped physics reset", "restore physics defaults");
+        helpLine(source, "/archeryrevamped physics gravity <value>", "set downward acceleration");
+        helpLine(source, "/archeryrevamped physics drag <value>", "set air resistance; higher means more resistance");
+        helpLine(source, "/archeryrevamped physics speed <value>", "set the velocity multiplier for arrows");
+        helpLine(source, "/archeryrevamped physics randomness <value>", "set random velocity spread");
+        helpLine(source, "/archeryrevamped physics terminal_velocity <value>", "set the maximum velocity magnitude");
+        helpLine(source, "/archeryrevamped physics lifetime <ticks>", "set the maximum arrow lifetime");
+        helpLine(source, "config: physics.ricochet_velocity_loss_percent", "set ricochet velocity loss; this is intentionally config-only");
+
+        helpHeader(source, "Trajectory");
+        helpLine(source, "/archeryrevamped trajectory <true|false>", "show or hide fired-arrow trajectory trails and forward predictions");
+
+        helpHeader(source, "Regular");
+        helpLine(source, "/archeryrevamped regular infinite_levels", "show the infinite custom-enchantment level setting");
+        helpLine(source, "/archeryrevamped regular infinite_levels <true|false>", "enable or disable uncapped custom-enchantment levels");
+        return 1;
+    }
+
+    private static void helpHeader(ServerCommandSource source, String text) {
+        source.sendFeedback(() -> Text.literal("\n" + text).formatted(Formatting.GOLD), false);
+    }
+
+    private static void helpLine(ServerCommandSource source, String command, String description) {
+        source.sendFeedback(() -> Text.literal(command).formatted(Formatting.AQUA)
+                .append(Text.literal(" - ").formatted(Formatting.DARK_GRAY))
+                .append(Text.literal(description).formatted(Formatting.GRAY)), false);
+    }
+
     private static int reload(CommandContext<ServerCommandSource> context) {
         ConfigManager.reload();
+        context.getSource().getServer().getPlayerManager().getPlayerList()
+                .forEach(player -> TrajectoryNetworking.send(player, TrajectoryVisualizer.isEnabled()));
         context.getSource().sendFeedback(
                 () -> Text.literal("Archery Revamped config reloaded."), true);
         return 1;
@@ -83,7 +138,7 @@ public final class ArcheryCommand {
         }
 
         String message = clothConfigPresent
-                ? "Cloth Config is installed, but no Archery Revamped Cloth Config screen is registered."
+                ? "Open Archery Revamped from Mod Menu to edit the Cloth Config screen."
                 : "Cloth Config is not installed. Use /archeryrevamped physics <setting> <value> instead.";
         context.getSource().sendFeedback(() -> Text.literal(message), false);
         return 1;
@@ -91,11 +146,12 @@ public final class ArcheryCommand {
 
     private static int showPhysics(CommandContext<ServerCommandSource> context) {
         String values = "Physics: gravity=" + ConfigManager.getGravity()
-                + ", drag=" + ConfigManager.getDrag()
-                + ", speed=" + ConfigManager.getSpeedMultiplier()
-                + ", randomness=" + ConfigManager.getRandomness()
+                + ", drag=" + ConfigManager.getDrag() + " (higher = more air resistance)"
+                + ", velocity_multiplier=" + ConfigManager.getSpeedMultiplier()
+                + ", spread=" + ConfigManager.getRandomness()
                 + ", terminal_velocity=" + ConfigManager.getTerminalVelocity()
-                + ", lifetime=" + ConfigManager.getMaxLifetimeTicks();
+                + ", lifetime=" + ConfigManager.getMaxLifetimeTicks()
+                + ", ricochet_velocity_loss_percent=" + ConfigManager.getRicochetVelocityLossPercent();
         context.getSource().sendFeedback(() -> Text.literal(values), false);
         return 1;
     }
@@ -104,6 +160,22 @@ public final class ArcheryCommand {
         ConfigManager.resetPhysicsToDefaults();
         context.getSource().sendFeedback(
                 () -> Text.literal("Physics settings reset to defaults."), true);
+        return 1;
+    }
+
+    private static int showInfiniteLevels(CommandContext<ServerCommandSource> context) {
+        context.getSource().sendFeedback(
+                () -> Text.literal("Infinite Archery Revamped enchantment levels are "
+                        + (ConfigManager.isInfiniteLevels() ? "enabled" : "disabled") + "."), false);
+        return 1;
+    }
+
+    private static int setInfiniteLevels(CommandContext<ServerCommandSource> context) {
+        boolean enabled = BoolArgumentType.getBool(context, "enabled");
+        ConfigManager.setInfiniteLevels(enabled);
+        context.getSource().sendFeedback(
+                () -> Text.literal("Infinite Archery Revamped enchantment levels "
+                        + (enabled ? "enabled" : "disabled") + "."), true);
         return 1;
     }
 
@@ -159,8 +231,11 @@ public final class ArcheryCommand {
     private static int setTrajectory(CommandContext<ServerCommandSource> context) {
         boolean enabled = BoolArgumentType.getBool(context, "enabled");
         TrajectoryVisualizer.setEnabled(enabled);
+        context.getSource().getServer().getPlayerManager().getPlayerList()
+                .forEach(player -> TrajectoryNetworking.send(player, enabled));
         context.getSource().sendFeedback(
                 () -> Text.literal("Trajectory visualization " + (enabled ? "enabled" : "disabled") + "."), true);
         return 1;
     }
+
 }

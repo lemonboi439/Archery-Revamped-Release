@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "archery-revamped",
   "version": "${version}",
-  "name": "Archery-Revamped",
-  "description": "",
+  "name": "Archery Revamped",
+  "description": "Vanilla+ archery with custom arrows, enchantments, physics, and fletching.",
   "authors": [],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/archery-revamped/icon.png",
+  "icon": "assets/archery-revamped/textures/item/ender_arrow.png",
   "environment": "*",
   "entrypoints": {
     "fabric-datagen": [
@@ -15,6 +15,9 @@
     ],
     "client": [
       "me.lemonboi439.archeryRevamped.client.ArcheryRevampedClient"
+    ],
+    "modmenu": [
+      "me.lemonboi439.archeryRevamped.client.ArcheryRevampedModMenu"
     ],
     "main": [
       "me.lemonboi439.archeryRevamped.ArcheryRevamped"
@@ -31,5 +34,12 @@
     "fabricloader": ">=${loader_version}",
     "fabric-api": "*",
     "minecraft": "${minecraft_version}"
+  },
+  "suggests": {
+    "jei": "*",
+    "roughlyenoughitems": "*",
+    "emi": "*",
+    "cloth-config": "*",
+    "modmenu": "*"
   }
 }

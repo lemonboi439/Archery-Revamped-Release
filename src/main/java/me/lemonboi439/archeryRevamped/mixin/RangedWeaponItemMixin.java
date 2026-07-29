@@ -9,7 +9,6 @@ import me.lemonboi439.archeryRevamped.burst.BurstArrowHandler;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
 import me.lemonboi439.archeryRevamped.arrow.ArrowType;
 import me.lemonboi439.archeryRevamped.item.ModItems;
-import me.lemonboi439.archeryRevamped.mixin.PersistentProjectileEntityAccessor;
 import me.lemonboi439.archeryRevamped.overdraw.OverdrawHandler;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.component.DataComponentTypes;
@@ -19,7 +18,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -49,12 +47,14 @@ public abstract class RangedWeaponItemMixin {
         int ricochetLevel = ricochet
                 .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
                 .orElse(0);
-        arrow.setRicochetLevel(MathHelper.clamp(ricochetLevel, 0, RicochetEnchantment.MAX_LEVEL));
+        arrow.setRicochetLevel(ConfigManager.limitEnchantmentLevel(
+                ricochetLevel, RicochetEnchantment.MAX_LEVEL));
         var longshot = enchantments.getOptional(LongshotEnchantment.KEY);
         int longshotLevel = longshot
                 .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
                 .orElse(0);
-        arrow.setLongshotLevel(MathHelper.clamp(longshotLevel, 0, LongshotEnchantment.MAX_LEVEL));
+        arrow.setLongshotLevel(ConfigManager.limitEnchantmentLevel(
+                longshotLevel, LongshotEnchantment.MAX_LEVEL));
         int fractureLevel = 0;
         if (ConfigManager.isFractureEnabled()) {
             var fracture = enchantments.getOptional(FractureEnchantment.KEY);
@@ -62,12 +62,13 @@ public abstract class RangedWeaponItemMixin {
                     .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
                     .orElse(0);
         }
-        arrow.setFractureLevel(MathHelper.clamp(fractureLevel, 0, FractureEnchantment.MAX_LEVEL));
+        arrow.setFractureLevel(ConfigManager.limitEnchantmentLevel(
+                fractureLevel, FractureEnchantment.MAX_LEVEL));
         var burst = enchantments.getOptional(BurstEnchantment.KEY);
         int burstLevel = burst
                 .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
                 .orElse(0);
-        burstLevel = MathHelper.clamp(burstLevel, 0, BurstEnchantment.MAX_LEVEL);
+        burstLevel = ConfigManager.limitEnchantmentLevel(burstLevel, BurstEnchantment.MAX_LEVEL);
         if (projectileStack.isOf(ModItems.ENDER_ARROW)) {
             arrow.setArrowType(ArrowType.ENDER);
         } else if (projectileStack.isOf(ModItems.IMPULSE_ARROW)) {
@@ -93,8 +94,6 @@ public abstract class RangedWeaponItemMixin {
                 ? OverdrawHandler.consumeDamageBonus(player) : 0.0D;
         if (overdrawBonus > 0.0D) {
             arrow.setOverdrawDamageBonus(overdrawBonus);
-            double baseDamage = ((PersistentProjectileEntityAccessor) originalArrow).archeryRevamped$getDamage();
-            arrow.setDamage(baseDamage * (1.0D + overdrawBonus));
         }
         cir.setReturnValue(arrow);
     }

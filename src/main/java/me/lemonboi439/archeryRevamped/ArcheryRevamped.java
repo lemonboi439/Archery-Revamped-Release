@@ -2,6 +2,7 @@ package me.lemonboi439.archeryRevamped;
 
 import me.lemonboi439.archeryRevamped.entity.ModEntities;
 import me.lemonboi439.archeryRevamped.item.ModItems;
+import me.lemonboi439.archeryRevamped.item.ModItemGroups;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.arrow.ArrowBehaviorRegistry;
 import me.lemonboi439.archeryRevamped.arrow.ArrowType;
@@ -16,11 +17,12 @@ import me.lemonboi439.archeryRevamped.arrow.RicochetBehavior;
 import me.lemonboi439.archeryRevamped.sharpshooter.SharpshooterHandler;
 import me.lemonboi439.archeryRevamped.screen.FletchingTableScreenHandler;
 import me.lemonboi439.archeryRevamped.screen.ModScreenHandlers;
+import me.lemonboi439.archeryRevamped.screen.RecipeViewerCompat;
 import me.lemonboi439.archeryRevamped.command.ArcheryCommand;
-import me.lemonboi439.archeryRevamped.debug.TrajectoryVisualizer;
 import me.lemonboi439.archeryRevamped.trade.VillagerTradeManager;
+import me.lemonboi439.archeryRevamped.loot.LateGameLootManager;
+import me.lemonboi439.archeryRevamped.debug.TrajectoryNetworking;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 public class ArcheryRevamped implements ModInitializer {
@@ -28,9 +30,13 @@ public class ArcheryRevamped implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        ConfigManager.load();
         ModEntities.register();
         ModItems.register();
+        ModItemGroups.register();
+        RecipeViewerCompat.register();
         VillagerTradeManager.register();
+        LateGameLootManager.register();
         ModScreenHandlers.register();
         ArrowBehaviorRegistry.register(ArrowType.NORMAL, new RicochetBehavior());
         ArrowBehaviorRegistry.register(ArrowType.ENDER, new EnderArrowBehavior());
@@ -41,9 +47,8 @@ public class ArcheryRevamped implements ModInitializer {
         FractureScheduler.register();
         BurstArrowHandler.register();
         SharpshooterHandler.register();
+        TrajectoryNetworking.register();
         ServerTickEvents.END_SERVER_TICK.register(FletchingTableScreenHandler::tickServer);
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> ConfigManager.load());
         ArcheryCommand.register();
-        TrajectoryVisualizer.register();
     }
 }

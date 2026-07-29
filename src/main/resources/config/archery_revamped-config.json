@@ -70,7 +70,13 @@
     "crafting_time_ticks": 20,
     "recipe_output_count": 4
   },
+  "trajectory": {
+    "colour_visualisation": false
+  },
   "general": {
     "mod_enabled": true
+  },
+  "regular": {
+    "infinite_levels": false
   }
 }

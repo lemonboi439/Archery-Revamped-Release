@@ -88,6 +88,7 @@ public final class ConfigManager {
 
     public static void setDrag(double value) {
         config.drag = value;
+        config.validate();
         save();
     }
 
@@ -279,6 +280,230 @@ public final class ConfigManager {
         return config.modEnabled;
     }
 
+    public static boolean isTrajectoryColourVisualisationEnabled() {
+        return config.trajectoryColourVisualisation;
+    }
+
+    public static void setTrajectoryColourVisualisationEnabled(boolean enabled) {
+        config.trajectoryColourVisualisation = enabled;
+        saveAfterChange();
+    }
+
+    public static boolean isInfiniteLevels() {
+        return config.infiniteLevels;
+    }
+
+    public static void setInfiniteLevels(boolean enabled) {
+        config.infiniteLevels = enabled;
+        saveAfterChange();
+    }
+
+    public static void setRicochetVelocityLossPercent(double value) {
+        config.ricochetVelocityLossPercent = value;
+        config.validate();
+        saveAfterChange();
+    }
+
+    public static void setEnderArrowEnabled(boolean value) {
+        config.enderArrowEnabled = value;
+        saveAfterChange();
+    }
+
+    public static void setImpulseArrowEnabled(boolean value) {
+        config.impulseArrowEnabled = value;
+        saveAfterChange();
+    }
+
+    public static void setExplosiveArrowEnabled(boolean value) {
+        config.explosiveArrowEnabled = value;
+        saveAfterChange();
+    }
+
+    public static void setStickyArrowEnabled(boolean value) {
+        config.stickyArrowEnabled = value;
+        saveAfterChange();
+    }
+
+    public static void setImpulseBlastRadius(double value) {
+        config.impulseBlastRadius = value;
+        saveAfterChange();
+    }
+
+    public static void setImpulseKnockbackStrength(double value) {
+        config.impulseKnockbackStrength = value;
+        saveAfterChange();
+    }
+
+    public static void setExplosiveArrowSize(double value) {
+        config.explosiveArrowSize = value;
+        saveAfterChange();
+    }
+
+    public static void setStickyMovementReductionPercent(double value) {
+        config.stickyMovementReductionPercent = value;
+        saveAfterChange();
+    }
+
+    public static void setStickyDurationTicks(int value) {
+        config.stickyDurationTicks = value;
+        saveAfterChange();
+    }
+
+    public static void setStickySlownessLevel(int value) {
+        config.stickySlownessLevel = value;
+        saveAfterChange();
+    }
+
+    public static void setOverdrawDamageIncreasePerTickPercent(double value) {
+        config.overdrawDamageIncreasePerTickPercent = value;
+        saveAfterChange();
+    }
+
+    public static void setOverdrawMaxDamageBonusPercent(double value) {
+        config.overdrawMaxDamageBonusPercent = value;
+        saveAfterChange();
+    }
+
+    public static void setOverdrawAutoFireDelayTicks(int value) {
+        config.overdrawAutoFireDelayTicks = value;
+        saveAfterChange();
+    }
+
+    public static void setOverdrawDurabilityLossPercent(double value) {
+        config.overdrawDurabilityLossPercent = value;
+        saveAfterChange();
+    }
+
+    public static void setOverdrawSelfDamageHearts(double value) {
+        config.overdrawSelfDamageHearts = value;
+        saveAfterChange();
+    }
+
+    public static void setLongshot16Threshold(double value) {
+        config.longshot16Threshold = value;
+        saveAfterChange();
+    }
+
+    public static void setLongshot32Threshold(double value) {
+        config.longshot32Threshold = value;
+        saveAfterChange();
+    }
+
+    public static void setLongshot48Threshold(double value) {
+        config.longshot48Threshold = value;
+        saveAfterChange();
+    }
+
+    public static void setLongshot64Threshold(double value) {
+        config.longshot64Threshold = value;
+        saveAfterChange();
+    }
+
+    public static void setLongshot16Multiplier(double value) {
+        config.longshot16Multiplier = value;
+        saveAfterChange();
+    }
+
+    public static void setLongshot32Multiplier(double value) {
+        config.longshot32Multiplier = value;
+        saveAfterChange();
+    }
+
+    public static void setLongshot48Multiplier(double value) {
+        config.longshot48Multiplier = value;
+        saveAfterChange();
+    }
+
+    public static void setLongshot64Multiplier(double value) {
+        config.longshot64Multiplier = value;
+        saveAfterChange();
+    }
+
+    public static void setFractureEnabled(boolean value) {
+        config.fractureEnabled = value;
+        saveAfterChange();
+    }
+
+    public static void setFractureSplitDelayTicks(int value) {
+        config.fractureSplitDelayTicks = value;
+        saveAfterChange();
+    }
+
+    public static void setFractureReferenceReleaseSpeed(double value) {
+        config.fractureReferenceReleaseSpeed = value;
+        saveAfterChange();
+    }
+
+    public static void setFractureMinSplitDelayTicks(int value) {
+        config.fractureMinSplitDelayTicks = value;
+        saveAfterChange();
+    }
+
+    public static void setFractureMaxSplitDelayTicks(int value) {
+        config.fractureMaxSplitDelayTicks = value;
+        saveAfterChange();
+    }
+
+    public static void setFractureSplitAngleDegrees(double value) {
+        config.fractureSplitAngleDegrees = value;
+        saveAfterChange();
+    }
+
+    public static void setBurstStaggerDelayTicks(int value) {
+        config.burstStaggerDelayTicks = value;
+        saveAfterChange();
+    }
+
+    public static void setBurstArrowsPerLevel(int value) {
+        config.burstArrowsPerLevel = value;
+        saveAfterChange();
+    }
+
+    public static void setSharpshooterEnabled(boolean value) {
+        config.sharpshooterEnabled = value;
+        saveAfterChange();
+    }
+
+    public static void setSharpshooterReductionPercent(int level, double value) {
+        switch (Math.max(1, Math.min(level, 3))) {
+            case 1 -> config.sharpshooterLevel1ReductionPercent = value;
+            case 2 -> config.sharpshooterLevel2ReductionPercent = value;
+            default -> config.sharpshooterLevel3ReductionPercent = value;
+        }
+        saveAfterChange();
+    }
+
+    public static void setFletchingCraftingTimeTicks(int value) {
+        config.fletchingCraftingTimeTicks = value;
+        saveAfterChange();
+    }
+
+    public static void setFletchingRecipeOutputCount(int value) {
+        config.fletchingRecipeOutputCount = value;
+        saveAfterChange();
+    }
+
+    public static void setModEnabled(boolean value) {
+        config.modEnabled = value;
+        saveAfterChange();
+    }
+
+    /**
+     * Returns an enchantment level without applying the normal hard cap when
+     * the admin-only infinite-levels option is enabled.
+     */
+    public static int limitEnchantmentLevel(int level, int normalMaximum) {
+        if (level <= 0) {
+            return 0;
+        }
+        return config.infiniteLevels ? level : Math.min(level, normalMaximum);
+    }
+
+    private static void saveAfterChange() {
+        config.validate();
+        save();
+    }
+
     private static final class PhysicsConfig {
         private double gravity = 0.05D;
         private double drag = 0.99D;
@@ -325,6 +550,8 @@ public final class ConfigManager {
         private int fletchingCraftingTimeTicks = 20;
         private int fletchingRecipeOutputCount = 4;
         private boolean modEnabled = true;
+        private boolean trajectoryColourVisualisation = false;
+        private boolean infiniteLevels = false;
 
         private static PhysicsConfig fromJson(JsonObject json) {
             PhysicsConfig result = new PhysicsConfig();
@@ -423,7 +650,11 @@ public final class ConfigManager {
                     "fletchingCraftingTimeTicks", result.fletchingCraftingTimeTicks);
             result.fletchingRecipeOutputCount = readInt(json, "fletching", "recipe_output_count",
                     "fletchingRecipeOutputCount", result.fletchingRecipeOutputCount);
+            result.trajectoryColourVisualisation = readBoolean(json, "trajectory", "colour_visualisation",
+                    "trajectoryColourVisualisation", result.trajectoryColourVisualisation);
             result.modEnabled = readBoolean(json, "general", "mod_enabled", "modEnabled", result.modEnabled);
+            result.infiniteLevels = readBoolean(json, "regular", "infinite_levels",
+                    "infiniteLevels", result.infiniteLevels);
             result.validate();
             return result;
         }
@@ -511,9 +742,17 @@ public final class ConfigManager {
             fletching.addProperty("recipe_output_count", fletchingRecipeOutputCount);
             root.add("fletching", fletching);
 
+            JsonObject trajectory = new JsonObject();
+            trajectory.addProperty("colour_visualisation", trajectoryColourVisualisation);
+            root.add("trajectory", trajectory);
+
             JsonObject general = new JsonObject();
             general.addProperty("mod_enabled", modEnabled);
             root.add("general", general);
+
+            JsonObject regular = new JsonObject();
+            regular.addProperty("infinite_levels", infiniteLevels);
+            root.add("regular", regular);
             return root;
         }
 

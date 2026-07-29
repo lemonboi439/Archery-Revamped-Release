@@ -6,10 +6,14 @@ import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.enchantment.BurstEnchantment;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -28,11 +32,12 @@ public final class BurstArrowHandler {
 
     public static void register() {
         ServerTickEvents.END_SERVER_TICK.register(BurstArrowHandler::tick);
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> PENDING_BURSTS.clear());
     }
 
     public static void schedule(ArcheryArrowEntity firstArrow, ServerPlayerEntity shooter,
                                 ItemStack weaponStack, int burstLevel) {
-        if (!(firstArrow.getEntityWorld() instanceof ServerWorld serverWorld)) {
+        if (burstLevel <= 0 || !(firstArrow.getEntityWorld() instanceof ServerWorld serverWorld)) {
             return;
         }
 
@@ -40,13 +45,25 @@ public final class BurstArrowHandler {
         // fires four. The first arrow is already in the world, so only the
         // enchantment level needs to be scheduled here.
         int arrowsPerLevel = Math.max(1, ConfigManager.getBurstArrowsPerLevel());
-        int additionalArrows = Math.max(0, Math.min(
-                burstLevel * arrowsPerLevel, BurstEnchantment.MAX_LEVEL * arrowsPerLevel));
+        int totalBurstArrows = Math.max(1, burstLevel * arrowsPerLevel);
+        int multishotLevel = serverWorld.getRegistryManager()
+                .getOrThrow(RegistryKeys.ENCHANTMENT)
+                .getOptional(Enchantments.MULTISHOT)
+                .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
+                .orElse(0);
+        // Multishot already creates three base projectiles. Treat the burst
+        // level as the total number of shots for each multishot lane so
+        // Burst III + Multishot produces 3 x 3 = 9 arrows rather than 12.
+        int additionalArrows = multishotLevel > 0
+                ? Math.max(0, totalBurstArrows - 1)
+                : totalBurstArrows;
         if (additionalArrows <= 0) {
             return;
         }
 
         int staggerDelay = Math.max(1, ConfigManager.getBurstStaggerDelayTicks());
+        firstArrow.setBurstState(additionalArrows, staggerDelay);
+        firstArrow.setBurstScheduled(true);
         shooter.getItemCooldownManager().set(weaponStack, additionalArrows * staggerDelay + 1);
 
         PENDING_BURSTS.add(new PendingBurst(
@@ -56,6 +73,27 @@ public final class BurstArrowHandler {
                 weaponStack,
                 additionalArrows,
                 staggerDelay
+        ));
+    }
+
+    /** Rebuilds delayed burst work after an arrow has been loaded from disk. */
+    public static void scheduleRestored(ArcheryArrowEntity firstArrow) {
+        if (firstArrow.isRemoved() || firstArrow.getBurstArrowsRemaining() <= 0
+                || firstArrow.isArrowInGround()
+                || !(firstArrow.getOwner() instanceof ServerPlayerEntity shooter)
+                || !(firstArrow.getEntityWorld() instanceof ServerWorld serverWorld)) {
+            return;
+        }
+
+        firstArrow.setBurstScheduled(true);
+        PENDING_BURSTS.add(new PendingBurst(
+                firstArrow,
+                serverWorld,
+                shooter,
+                firstArrow.getBurstWeaponStack(),
+                firstArrow.getBurstArrowsRemaining(),
+                firstArrow.getBurstStaggerDelay(),
+                firstArrow.getBurstStaggerTimer()
         ));
     }
 
@@ -76,6 +114,7 @@ public final class BurstArrowHandler {
             }
 
             pending.staggerTimer++;
+            pending.template.setBurstStaggerTimer(pending.staggerTimer);
             if (pending.staggerTimer < pending.staggerDelayTicks) {
                 continue;
             }
@@ -86,6 +125,8 @@ public final class BurstArrowHandler {
                 // The first arrow was already paid for by vanilla. Do not
                 // create any free burst arrows when no extra ammo remains.
                 iterator.remove();
+                pending.template.setBurstScheduled(false);
+                pending.template.setBurstState(0, pending.staggerDelayTicks);
                 continue;
             }
 
@@ -111,8 +152,11 @@ public final class BurstArrowHandler {
             pending.weaponStack.damage(1, pending.shooter, EquipmentSlot.MAINHAND);
 
             pending.arrowsRemaining--;
+            pending.template.setBurstState(pending.arrowsRemaining, pending.staggerDelayTicks);
             pending.staggerTimer = 0;
+            pending.template.setBurstStaggerTimer(0);
             if (pending.arrowsRemaining <= 0) {
+                pending.template.setBurstScheduled(false);
                 iterator.remove();
             }
         }
@@ -131,12 +175,19 @@ public final class BurstArrowHandler {
         private PendingBurst(ArcheryArrowEntity template, ServerWorld world,
                              ServerPlayerEntity shooter, ItemStack weaponStack,
                              int arrowsRemaining, int staggerDelayTicks) {
+            this(template, world, shooter, weaponStack, arrowsRemaining, staggerDelayTicks, 0);
+        }
+
+        private PendingBurst(ArcheryArrowEntity template, ServerWorld world,
+                             ServerPlayerEntity shooter, ItemStack weaponStack,
+                             int arrowsRemaining, int staggerDelayTicks, int staggerTimer) {
             this.template = template;
             this.world = world;
             this.shooter = shooter;
             this.weaponStack = weaponStack;
             this.arrowsRemaining = arrowsRemaining;
             this.staggerDelayTicks = staggerDelayTicks;
+            this.staggerTimer = Math.max(0, staggerTimer);
         }
 
         private boolean captureReleaseVelocity() {

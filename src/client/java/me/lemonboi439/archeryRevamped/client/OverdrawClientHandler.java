@@ -1,5 +1,6 @@
 package me.lemonboi439.archeryRevamped.client;
 
+import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.enchantment.OverdrawEnchantment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -43,7 +44,7 @@ public final class OverdrawClientHandler {
         var enchantments = client.world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
         int level = enchantments.getOptional(OverdrawEnchantment.KEY)
                 .map(entry -> EnchantmentHelper.getLevel(entry, activeStack))
-                .map(value -> Math.min(value, OverdrawEnchantment.MAX_LEVEL))
+                .map(value -> ConfigManager.limitEnchantmentLevel(value, OverdrawEnchantment.MAX_LEVEL))
                 .orElse(0);
         int overdrawTicks = client.player.getItemUseTime() - 20;
         if (level <= 0 || overdrawTicks <= 0) {

@@ -3,7 +3,7 @@ package me.lemonboi439.archeryRevamped.arrow;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
-import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -44,9 +44,9 @@ public final class RicochetBehavior implements ArrowBehavior {
 
         Vec3d bouncePosition = new Vec3d(arrow.getX(), arrow.getY(), arrow.getZ());
         EffectManager.spawnParticles(arrow.getEntityWorld(), bouncePosition,
-                new DustParticleEffect(DustParticleEffect.RED, 1.0F), 8);
+                ParticleTypes.ITEM_SLIME, 12);
         EffectManager.playSound(arrow.getEntityWorld(), bouncePosition,
-                SoundEvents.BLOCK_STONE_STEP, 0.7F, 0.9F);
+                SoundEvents.ENTITY_SLIME_JUMP, 0.8F, 1.15F);
     }
 
     @Override

@@ -97,7 +97,7 @@ public final class OverdrawHandler {
         var enchantments = player.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
         return enchantments.getOptional(OverdrawEnchantment.KEY)
                 .map(entry -> EnchantmentHelper.getLevel(entry, bow))
-                .map(level -> Math.min(level, OverdrawEnchantment.MAX_LEVEL))
+                .map(level -> ConfigManager.limitEnchantmentLevel(level, OverdrawEnchantment.MAX_LEVEL))
                 .orElse(0);
     }
 

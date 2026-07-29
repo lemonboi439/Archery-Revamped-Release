@@ -19,3 +19,10 @@ hs_err_pid*
 
 # Common working directory
 run
+.gradle/
+.idea/
+build/
+run/
+.zencoder/
+PTP/
+*.class

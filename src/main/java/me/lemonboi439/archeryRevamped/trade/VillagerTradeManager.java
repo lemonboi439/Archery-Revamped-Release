@@ -36,6 +36,7 @@ public final class VillagerTradeManager {
         registerWeaponsmithTrades();
         registerClericTrades();
         registerCartographerTrades();
+        registerFletcherTrades();
     }
 
     private static void registerWeaponsmithTrades() {
@@ -100,6 +101,34 @@ public final class VillagerTradeManager {
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.CARTOGRAPHER, 4, factories ->
                 factories.add((world, entity, random) -> emeraldTrade(
                         6, new ItemStack(ModItems.STICKY_ARROW, 4), 20
+                ))
+        );
+    }
+
+    private static void registerFletcherTrades() {
+        // The Fletcher is the fletching profession and is the primary
+        // villager source for the finished special arrows.
+        TradeOfferHelper.registerVillagerOffers(VillagerProfession.FLETCHER, 2, factories ->
+                factories.add((world, entity, random) -> emeraldTrade(
+                        3, new ItemStack(ModItems.IMPULSE_ARROW, 4), 10
+                ))
+        );
+
+        TradeOfferHelper.registerVillagerOffers(VillagerProfession.FLETCHER, 3, factories ->
+                factories.add((world, entity, random) -> emeraldTrade(
+                        5, new ItemStack(ModItems.ENDER_ARROW, 2), 15
+                ))
+        );
+
+        TradeOfferHelper.registerVillagerOffers(VillagerProfession.FLETCHER, 4, factories ->
+                factories.add((world, entity, random) -> emeraldTrade(
+                        4, new ItemStack(ModItems.EXPLOSIVE_ARROW, 4), 20
+                ))
+        );
+
+        TradeOfferHelper.registerVillagerOffers(VillagerProfession.FLETCHER, 5, factories ->
+                factories.add((world, entity, random) -> emeraldTrade(
+                        6, new ItemStack(ModItems.STICKY_ARROW, 4), 30
                 ))
         );
     }

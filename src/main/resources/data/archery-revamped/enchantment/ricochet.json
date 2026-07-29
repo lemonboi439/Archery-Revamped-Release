@@ -2,7 +2,7 @@
   "description": {
     "translate": "enchantment.archery-revamped.ricochet"
   },
-  "supported_items": "#minecraft:enchantable/bow",
+  "supported_items": "#minecraft:enchantable/ranged",
   "weight": 2,
   "max_level": 5,
   "min_cost": {

@@ -90,7 +90,7 @@ public final class SharpshooterHandler {
         var enchantments = player.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
         return enchantments.getOptional(SharpshooterEnchantment.KEY)
                 .map(entry -> EnchantmentHelper.getLevel(entry, leggings))
-                .map(level -> Math.min(level, SharpshooterEnchantment.MAX_LEVEL))
+                .map(level -> ConfigManager.limitEnchantmentLevel(level, SharpshooterEnchantment.MAX_LEVEL))
                 .orElse(0);
     }
 }

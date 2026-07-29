@@ -24,6 +24,15 @@ public final class FletchingRecipeRegistry {
     private FletchingRecipeRegistry() {
     }
 
+    /**
+     * Stable read-only view for optional recipe viewers. JEI, REI, and EMI
+     * integrations can consume the same recipe definitions without making
+     * any of those client-only mods a required dependency of this mod.
+     */
+    public static List<FletchingRecipe> getRecipes() {
+        return RECIPES;
+    }
+
     public static FletchingRecipe match(ItemStack arrowStack, ItemStack ingredientStack) {
         for (FletchingRecipe recipe : RECIPES) {
             if (recipe.matches(arrowStack, ingredientStack)) {
