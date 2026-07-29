@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "archery-revamped:ricochet",
+    "archery-revamped:overdraw",
+    "archery-revamped:longshot",
+    "archery-revamped:fracture",
+    "archery-revamped:burst",
+    "archery-revamped:sharpshooter"
+  ]
+}
