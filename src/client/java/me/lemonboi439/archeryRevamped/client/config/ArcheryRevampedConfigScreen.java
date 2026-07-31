@@ -28,7 +28,7 @@ public final class ArcheryRevampedConfigScreen {
         addLongshot(builder, entries);
         addBurst(builder, entries);
         addFracture(builder, entries);
-        addSharpshooter(builder, entries);
+        addHeadshot(builder, entries);
         addFletching(builder, entries);
         addTrajectory(builder, entries);
         addRegular(builder, entries);
@@ -67,17 +67,28 @@ public final class ArcheryRevampedConfigScreen {
         category.addEntry(entries.startBooleanToggle(Text.literal("Ender arrows enabled"),
                         ConfigManager.isEnderArrowEnabled())
                 .setDefaultValue(true).setSaveConsumer(ConfigManager::setEnderArrowEnabled).build());
+        category.addEntry(entries.startBooleanToggle(Text.literal("Shockwave arrows enabled"),
+                        ConfigManager.isShockwaveArrowEnabled())
+                .setDefaultValue(true).setSaveConsumer(ConfigManager::setShockwaveArrowEnabled).build());
+        category.addEntry(entries.startDoubleField(Text.literal("Shockwave radius"),
+                        ConfigManager.getShockwaveRadius())
+                .setDefaultValue(4.0D).setMin(0.0D)
+                .setSaveConsumer(ConfigManager::setShockwaveRadius).build());
+        category.addEntry(entries.startDoubleField(Text.literal("Shockwave strength"),
+                        ConfigManager.getShockwaveStrength())
+                .setDefaultValue(2.0D).setMin(0.0D)
+                .setSaveConsumer(ConfigManager::setShockwaveStrength).build());
         category.addEntry(entries.startBooleanToggle(Text.literal("Impulse arrows enabled"),
                         ConfigManager.isImpulseArrowEnabled())
                 .setDefaultValue(true).setSaveConsumer(ConfigManager::setImpulseArrowEnabled).build());
-        category.addEntry(entries.startDoubleField(Text.literal("Impulse blast radius"),
-                        ConfigManager.getImpulseBlastRadius())
+        category.addEntry(entries.startDoubleField(Text.literal("Impulse radius"),
+                        ConfigManager.getImpulseRadius())
                 .setDefaultValue(4.0D).setMin(0.0D)
-                .setSaveConsumer(ConfigManager::setImpulseBlastRadius).build());
-        category.addEntry(entries.startDoubleField(Text.literal("Impulse knockback strength"),
-                        ConfigManager.getImpulseKnockbackStrength())
+                .setSaveConsumer(ConfigManager::setImpulseRadius).build());
+        category.addEntry(entries.startDoubleField(Text.literal("Impulse pull strength"),
+                        ConfigManager.getImpulseStrength())
                 .setDefaultValue(2.0D).setMin(0.0D)
-                .setSaveConsumer(ConfigManager::setImpulseKnockbackStrength).build());
+                .setSaveConsumer(ConfigManager::setImpulseStrength).build());
         category.addEntry(entries.startBooleanToggle(Text.literal("Explosive arrows enabled"),
                         ConfigManager.isExplosiveArrowEnabled())
                 .setDefaultValue(true).setSaveConsumer(ConfigManager::setExplosiveArrowEnabled).build());
@@ -85,21 +96,6 @@ public final class ArcheryRevampedConfigScreen {
                         ConfigManager.getExplosiveArrowSize())
                 .setDefaultValue(2.5D).setMin(0.0D)
                 .setSaveConsumer(ConfigManager::setExplosiveArrowSize).build());
-        category.addEntry(entries.startBooleanToggle(Text.literal("Sticky arrows enabled"),
-                        ConfigManager.isStickyArrowEnabled())
-                .setDefaultValue(true).setSaveConsumer(ConfigManager::setStickyArrowEnabled).build());
-        category.addEntry(entries.startDoubleField(Text.literal("Sticky movement reduction (%)"),
-                        ConfigManager.getStickyMovementReductionPercent())
-                .setDefaultValue(50.0D).setMin(0.0D).setMax(100.0D)
-                .setSaveConsumer(ConfigManager::setStickyMovementReductionPercent).build());
-        category.addEntry(entries.startIntField(Text.literal("Sticky duration (ticks)"),
-                        ConfigManager.getStickyDurationTicks())
-                .setDefaultValue(100).setMin(1)
-                .setSaveConsumer(ConfigManager::setStickyDurationTicks).build());
-        category.addEntry(entries.startIntField(Text.literal("Sticky slowness level"),
-                        ConfigManager.getStickySlownessLevel())
-                .setDefaultValue(1).setMin(1)
-                .setSaveConsumer(ConfigManager::setStickySlownessLevel).build());
     }
 
     private static void addOverdraw(ConfigBuilder builder, ConfigEntryBuilder entries) {
@@ -185,29 +181,49 @@ public final class ArcheryRevampedConfigScreen {
                 .setSaveConsumer(ConfigManager::setFractureMaxSplitDelayTicks).build());
     }
 
-    private static void addSharpshooter(ConfigBuilder builder, ConfigEntryBuilder entries) {
-        ConfigCategory category = builder.getOrCreateCategory(Text.literal("Sharpshooter"));
-        category.addEntry(entries.startBooleanToggle(Text.literal("Enabled"), ConfigManager.isSharpshooterEnabled())
-                .setDefaultValue(false).setSaveConsumer(ConfigManager::setSharpshooterEnabled).build());
-        category.addEntry(entries.startDoubleField(Text.literal("Level 1 reduction (%)"), ConfigManager.getSharpshooterReductionPercent(1))
-                .setDefaultValue(70.0D).setMin(0.0D).setMax(100.0D)
-                .setSaveConsumer(value -> ConfigManager.setSharpshooterReductionPercent(1, value)).build());
-        category.addEntry(entries.startDoubleField(Text.literal("Level 2 reduction (%)"), ConfigManager.getSharpshooterReductionPercent(2))
-                .setDefaultValue(40.0D).setMin(0.0D).setMax(100.0D)
-                .setSaveConsumer(value -> ConfigManager.setSharpshooterReductionPercent(2, value)).build());
-        category.addEntry(entries.startDoubleField(Text.literal("Level 3 reduction (%)"), ConfigManager.getSharpshooterReductionPercent(3))
-                .setDefaultValue(10.0D).setMin(0.0D).setMax(100.0D)
-                .setSaveConsumer(value -> ConfigManager.setSharpshooterReductionPercent(3, value)).build());
-    }
-
     private static void addFletching(ConfigBuilder builder, ConfigEntryBuilder entries) {
         ConfigCategory category = builder.getOrCreateCategory(Text.literal("Fletching table"));
-        category.addEntry(entries.startIntField(Text.literal("Crafting time (ticks)"), ConfigManager.getFletchingCraftingTimeTicks())
-                .setDefaultValue(20).setMin(1)
-                .setSaveConsumer(ConfigManager::setFletchingCraftingTimeTicks).build());
         category.addEntry(entries.startIntField(Text.literal("Recipe output count"), ConfigManager.getFletchingRecipeOutputCount())
                 .setDefaultValue(4).setMin(1)
                 .setSaveConsumer(ConfigManager::setFletchingRecipeOutputCount).build());
+    }
+
+    private static void addHeadshot(ConfigBuilder builder, ConfigEntryBuilder entries) {
+        ConfigCategory category = builder.getOrCreateCategory(Text.literal("Headshot"));
+        category.addEntry(entries.startBooleanToggle(Text.literal("Enable Headshot"),
+                        ConfigManager.isHeadshotEnabled())
+                .setDefaultValue(false).setSaveConsumer(ConfigManager::setHeadshotEnabled).build());
+        category.addEntry(entries.startDoubleField(Text.literal("PvE bonus I (%)"),
+                        ConfigManager.getHeadshotDamageBonusI())
+                .setDefaultValue(15.0D).setMin(0.0D)
+                .setSaveConsumer(ConfigManager::setHeadshotDamageBonusI).build());
+        category.addEntry(entries.startDoubleField(Text.literal("PvE bonus II (%)"),
+                        ConfigManager.getHeadshotDamageBonusII())
+                .setDefaultValue(30.0D).setMin(0.0D)
+                .setSaveConsumer(ConfigManager::setHeadshotDamageBonusII).build());
+        category.addEntry(entries.startDoubleField(Text.literal("PvE bonus III (%)"),
+                        ConfigManager.getHeadshotDamageBonusIII())
+                .setDefaultValue(45.0D).setMin(0.0D)
+                .setSaveConsumer(ConfigManager::setHeadshotDamageBonusIII).build());
+        category.addEntry(entries.startDoubleField(Text.literal("Head box radius"),
+                        ConfigManager.getHeadshotBoxRadius())
+                .setDefaultValue(0.35D).setMin(0.0D)
+                .setSaveConsumer(ConfigManager::setHeadshotBoxRadius).build());
+        category.addEntry(entries.startBooleanToggle(Text.literal("Headshot feedback"),
+                        ConfigManager.isHeadshotFeedbackEnabled())
+                .setDefaultValue(true).setSaveConsumer(ConfigManager::setHeadshotFeedbackEnabled).build());
+        category.addEntry(entries.startDoubleField(Text.literal("PvP bonus I (%)"),
+                        ConfigManager.getHeadshotPvpDamageBonusI())
+                .setDefaultValue(15.0D).setMin(0.0D)
+                .setSaveConsumer(ConfigManager::setHeadshotPvpDamageBonusI).build());
+        category.addEntry(entries.startDoubleField(Text.literal("PvP bonus II (%)"),
+                        ConfigManager.getHeadshotPvpDamageBonusII())
+                .setDefaultValue(30.0D).setMin(0.0D)
+                .setSaveConsumer(ConfigManager::setHeadshotPvpDamageBonusII).build());
+        category.addEntry(entries.startDoubleField(Text.literal("PvP bonus III (%)"),
+                        ConfigManager.getHeadshotPvpDamageBonusIII())
+                .setDefaultValue(45.0D).setMin(0.0D)
+                .setSaveConsumer(ConfigManager::setHeadshotPvpDamageBonusIII).build());
     }
 
     private static void addRegular(ConfigBuilder builder, ConfigEntryBuilder entries) {

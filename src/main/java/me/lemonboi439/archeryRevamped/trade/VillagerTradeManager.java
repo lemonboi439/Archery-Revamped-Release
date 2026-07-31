@@ -54,12 +54,18 @@ public final class VillagerTradeManager {
                 ))
         );
 
-        // Journeyman: Honeycomb for Sticky Arrows.
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.WEAPONSMITH, 3, factories ->
                 factories.add((world, entity, random) -> emeraldTrade(
-                        3, new ItemStack(Items.HONEYCOMB, 2), 15
+                        3, new ItemStack(Items.WIND_CHARGE, 2), 15
                 ))
         );
+
+        TradeOfferHelper.registerVillagerOffers(VillagerProfession.WEAPONSMITH, 4, factories ->
+                factories.add((world, entity, random) -> emeraldTrade(
+                        2, new ItemStack(Items.IRON_NUGGET, 8), 20
+                ))
+        );
+
     }
 
     private static void registerClericTrades() {
@@ -88,21 +94,22 @@ public final class VillagerTradeManager {
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.CARTOGRAPHER, 2, factories ->
                 factories.add((world, entity, random) -> emeraldTrade(
-                        4, new ItemStack(ModItems.IMPULSE_ARROW, 4), 10
+                        4, new ItemStack(ModItems.SHOCKWAVE_ARROW, 4), 10
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.CARTOGRAPHER, 3, factories ->
                 factories.add((world, entity, random) -> emeraldTrade(
-                        5, new ItemStack(ModItems.EXPLOSIVE_ARROW, 4), 15
+                        4, new ItemStack(ModItems.IMPULSE_ARROW, 4), 15
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.CARTOGRAPHER, 4, factories ->
                 factories.add((world, entity, random) -> emeraldTrade(
-                        6, new ItemStack(ModItems.STICKY_ARROW, 4), 20
+                        5, new ItemStack(ModItems.EXPLOSIVE_ARROW, 4), 20
                 ))
         );
+
     }
 
     private static void registerFletcherTrades() {
@@ -110,27 +117,28 @@ public final class VillagerTradeManager {
         // villager source for the finished special arrows.
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.FLETCHER, 2, factories ->
                 factories.add((world, entity, random) -> emeraldTrade(
-                        3, new ItemStack(ModItems.IMPULSE_ARROW, 4), 10
+                        3, new ItemStack(ModItems.SHOCKWAVE_ARROW, 4), 10
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.FLETCHER, 3, factories ->
                 factories.add((world, entity, random) -> emeraldTrade(
-                        5, new ItemStack(ModItems.ENDER_ARROW, 2), 15
+                        4, new ItemStack(ModItems.IMPULSE_ARROW, 4), 15
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.FLETCHER, 4, factories ->
                 factories.add((world, entity, random) -> emeraldTrade(
-                        4, new ItemStack(ModItems.EXPLOSIVE_ARROW, 4), 20
+                        5, new ItemStack(ModItems.ENDER_ARROW, 2), 20
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.FLETCHER, 5, factories ->
                 factories.add((world, entity, random) -> emeraldTrade(
-                        6, new ItemStack(ModItems.STICKY_ARROW, 4), 30
+                        5, new ItemStack(ModItems.EXPLOSIVE_ARROW, 4), 30
                 ))
         );
+
     }
 
     private static TradeOffer emeraldTrade(int emeraldCost, ItemStack result, int experience) {

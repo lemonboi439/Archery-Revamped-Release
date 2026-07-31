@@ -4,120 +4,59 @@ All notable changes to Archery Revamped are documented here.
 
 ---
 
+## 1.2.0 - Arrow force, cleanup, and Headshot update
+
+### Added
+
+- Added experimental **Headshot I–III** enchantment support for bows and crossbows.
+  - Detects the exact entity collision point against a configurable eye-centered region.
+  - Works with any `LivingEntity`, including modded entities.
+  - Applies configurable PvE and PvP damage bonuses after vanilla critical damage calculation.
+  - Includes optional crit-particle and sound feedback.
+  - Disabled by default with `enableHeadshot: false`.
+- Added a dedicated Archery Revamped item group for special arrows and mod features.
+- Added Headshot books to enchanting-table eligibility and late-game structure loot.
+
+### Changed
+
+- Renamed the former outward **Impulse Arrow** to **Shockwave Arrow**.
+- Shockwave Arrows are crafted with Wind Charges and push entities away from their landing point.
+- Added inward-pulling **Impulse Arrows**, crafted with Iron Nuggets.
+- Improved Shockwave and Impulse area force:
+  - affects entities across the configured radius;
+  - uses gentler distance falloff;
+  - applies stronger force to players.
+- Fletching Table recipes now craft instantly instead of using a crafting-time delay.
+- Fletching Table output continues stacking correctly and returns all table contents when closed.
+- Fracture child counts scale with enchantment level and preserve projectile state.
+- Custom enchantment level handling supports the safe maximum of 255 when enabled in configuration.
+- Removed the `/archeryrevamped regular infinite_levels` command; the setting remains available in configuration.
+- Updated the release version to `1.2`.
+
+### Removed
+
+- Removed Sticky Arrows and their Slowness behavior.
+- Removed the Sharpshooter enchantment and its leggings behavior.
+- Removed the unused global enchantment-limit mixin.
+
+### Fixed
+
+- Prevented Burst and Fracture child arrows from immediately colliding with the shooter.
+- Preserved vanilla projectile state for custom, Burst, and Fracture arrows, including pickup behavior.
+- Fixed custom arrow inheritance and persistence for world save/load.
+- Fixed fletching output item creation and inventory return handling.
+
+---
+
 ## 1.0.0 - Initial Release
 
 ### Added
 
-#### Enchantments
-
-- Added **Ricochet I–V**
-  - Arrows bounce off blocks.
-  - Configurable velocity loss.
-
-- Added **Overdraw I–II**
-  - Allows bows to charge beyond their normal maximum.
-  - Increased damage while overcharging.
-  - Self-damage, bow damage and forced firing when held too long.
-
-- Added **Longshot I**
-  - Increases arrow damage based on distance travelled.
-
-- Added **Fracture I–II**
-  - Splits arrows into additional projectiles during flight.
-  - Disabled by default.
-
-- Added **Burst I–III**
-  - Fires additional delayed arrows.
-  - Each projectile consumes ammunition and durability.
-
-- Added **Sharpshooter I–III**
-  - Leggings enchantment reducing movement slowdown while drawing ranged weapons.
-  - Disabled by default.
-
-#### Special Arrows
-
-- Added **Ender Arrows**
-  - Teleport the shooter to the impact location.
-
-- Added **Impulse Arrows**
-  - Push nearby entities away from the impact.
-
-- Added **Explosive Arrows**
-  - Explode on impact.
-
-- Added **Sticky Arrows**
-  - Apply Slowness to living targets.
-
-#### Arrow System
-
-- Added custom `ArcheryArrowEntity`.
-- Added support for Bows and Crossbows.
-- Preserved vanilla:
-  - Damage
-  - Critical hits
-  - Power
-  - Punch
-  - Flame
-  - Piercing
-  - Multishot
-  - Infinity
-  - Arrow pickup behaviour
-- Added persistent custom projectile data.
-
-#### Projectile Physics
-
-- Added configurable gravity.
-- Added configurable drag.
-- Added configurable projectile speed.
-- Added configurable firing randomness.
-- Added configurable terminal velocity.
-- Added configurable arrow lifetime.
-
-#### Fletching Table
-
-- Added experimental custom Fletching Table interface.
-- Added crafting for:
-  - Ender Arrows
-  - Impulse Arrows
-  - Explosive Arrows
-  - Sticky Arrows
-  - Tipped Arrows
-- Added crafting progress and animation.
-
-#### Trajectory System
-
-- Added experimental pre-shot trajectory preview.
-- Added live projectile trails.
-- Added future path prediction.
-- Added block and entity collision prediction.
-- Added Ricochet prediction.
-- Added smooth line rendering without particles or preview entities.
-- Added optional velocity colour visualisation.
-
-#### World Integration
-
-- Added custom enchantments to the Enchanting Table.
-- Added enchanted books to structure loot.
-- Added special arrow and ingredient villager trades.
-
-#### Configuration
-
-- Added JSON configuration system.
-- Added Cloth Config support.
-- Added Mod Menu support.
-- Added hot config reload.
-- Added `/archeryrevamped` command system.
-
-#### Compatibility
-
-- Added JEI integration.
-- Added REI integration.
-- Added EMI integration.
-
-### Known Issues
-
-- Burst follow-up arrows may occasionally fire at an incorrect angle.
-- Fracture is disabled by default while balancing and behaviour are refined.
-- Sharpshooter is disabled by default and may be reworked.
-- The Fletching Table interface is experimental.
-- Trajectory rendering is experimental.
+- Custom `ArcheryArrowEntity` replacement for bow and crossbow projectiles while preserving vanilla behavior.
+- Configurable projectile gravity, drag, speed, randomness, terminal velocity, and lifetime.
+- Ricochet, Overdraw, Longshot, Fracture, and Burst enchantments.
+- Ender, Impulse, Explosive, and the original Sticky Arrow features.
+- Fletching Table interface and special-arrow recipes.
+- Trajectory preview, live trails, collision prediction, and ricochet prediction.
+- JSON configuration, Cloth Config, Mod Menu, hot reload, and `/archeryrevamped` commands.
+- Enchanting-table support, late-game enchanted-book loot, villager trades, and optional JEI/REI/EMI compatibility.

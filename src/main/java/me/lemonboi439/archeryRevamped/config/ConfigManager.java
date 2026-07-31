@@ -136,6 +136,10 @@ public final class ConfigManager {
         return config.enderArrowEnabled;
     }
 
+    public static boolean isShockwaveArrowEnabled() {
+        return config.shockwaveArrowEnabled;
+    }
+
     public static boolean isImpulseArrowEnabled() {
         return config.impulseArrowEnabled;
     }
@@ -144,32 +148,24 @@ public final class ConfigManager {
         return config.explosiveArrowEnabled;
     }
 
-    public static boolean isStickyArrowEnabled() {
-        return config.stickyArrowEnabled;
+    public static double getShockwaveRadius() {
+        return config.shockwaveRadius;
     }
 
-    public static double getImpulseBlastRadius() {
-        return config.impulseBlastRadius;
+    public static double getShockwaveStrength() {
+        return config.shockwaveStrength;
     }
 
-    public static double getImpulseKnockbackStrength() {
-        return config.impulseKnockbackStrength;
+    public static double getImpulseRadius() {
+        return config.impulseRadius;
+    }
+
+    public static double getImpulseStrength() {
+        return config.impulseStrength;
     }
 
     public static double getExplosiveArrowSize() {
         return config.explosiveArrowSize;
-    }
-
-    public static double getStickyMovementReductionPercent() {
-        return config.stickyMovementReductionPercent;
-    }
-
-    public static int getStickyDurationTicks() {
-        return config.stickyDurationTicks;
-    }
-
-    public static int getStickySlownessLevel() {
-        return config.stickySlownessLevel;
     }
 
     public static double getOverdrawDamageIncreasePerTickPercent() {
@@ -256,28 +252,48 @@ public final class ConfigManager {
         return config.burstArrowsPerLevel;
     }
 
-    public static double getSharpshooterReductionPercent(int level) {
-        return switch (Math.max(1, Math.min(level, 3))) {
-            case 1 -> config.sharpshooterLevel1ReductionPercent;
-            case 2 -> config.sharpshooterLevel2ReductionPercent;
-            default -> config.sharpshooterLevel3ReductionPercent;
-        };
-    }
-
-    public static boolean isSharpshooterEnabled() {
-        return config.sharpshooterEnabled;
-    }
-
-    public static int getFletchingCraftingTimeTicks() {
-        return config.fletchingCraftingTimeTicks;
-    }
-
     public static int getFletchingRecipeOutputCount() {
         return config.fletchingRecipeOutputCount;
     }
 
     public static boolean isModEnabled() {
         return config.modEnabled;
+    }
+
+    public static boolean isHeadshotEnabled() {
+        return config.headshotEnabled;
+    }
+
+    public static double getHeadshotDamageBonusI() {
+        return config.headshotDamageBonusI;
+    }
+
+    public static double getHeadshotDamageBonusII() {
+        return config.headshotDamageBonusII;
+    }
+
+    public static double getHeadshotDamageBonusIII() {
+        return config.headshotDamageBonusIII;
+    }
+
+    public static double getHeadshotBoxRadius() {
+        return config.headshotBoxRadius;
+    }
+
+    public static boolean isHeadshotFeedbackEnabled() {
+        return config.headshotFeedbackEnabled;
+    }
+
+    public static double getHeadshotPvpDamageBonusI() {
+        return config.headshotPvpDamageBonusI;
+    }
+
+    public static double getHeadshotPvpDamageBonusII() {
+        return config.headshotPvpDamageBonusII;
+    }
+
+    public static double getHeadshotPvpDamageBonusIII() {
+        return config.headshotPvpDamageBonusIII;
     }
 
     public static boolean isTrajectoryColourVisualisationEnabled() {
@@ -309,6 +325,11 @@ public final class ConfigManager {
         saveAfterChange();
     }
 
+    public static void setShockwaveArrowEnabled(boolean value) {
+        config.shockwaveArrowEnabled = value;
+        saveAfterChange();
+    }
+
     public static void setImpulseArrowEnabled(boolean value) {
         config.impulseArrowEnabled = value;
         saveAfterChange();
@@ -319,38 +340,28 @@ public final class ConfigManager {
         saveAfterChange();
     }
 
-    public static void setStickyArrowEnabled(boolean value) {
-        config.stickyArrowEnabled = value;
+    public static void setShockwaveRadius(double value) {
+        config.shockwaveRadius = value;
         saveAfterChange();
     }
 
-    public static void setImpulseBlastRadius(double value) {
-        config.impulseBlastRadius = value;
+    public static void setShockwaveStrength(double value) {
+        config.shockwaveStrength = value;
         saveAfterChange();
     }
 
-    public static void setImpulseKnockbackStrength(double value) {
-        config.impulseKnockbackStrength = value;
+    public static void setImpulseRadius(double value) {
+        config.impulseRadius = value;
+        saveAfterChange();
+    }
+
+    public static void setImpulseStrength(double value) {
+        config.impulseStrength = value;
         saveAfterChange();
     }
 
     public static void setExplosiveArrowSize(double value) {
         config.explosiveArrowSize = value;
-        saveAfterChange();
-    }
-
-    public static void setStickyMovementReductionPercent(double value) {
-        config.stickyMovementReductionPercent = value;
-        saveAfterChange();
-    }
-
-    public static void setStickyDurationTicks(int value) {
-        config.stickyDurationTicks = value;
-        saveAfterChange();
-    }
-
-    public static void setStickySlownessLevel(int value) {
-        config.stickySlownessLevel = value;
         saveAfterChange();
     }
 
@@ -459,25 +470,6 @@ public final class ConfigManager {
         saveAfterChange();
     }
 
-    public static void setSharpshooterEnabled(boolean value) {
-        config.sharpshooterEnabled = value;
-        saveAfterChange();
-    }
-
-    public static void setSharpshooterReductionPercent(int level, double value) {
-        switch (Math.max(1, Math.min(level, 3))) {
-            case 1 -> config.sharpshooterLevel1ReductionPercent = value;
-            case 2 -> config.sharpshooterLevel2ReductionPercent = value;
-            default -> config.sharpshooterLevel3ReductionPercent = value;
-        }
-        saveAfterChange();
-    }
-
-    public static void setFletchingCraftingTimeTicks(int value) {
-        config.fletchingCraftingTimeTicks = value;
-        saveAfterChange();
-    }
-
     public static void setFletchingRecipeOutputCount(int value) {
         config.fletchingRecipeOutputCount = value;
         saveAfterChange();
@@ -488,15 +480,57 @@ public final class ConfigManager {
         saveAfterChange();
     }
 
-    /**
-     * Returns an enchantment level without applying the normal hard cap when
-     * the admin-only infinite-levels option is enabled.
-     */
+    public static void setHeadshotEnabled(boolean value) {
+        config.headshotEnabled = value;
+        saveAfterChange();
+    }
+
+    public static void setHeadshotDamageBonusI(double value) {
+        config.headshotDamageBonusI = value;
+        saveAfterChange();
+    }
+
+    public static void setHeadshotDamageBonusII(double value) {
+        config.headshotDamageBonusII = value;
+        saveAfterChange();
+    }
+
+    public static void setHeadshotDamageBonusIII(double value) {
+        config.headshotDamageBonusIII = value;
+        saveAfterChange();
+    }
+
+    public static void setHeadshotBoxRadius(double value) {
+        config.headshotBoxRadius = value;
+        saveAfterChange();
+    }
+
+    public static void setHeadshotFeedbackEnabled(boolean value) {
+        config.headshotFeedbackEnabled = value;
+        saveAfterChange();
+    }
+
+    public static void setHeadshotPvpDamageBonusI(double value) {
+        config.headshotPvpDamageBonusI = value;
+        saveAfterChange();
+    }
+
+    public static void setHeadshotPvpDamageBonusII(double value) {
+        config.headshotPvpDamageBonusII = value;
+        saveAfterChange();
+    }
+
+    public static void setHeadshotPvpDamageBonusIII(double value) {
+        config.headshotPvpDamageBonusIII = value;
+        saveAfterChange();
+    }
+
+    /** Limits custom enchantments to a large but safe finite maximum. */
     public static int limitEnchantmentLevel(int level, int normalMaximum) {
         if (level <= 0) {
             return 0;
         }
-        return config.infiniteLevels ? level : Math.min(level, normalMaximum);
+        return Math.min(level, config.infiniteLevels ? 255 : normalMaximum);
     }
 
     private static void saveAfterChange() {
@@ -513,15 +547,14 @@ public final class ConfigManager {
         private int maxLifetimeTicks = 1200;
         private double ricochetVelocityLossPercent = 10.0D;
         private boolean enderArrowEnabled = true;
+        private boolean shockwaveArrowEnabled = true;
         private boolean impulseArrowEnabled = true;
         private boolean explosiveArrowEnabled = true;
-        private boolean stickyArrowEnabled = true;
-        private double impulseBlastRadius = 4.0D;
-        private double impulseKnockbackStrength = 2.0D;
+        private double shockwaveRadius = 4.0D;
+        private double shockwaveStrength = 2.0D;
+        private double impulseRadius = 4.0D;
+        private double impulseStrength = 2.0D;
         private double explosiveArrowSize = 2.5D;
-        private double stickyMovementReductionPercent = 50.0D;
-        private int stickyDurationTicks = 100;
-        private int stickySlownessLevel = 1;
         private double overdrawDamageIncreasePerTickPercent = 1.0D;
         private double overdrawMaxDamageBonusPercent = 100.0D;
         private int overdrawAutoFireDelayTicks = 100;
@@ -543,15 +576,19 @@ public final class ConfigManager {
         private double fractureSplitAngleDegrees = 15.0D;
         private int burstStaggerDelayTicks = 3;
         private int burstArrowsPerLevel = 1;
-        private boolean sharpshooterEnabled = false;
-        private double sharpshooterLevel1ReductionPercent = 70.0D;
-        private double sharpshooterLevel2ReductionPercent = 40.0D;
-        private double sharpshooterLevel3ReductionPercent = 10.0D;
-        private int fletchingCraftingTimeTicks = 20;
         private int fletchingRecipeOutputCount = 4;
         private boolean modEnabled = true;
         private boolean trajectoryColourVisualisation = false;
         private boolean infiniteLevels = false;
+        private boolean headshotEnabled = false;
+        private double headshotDamageBonusI = 15.0D;
+        private double headshotDamageBonusII = 30.0D;
+        private double headshotDamageBonusIII = 45.0D;
+        private double headshotBoxRadius = 0.35D;
+        private boolean headshotFeedbackEnabled = true;
+        private double headshotPvpDamageBonusI = 15.0D;
+        private double headshotPvpDamageBonusII = 30.0D;
+        private double headshotPvpDamageBonusIII = 45.0D;
 
         private static PhysicsConfig fromJson(JsonObject json) {
             PhysicsConfig result = new PhysicsConfig();
@@ -572,25 +609,37 @@ public final class ConfigManager {
 
             result.enderArrowEnabled = readBoolean(json, "arrow_types", "ender.enabled",
                     "enderArrowEnabled", result.enderArrowEnabled);
-            result.impulseArrowEnabled = readBoolean(json, "arrow_types", "impulse.enabled",
-                    null, result.impulseArrowEnabled);
+            JsonElement shockwaveElement = readNested(json, "arrow_types", "shockwave");
+            boolean hasShockwaveSettings = shockwaveElement != null && shockwaveElement.isJsonObject();
+            if (hasShockwaveSettings) {
+                result.shockwaveArrowEnabled = readBoolean(json, "arrow_types", "shockwave.enabled",
+                        null, result.shockwaveArrowEnabled);
+                result.shockwaveRadius = readDouble(json, "arrow_types", "shockwave.radius",
+                        null, result.shockwaveRadius);
+                result.shockwaveStrength = readDouble(json, "arrow_types", "shockwave.strength",
+                        null, result.shockwaveStrength);
+            } else {
+                // Migrate the old impulse arrow settings to Shockwave. The
+                // new inward Impulse arrow keeps its independent defaults.
+                result.shockwaveArrowEnabled = readBoolean(json, "arrow_types", "impulse.enabled",
+                        null, result.shockwaveArrowEnabled);
+                result.shockwaveRadius = readDouble(json, "arrow_types", "impulse.blast_radius",
+                        null, result.shockwaveRadius);
+                result.shockwaveStrength = readDouble(json, "arrow_types", "impulse.knockback_strength",
+                        null, result.shockwaveStrength);
+            }
+            if (hasShockwaveSettings) {
+                result.impulseArrowEnabled = readBoolean(json, "arrow_types", "impulse.enabled",
+                        null, result.impulseArrowEnabled);
+                result.impulseRadius = readDouble(json, "arrow_types", "impulse.radius",
+                        null, result.impulseRadius);
+                result.impulseStrength = readDouble(json, "arrow_types", "impulse.strength",
+                        null, result.impulseStrength);
+            }
             result.explosiveArrowEnabled = readBoolean(json, "arrow_types", "explosive.enabled",
                     null, result.explosiveArrowEnabled);
-            result.stickyArrowEnabled = readBoolean(json, "arrow_types", "sticky.enabled",
-                    null, result.stickyArrowEnabled);
-            result.impulseBlastRadius = readDouble(json, "arrow_types", "impulse.blast_radius",
-                    "impulseBlastRadius", result.impulseBlastRadius);
-            result.impulseKnockbackStrength = readDouble(json, "arrow_types", "impulse.knockback_strength",
-                    "impulseKnockbackStrength", result.impulseKnockbackStrength);
             result.explosiveArrowSize = readDouble(json, "arrow_types", "explosive.explosion_size",
                     "explosiveArrowSize", result.explosiveArrowSize);
-            result.stickyMovementReductionPercent = readDouble(json, "arrow_types",
-                    "sticky.movement_reduction_percent", "stickyMovementReductionPercent",
-                    result.stickyMovementReductionPercent);
-            result.stickyDurationTicks = readInt(json, "arrow_types", "sticky.duration_ticks",
-                    "stickyDurationTicks", result.stickyDurationTicks);
-            result.stickySlownessLevel = readInt(json, "arrow_types", "sticky.slowness_level",
-                    "stickySlownessLevel", result.stickySlownessLevel);
 
             result.overdrawDamageIncreasePerTickPercent = readDouble(json, "overdraw",
                     "damage_increase_per_tick_percent", "overdrawDamageIncreasePerTickPercent", result.overdrawDamageIncreasePerTickPercent);
@@ -638,16 +687,25 @@ public final class ConfigManager {
             result.fractureMaxSplitDelayTicks = readInt(json, "fracture", "max_split_delay_ticks",
                     "fractureMaxSplitDelayTicks", result.fractureMaxSplitDelayTicks);
 
-            result.sharpshooterEnabled = readBoolean(json, "sharpshooter", "enabled",
-                    "sharpshooterEnabled", result.sharpshooterEnabled);
-            result.sharpshooterLevel1ReductionPercent = readDouble(json, "sharpshooter", "level_1_reduction_percent",
-                    "sharpshooterLevel1ReductionPercent", result.sharpshooterLevel1ReductionPercent);
-            result.sharpshooterLevel2ReductionPercent = readDouble(json, "sharpshooter", "level_2_reduction_percent",
-                    "sharpshooterLevel2ReductionPercent", result.sharpshooterLevel2ReductionPercent);
-            result.sharpshooterLevel3ReductionPercent = readDouble(json, "sharpshooter", "level_3_reduction_percent",
-                    "sharpshooterLevel3ReductionPercent", result.sharpshooterLevel3ReductionPercent);
-            result.fletchingCraftingTimeTicks = readInt(json, "fletching", "crafting_time_ticks",
-                    "fletchingCraftingTimeTicks", result.fletchingCraftingTimeTicks);
+            result.headshotEnabled = readBoolean(json, "headshot", "enableHeadshot",
+                    "enableHeadshot", result.headshotEnabled);
+            result.headshotDamageBonusI = readDouble(json, "headshot", "headshotDamageBonusI",
+                    "headshotDamageBonusI", result.headshotDamageBonusI);
+            result.headshotDamageBonusII = readDouble(json, "headshot", "headshotDamageBonusII",
+                    "headshotDamageBonusII", result.headshotDamageBonusII);
+            result.headshotDamageBonusIII = readDouble(json, "headshot", "headshotDamageBonusIII",
+                    "headshotDamageBonusIII", result.headshotDamageBonusIII);
+            result.headshotBoxRadius = readDouble(json, "headshot", "headshotBoxRadius",
+                    "headshotBoxRadius", result.headshotBoxRadius);
+            result.headshotFeedbackEnabled = readBoolean(json, "headshot", "headshotFeedbackEnabled",
+                    "headshotFeedbackEnabled", result.headshotFeedbackEnabled);
+            result.headshotPvpDamageBonusI = readDouble(json, "headshot", "headshotPvpDamageBonusI",
+                    "headshotPvpDamageBonusI", result.headshotPvpDamageBonusI);
+            result.headshotPvpDamageBonusII = readDouble(json, "headshot", "headshotPvpDamageBonusII",
+                    "headshotPvpDamageBonusII", result.headshotPvpDamageBonusII);
+            result.headshotPvpDamageBonusIII = readDouble(json, "headshot", "headshotPvpDamageBonusIII",
+                    "headshotPvpDamageBonusIII", result.headshotPvpDamageBonusIII);
+
             result.fletchingRecipeOutputCount = readInt(json, "fletching", "recipe_output_count",
                     "fletchingRecipeOutputCount", result.fletchingRecipeOutputCount);
             result.trajectoryColourVisualisation = readBoolean(json, "trajectory", "colour_visualisation",
@@ -713,34 +771,37 @@ public final class ConfigManager {
             JsonObject ender = new JsonObject();
             ender.addProperty("enabled", enderArrowEnabled);
             arrowTypes.add("ender", ender);
+            JsonObject shockwave = new JsonObject();
+            shockwave.addProperty("enabled", shockwaveArrowEnabled);
+            shockwave.addProperty("radius", shockwaveRadius);
+            shockwave.addProperty("strength", shockwaveStrength);
+            arrowTypes.add("shockwave", shockwave);
             JsonObject impulse = new JsonObject();
             impulse.addProperty("enabled", impulseArrowEnabled);
-            impulse.addProperty("blast_radius", impulseBlastRadius);
-            impulse.addProperty("knockback_strength", impulseKnockbackStrength);
+            impulse.addProperty("radius", impulseRadius);
+            impulse.addProperty("strength", impulseStrength);
             arrowTypes.add("impulse", impulse);
             JsonObject explosive = new JsonObject();
             explosive.addProperty("enabled", explosiveArrowEnabled);
             explosive.addProperty("explosion_size", explosiveArrowSize);
             arrowTypes.add("explosive", explosive);
-            JsonObject sticky = new JsonObject();
-            sticky.addProperty("enabled", stickyArrowEnabled);
-            sticky.addProperty("movement_reduction_percent", stickyMovementReductionPercent);
-            sticky.addProperty("duration_ticks", stickyDurationTicks);
-            sticky.addProperty("slowness_level", stickySlownessLevel);
-            arrowTypes.add("sticky", sticky);
             root.add("arrow_types", arrowTypes);
 
-            JsonObject sharpshooter = new JsonObject();
-            sharpshooter.addProperty("enabled", sharpshooterEnabled);
-            sharpshooter.addProperty("level_1_reduction_percent", sharpshooterLevel1ReductionPercent);
-            sharpshooter.addProperty("level_2_reduction_percent", sharpshooterLevel2ReductionPercent);
-            sharpshooter.addProperty("level_3_reduction_percent", sharpshooterLevel3ReductionPercent);
-            root.add("sharpshooter", sharpshooter);
-
             JsonObject fletching = new JsonObject();
-            fletching.addProperty("crafting_time_ticks", fletchingCraftingTimeTicks);
             fletching.addProperty("recipe_output_count", fletchingRecipeOutputCount);
             root.add("fletching", fletching);
+
+            JsonObject headshot = new JsonObject();
+            headshot.addProperty("enableHeadshot", headshotEnabled);
+            headshot.addProperty("headshotDamageBonusI", headshotDamageBonusI);
+            headshot.addProperty("headshotDamageBonusII", headshotDamageBonusII);
+            headshot.addProperty("headshotDamageBonusIII", headshotDamageBonusIII);
+            headshot.addProperty("headshotBoxRadius", headshotBoxRadius);
+            headshot.addProperty("headshotFeedbackEnabled", headshotFeedbackEnabled);
+            headshot.addProperty("headshotPvpDamageBonusI", headshotPvpDamageBonusI);
+            headshot.addProperty("headshotPvpDamageBonusII", headshotPvpDamageBonusII);
+            headshot.addProperty("headshotPvpDamageBonusIII", headshotPvpDamageBonusIII);
+            root.add("headshot", headshot);
 
             JsonObject trajectory = new JsonObject();
             trajectory.addProperty("colour_visualisation", trajectoryColourVisualisation);
@@ -764,12 +825,11 @@ public final class ConfigManager {
             terminalVelocity = nonNegative(terminalVelocity, 999.0D);
             maxLifetimeTicks = Math.max(1, maxLifetimeTicks);
             ricochetVelocityLossPercent = clamp(ricochetVelocityLossPercent, 0.0D, 100.0D, 10.0D);
-            impulseBlastRadius = nonNegative(impulseBlastRadius, 4.0D);
-            impulseKnockbackStrength = nonNegative(impulseKnockbackStrength, 2.0D);
+            shockwaveRadius = nonNegative(shockwaveRadius, 4.0D);
+            shockwaveStrength = nonNegative(shockwaveStrength, 2.0D);
+            impulseRadius = nonNegative(impulseRadius, 4.0D);
+            impulseStrength = nonNegative(impulseStrength, 2.0D);
             explosiveArrowSize = nonNegative(explosiveArrowSize, 2.5D);
-            stickyMovementReductionPercent = clamp(stickyMovementReductionPercent, 0.0D, 100.0D, 50.0D);
-            stickyDurationTicks = Math.max(1, stickyDurationTicks);
-            stickySlownessLevel = Math.max(1, stickySlownessLevel);
             overdrawDamageIncreasePerTickPercent = nonNegative(overdrawDamageIncreasePerTickPercent, 1.0D);
             overdrawMaxDamageBonusPercent = nonNegative(overdrawMaxDamageBonusPercent, 100.0D);
             overdrawAutoFireDelayTicks = Math.max(1, overdrawAutoFireDelayTicks);
@@ -780,8 +840,14 @@ public final class ConfigManager {
             fractureSplitDelayTicks = Math.max(1, fractureSplitDelayTicks);
             fractureMinSplitDelayTicks = Math.max(1, fractureMinSplitDelayTicks);
             fractureMaxSplitDelayTicks = Math.max(fractureMinSplitDelayTicks, fractureMaxSplitDelayTicks);
-            fletchingCraftingTimeTicks = Math.max(1, fletchingCraftingTimeTicks);
             fletchingRecipeOutputCount = Math.max(1, fletchingRecipeOutputCount);
+            headshotDamageBonusI = nonNegative(headshotDamageBonusI, 15.0D);
+            headshotDamageBonusII = nonNegative(headshotDamageBonusII, 30.0D);
+            headshotDamageBonusIII = nonNegative(headshotDamageBonusIII, 45.0D);
+            headshotBoxRadius = nonNegative(headshotBoxRadius, 0.35D);
+            headshotPvpDamageBonusI = nonNegative(headshotPvpDamageBonusI, 15.0D);
+            headshotPvpDamageBonusII = nonNegative(headshotPvpDamageBonusII, 30.0D);
+            headshotPvpDamageBonusIII = nonNegative(headshotPvpDamageBonusIII, 45.0D);
         }
 
         private static double readDouble(JsonObject root, String section, String key,

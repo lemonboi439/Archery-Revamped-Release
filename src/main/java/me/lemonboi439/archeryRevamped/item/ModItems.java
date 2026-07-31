@@ -12,15 +12,23 @@ import net.minecraft.util.Identifier;
 
 public final class ModItems {
     private static final Identifier ENDER_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "ender_arrow");
+    private static final Identifier SHOCKWAVE_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "shockwave_arrow");
     private static final Identifier IMPULSE_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "impulse_arrow");
     private static final Identifier EXPLOSIVE_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "explosive_arrow");
-    private static final Identifier STICKY_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "sticky_arrow");
 
     public static final Item ENDER_ARROW = Registry.register(
             Registries.ITEM,
             ENDER_ARROW_ID,
             new EnderArrowItem(new Item.Settings()
                     .registryKey(RegistryKey.of(RegistryKeys.ITEM, ENDER_ARROW_ID))
+                    .maxCount(64))
+    );
+
+    public static final Item SHOCKWAVE_ARROW = Registry.register(
+            Registries.ITEM,
+            SHOCKWAVE_ARROW_ID,
+            new ShockwaveArrowItem(new Item.Settings()
+                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, SHOCKWAVE_ARROW_ID))
                     .maxCount(64))
     );
 
@@ -40,23 +48,15 @@ public final class ModItems {
                     .maxCount(64))
     );
 
-    public static final Item STICKY_ARROW = Registry.register(
-            Registries.ITEM,
-            STICKY_ARROW_ID,
-            new StickyArrowItem(new Item.Settings()
-                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, STICKY_ARROW_ID))
-                    .maxCount(64))
-    );
-
     private ModItems() {
     }
 
     public static void register() {
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
             entries.add(ENDER_ARROW);
+            entries.add(SHOCKWAVE_ARROW);
             entries.add(IMPULSE_ARROW);
             entries.add(EXPLOSIVE_ARROW);
-            entries.add(STICKY_ARROW);
         });
     }
 }

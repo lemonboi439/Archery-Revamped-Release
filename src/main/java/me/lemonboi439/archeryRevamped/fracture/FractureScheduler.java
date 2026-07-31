@@ -35,12 +35,17 @@ public final class FractureScheduler {
             return;
         }
 
-        int childCount = parent.getFractureLevel() >= 2 ? 3 : 2;
+        int childCount = Math.max(2, Math.min(256, parent.getFractureLevel() + 1));
+        double angleDegrees = ConfigManager.getFractureSplitAngleDegrees();
+        if (childCount > 240) {
+            angleDegrees = Math.min(angleDegrees, 5.0D);
+        } else if (childCount > 120) {
+            angleDegrees = Math.min(angleDegrees, 10.0D);
+        }
         // Keep the split asynchronous, but make the child arrows appear
         // almost immediately after the speed-scaled split timer expires.
         int delay = 1 + serverWorld.getRandom().nextInt(2);
-        PENDING_SPLITS.add(new PendingSplit(parent, delay, childCount,
-                ConfigManager.getFractureSplitAngleDegrees()));
+        PENDING_SPLITS.add(new PendingSplit(parent, delay, childCount, angleDegrees));
     }
 
     private static void tick(MinecraftServer server) {
@@ -77,13 +82,10 @@ public final class FractureScheduler {
                 parent.setHasSpread(true);
                 parent.setFractureScheduled(false);
                 parent.discard();
-                if (pending.childCount == 2) {
-                    spawnChild(serverWorld, parent, -pending.angleDegrees);
-                    spawnChild(serverWorld, parent, pending.angleDegrees);
-                } else {
-                    spawnChild(serverWorld, parent, 0.0D);
-                    spawnChild(serverWorld, parent, -pending.angleDegrees);
-                    spawnChild(serverWorld, parent, pending.angleDegrees);
+                for (int index = 0; index < pending.childCount; index++) {
+                    double spread = pending.childCount == 1 ? 0.0D
+                            : (index / (double) (pending.childCount - 1) * 2.0D - 1.0D);
+                    spawnChild(serverWorld, parent, spread * pending.angleDegrees);
                 }
             }
             iterator.remove();

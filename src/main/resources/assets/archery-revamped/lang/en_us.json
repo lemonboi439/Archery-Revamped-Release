@@ -1,19 +1,19 @@
 {
   "container.archery-revamped.fletching_table": "Fletching Table",
   "container.archery-revamped.recipe.ender_arrow": "Ender Arrows",
+  "container.archery-revamped.recipe.shockwave_arrow": "Shockwave Arrows",
   "container.archery-revamped.recipe.impulse_arrow": "Impulse Arrows",
   "container.archery-revamped.recipe.explosive_arrow": "Explosive Arrows",
-  "container.archery-revamped.recipe.sticky_arrow": "Sticky Arrows",
   "container.archery-revamped.recipe.tipped_arrow": "Tipped Arrows",
   "enchantment.archery-revamped.ricochet": "Ricochet",
   "item.archery-revamped.ender_arrow": "Ender Arrow",
+  "item.archery-revamped.shockwave_arrow": "Shockwave Arrow",
   "item.archery-revamped.impulse_arrow": "Impulse Arrow",
   "item.archery-revamped.explosive_arrow": "Explosive Arrow",
-  "item.archery-revamped.sticky_arrow": "Sticky Arrow",
   "enchantment.archery-revamped.overdraw": "Overdraw",
   "enchantment.archery-revamped.longshot": "Longshot",
   "enchantment.archery-revamped.fracture": "Fracture",
   "enchantment.archery-revamped.burst": "Burst",
-  "enchantment.archery-revamped.sharpshooter": "Sharpshooter",
+  "enchantment.archery-revamped.headshot": "Headshot",
   "itemGroup.archery-revamped": "Archery Revamped"
 }

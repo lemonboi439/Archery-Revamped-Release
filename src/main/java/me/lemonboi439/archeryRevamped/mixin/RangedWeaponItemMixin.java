@@ -4,6 +4,7 @@ import me.lemonboi439.archeryRevamped.enchantment.RicochetEnchantment;
 import me.lemonboi439.archeryRevamped.enchantment.LongshotEnchantment;
 import me.lemonboi439.archeryRevamped.enchantment.FractureEnchantment;
 import me.lemonboi439.archeryRevamped.enchantment.BurstEnchantment;
+import me.lemonboi439.archeryRevamped.enchantment.HeadshotEnchantment;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.burst.BurstArrowHandler;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
@@ -69,14 +70,20 @@ public abstract class RangedWeaponItemMixin {
                 .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
                 .orElse(0);
         burstLevel = ConfigManager.limitEnchantmentLevel(burstLevel, BurstEnchantment.MAX_LEVEL);
+        var headshot = enchantments.getOptional(HeadshotEnchantment.KEY);
+        int headshotLevel = headshot
+                .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
+                .orElse(0);
+        arrow.setHeadshotLevel(ConfigManager.limitEnchantmentLevel(
+                headshotLevel, HeadshotEnchantment.MAX_LEVEL));
         if (projectileStack.isOf(ModItems.ENDER_ARROW)) {
             arrow.setArrowType(ArrowType.ENDER);
+        } else if (projectileStack.isOf(ModItems.SHOCKWAVE_ARROW)) {
+            arrow.setArrowType(ArrowType.SHOCKWAVE);
         } else if (projectileStack.isOf(ModItems.IMPULSE_ARROW)) {
             arrow.setArrowType(ArrowType.IMPULSE);
         } else if (projectileStack.isOf(ModItems.EXPLOSIVE_ARROW)) {
             arrow.setArrowType(ArrowType.EXPLOSIVE);
-        } else if (projectileStack.isOf(ModItems.STICKY_ARROW)) {
-            arrow.setArrowType(ArrowType.STICKY);
         }
         arrow.setProjectileStack(originalArrow.getItemStack().copy());
         arrow.setPosition(originalArrow.getX(), originalArrow.getY(), originalArrow.getZ());

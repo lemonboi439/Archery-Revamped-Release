@@ -17,7 +17,6 @@ src/main/java/me/lemonboi439/archeryRevamped/
 ├── loot/         Late-game vanilla loot-table modification
 ├── physics/      Per-tick projectile velocity calculations
 ├── screen/       Fletching table handler, recipes, and viewer surface
-├── sharpshooter/ Leggings movement modifier
 └── trade/        Villager trade registration
 
 src/client/java/me/lemonboi439/archeryRevamped/
@@ -68,7 +67,7 @@ Register admin commands through `ArcheryCommand`. The root command is `/archeryr
 
 Do not add hard dependencies on JEI, REI, EMI, Cloth Config, or Mod Menu. The Cloth Config and Mod Menu artifacts are compile-only integrations. `ArcheryRevampedModMenu` checks whether Cloth Config is loaded before returning the screen factory, so dedicated-server startup and clients without either optional mod remain safe. Keep configuration screen values routed through `ConfigManager`; the screen and `/archeryrevamped physics` commands must edit the same values.
 
-The optional configuration screen is in `src/client/java/.../client/config/ArcheryRevampedConfigScreen.java`. Add new settings to the appropriate Cloth Config category and to `ConfigManager`'s parser, serializer, validation, and setters. The `regular/infinite_levels` setting is deliberately separate from physics and is applied by `EnchantmentLevelLimitMixin` only to Archery Revamped enchantments.
+The optional configuration screen is in `src/client/java/.../client/config/ArcheryRevampedConfigScreen.java`. Add new settings to the appropriate Cloth Config category and to `ConfigManager`'s parser, serializer, validation, and setters. The `regular/infinite_levels` setting is deliberately separate from physics. When enabled, custom enchantment levels are clamped to the safe finite maximum of 255; there is no unbounded global enchantment mixin.
 
 ## Validation checklist
 
@@ -85,6 +84,5 @@ Before a release, also verify in a clean instance:
 - ricochet paths and trajectory rendering do not crash the client;
 - fletching output and returned inventory items are correct;
 - custom books appear in enchanting and selected late-game loot tables;
-- `/archeryrevamped regular infinite_levels` reports and changes the custom-enchantment level-limit setting;
 - the Mod Menu screen displays current physics values and changes made by the physics commands;
 - the game starts with JEI, REI, EMI, and Cloth Config absent.

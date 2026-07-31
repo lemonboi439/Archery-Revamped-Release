@@ -44,31 +44,34 @@
     "ender": {
       "enabled": true
     },
+    "shockwave": {
+      "enabled": true,
+      "radius": 4.0,
+      "strength": 2.0
+    },
     "impulse": {
       "enabled": true,
-      "blast_radius": 4.0,
-      "knockback_strength": 2.0
+      "radius": 4.0,
+      "strength": 2.0
     },
     "explosive": {
       "enabled": true,
       "explosion_size": 2.5
-    },
-    "sticky": {
-      "enabled": true,
-      "movement_reduction_percent": 50.0,
-      "duration_ticks": 100,
-      "slowness_level": 1
     }
   },
-  "sharpshooter": {
-    "enabled": false,
-    "level_1_reduction_percent": 70.0,
-    "level_2_reduction_percent": 40.0,
-    "level_3_reduction_percent": 10.0
-  },
   "fletching": {
-    "crafting_time_ticks": 20,
     "recipe_output_count": 4
+  },
+  "headshot": {
+    "enableHeadshot": false,
+    "headshotDamageBonusI": 15.0,
+    "headshotDamageBonusII": 30.0,
+    "headshotDamageBonusIII": 45.0,
+    "headshotBoxRadius": 0.35,
+    "headshotFeedbackEnabled": true,
+    "headshotPvpDamageBonusI": 15.0,
+    "headshotPvpDamageBonusII": 30.0,
+    "headshotPvpDamageBonusIII": 45.0
   },
   "trajectory": {
     "colour_visualisation": false

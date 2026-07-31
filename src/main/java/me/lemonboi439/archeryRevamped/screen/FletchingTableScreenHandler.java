@@ -1,6 +1,5 @@
 package me.lemonboi439.archeryRevamped.screen;
 
-import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -54,7 +53,7 @@ public class FletchingTableScreenHandler extends ScreenHandler implements Invent
         this.context = context;
         this.progress = progress;
         this.inventory.addListener(this);
-        this.progress.set(MAX_PROGRESS_INDEX, getCraftingTime());
+        this.progress.set(MAX_PROGRESS_INDEX, 1);
         addProperties(this.progress);
 
         this.addSlot(new Slot(this.inventory, INPUT_ARROW_SLOT, 27, 47) {
@@ -87,7 +86,7 @@ public class FletchingTableScreenHandler extends ScreenHandler implements Invent
         FletchingRecipeRegistry.FletchingRecipe recipe = getMatchingRecipe();
         if (recipe == null) {
             progress.set(PROGRESS_INDEX, 0);
-            progress.set(MAX_PROGRESS_INDEX, getCraftingTime());
+            progress.set(MAX_PROGRESS_INDEX, 1);
             activeRecipe = null;
             return;
         }
@@ -95,27 +94,19 @@ public class FletchingTableScreenHandler extends ScreenHandler implements Invent
         if (inputsChanged() || activeRecipe != recipe) {
             activeRecipe = recipe;
             progress.set(PROGRESS_INDEX, 0);
-            progress.set(MAX_PROGRESS_INDEX, getCraftingTime());
         }
 
-        int maxProgress = getCraftingTime();
-        progress.set(MAX_PROGRESS_INDEX, maxProgress);
+        progress.set(MAX_PROGRESS_INDEX, 1);
         ItemStack result = FletchingRecipeRegistry.createOutput(
                 recipe, inventory.getStack(INPUT_INGREDIENT_SLOT));
         if (!canAcceptOutput(result)) {
             return;
         }
 
-        if (progress.get(PROGRESS_INDEX) < maxProgress) {
-            progress.set(PROGRESS_INDEX, progress.get(PROGRESS_INDEX) + 1);
-        }
-        if (progress.get(PROGRESS_INDEX) >= maxProgress) {
-            craftBatch(recipe, result);
-        }
-    }
-
-    private int getCraftingTime() {
-        return Math.max(1, ConfigManager.getFletchingCraftingTimeTicks());
+        // Fletching is intentionally instantaneous: one valid batch is made
+        // on each server tick while inputs and output space are available.
+        progress.set(PROGRESS_INDEX, 1);
+        craftBatch(recipe, result);
     }
 
     private FletchingRecipeRegistry.FletchingRecipe getMatchingRecipe() {
@@ -132,7 +123,7 @@ public class FletchingTableScreenHandler extends ScreenHandler implements Invent
             progress.set(PROGRESS_INDEX, 0);
         }
         activeRecipe = recipe;
-        progress.set(MAX_PROGRESS_INDEX, getCraftingTime());
+        progress.set(MAX_PROGRESS_INDEX, 1);
     }
 
     private boolean inputsChanged() {

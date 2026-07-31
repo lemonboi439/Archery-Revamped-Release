@@ -14,8 +14,10 @@ import me.lemonboi439.archeryRevamped.mixin.PersistentProjectileEntityAccessor;
 import me.lemonboi439.archeryRevamped.fracture.FractureScheduler;
 import me.lemonboi439.archeryRevamped.burst.BurstArrowHandler;
 import me.lemonboi439.archeryRevamped.debug.TrajectoryVisualizer;
+import me.lemonboi439.archeryRevamped.headshot.HeadshotManager;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -62,7 +64,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private static final TrackedData<Float> TRACKED_TRAJECTORY_VELOCITY_Z = DataTracker.registerData(
             ArcheryArrowEntity.class, TrackedDataHandlerRegistry.FLOAT
     );
-    private static final int CURRENT_DATA_VERSION = 2;
+    private static final int CURRENT_DATA_VERSION = 4;
     private static final String DATA_VERSION_KEY = "archeryRevampedDataVersion";
     private static final String ARROW_TYPE_KEY = "arrowType";
     private static final String RICOCHET_LEVEL_KEY = "ricochetLevel";
@@ -94,6 +96,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private static final String BURST_STAGGER_DELAY_KEY = "burstStaggerDelay";
     private static final String BURST_STAGGER_TIMER_KEY = "burstStaggerTimer";
     private static final String TRAJECTORY_FINISHED_KEY = "trajectoryFinished";
+    private static final String HEADSHOT_LEVEL_KEY = "headshotLevel";
 
     private ArrowType arrowType = ArrowType.NORMAL;
     private int ricochetLevel;
@@ -127,6 +130,8 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private int burstStaggerDelay;
     private int burstStaggerTimer;
     private boolean burstScheduled;
+    private int headshotLevel;
+    private double pendingHeadshotDamageMultiplier = 1.0D;
 
     public ArcheryArrowEntity(World world) {
         super(ModEntities.ARCHERY_ARROW, world);
@@ -165,6 +170,12 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     @Override
     protected ItemStack getDefaultItemStack() {
         return new ItemStack(Items.ARROW);
+    }
+
+    /** Never let a child arrow immediately collide with the shooter it inherits. */
+    @Override
+    protected boolean canHit(Entity entity) {
+        return entity != this.getOwner() && super.canHit(entity);
     }
 
     @Override
@@ -326,6 +337,24 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         this.fractureLevel = ConfigManager.limitEnchantmentLevel(level, 2);
     }
 
+    public int getHeadshotLevel() {
+        return this.headshotLevel;
+    }
+
+    public void setHeadshotLevel(int level) {
+        this.headshotLevel = ConfigManager.limitEnchantmentLevel(level, 3);
+    }
+
+    public void prepareHeadshot(EntityHitResult hit) {
+        this.pendingHeadshotDamageMultiplier = HeadshotManager.prepareHeadshot(this, hit);
+    }
+
+    public double consumeHeadshotDamageMultiplier() {
+        double multiplier = this.pendingHeadshotDamageMultiplier;
+        this.pendingHeadshotDamageMultiplier = 1.0D;
+        return Double.isFinite(multiplier) && multiplier > 0.0D ? multiplier : 1.0D;
+    }
+
     public void setFractureReleaseSpeed(double speed) {
         if (Double.isFinite(speed) && speed > 1.0E-6D) {
             this.fractureReleaseSpeed = speed;
@@ -392,8 +421,13 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
 
         child.setOwner(this.getOwner());
         child.setProjectileStack(this.createChildPickupStack());
-        child.setPosition(this.getX(), this.getY(), this.getZ());
-        child.setVelocity(this.getVelocity().rotateY((float) Math.toRadians(angleDegrees)));
+        Vec3d childVelocity = this.getVelocity().rotateY((float) Math.toRadians(angleDegrees));
+        Vec3d childDirection = childVelocity.lengthSquared() > 1.0E-7D
+                ? childVelocity.normalize() : new Vec3d(0.0D, 0.0D, 1.0D);
+        Vec3d childPosition = new Vec3d(this.getX(), this.getY(), this.getZ())
+                .add(childDirection.multiply(0.35D));
+        child.setPosition(childPosition.x, childPosition.y, childPosition.z);
+        child.setVelocity(childVelocity);
         child.setTrajectorySpawnPosition(child.getX(), child.getY(), child.getZ());
         this.copyVanillaProjectileStateTo(child);
 
@@ -420,6 +454,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         child.fractureReleaseSpeed = this.fractureReleaseSpeed;
         child.fractureReleaseSpeedCaptured = this.fractureReleaseSpeedCaptured;
         child.extraAmmoFree = this.extraAmmoFree;
+        child.headshotLevel = this.headshotLevel;
         child.impactDamageModifiersApplied = false;
         child.releaseVelocity = this.releaseVelocity;
         child.burstArrowsRemaining = 0;
@@ -449,6 +484,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         child.fractureReleaseSpeed = this.fractureReleaseSpeed;
         child.fractureReleaseSpeedCaptured = this.fractureReleaseSpeedCaptured;
         child.extraAmmoFree = this.extraAmmoFree;
+        child.headshotLevel = this.headshotLevel;
         child.splitTimer = 0;
         child.hasSpread = false;
         child.fractureScheduled = false;
@@ -600,6 +636,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     protected void onEntityHit(EntityHitResult hit) {
         this.updateDistanceTravelled();
         this.applyImpactDamageModifiers();
+        this.prepareHeadshot(hit);
         this.setTrajectoryFinished(true);
         super.onEntityHit(hit);
         ArrowBehaviorRegistry.getBehavior(this.arrowType).onEntityHit(this, hit);
@@ -633,6 +670,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         tag.putInt(BURST_STAGGER_DELAY_KEY, Math.max(1, this.burstStaggerDelay));
         tag.putInt(BURST_STAGGER_TIMER_KEY, Math.max(0, this.burstStaggerTimer));
         tag.putBoolean(TRAJECTORY_FINISHED_KEY, this.isTrajectoryFinished());
+        tag.putInt(HEADSHOT_LEVEL_KEY, ConfigManager.limitEnchantmentLevel(this.headshotLevel, 3));
         writeReleaseVelocity(tag);
     }
 
@@ -643,7 +681,8 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         if (dataVersion < 2 && tag.contains("bouncingLevel") && !tag.contains(RICOCHET_LEVEL_KEY)) {
             this.ricochetLevel = tag.getInt("bouncingLevel").orElse(0);
         }
-        this.setArrowType(parseArrowType(tag.getString(ARROW_TYPE_KEY).orElse(ArrowType.NORMAL.name())));
+        this.setArrowType(parseStoredArrowType(
+                tag.getString(ARROW_TYPE_KEY).orElse(ArrowType.NORMAL.name()), dataVersion));
         this.ricochetLevel = ConfigManager.limitEnchantmentLevel(
                 tag.getInt(RICOCHET_LEVEL_KEY).orElse(this.ricochetLevel), 5);
         this.bounceCount = Math.max(0, tag.getInt(BOUNCE_COUNT_KEY).orElse(0));
@@ -678,6 +717,8 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         this.burstStaggerTimer = Math.max(0, tag.getInt(BURST_STAGGER_TIMER_KEY).orElse(0));
         this.burstScheduled = false;
         this.setTrajectoryFinished(tag.getBoolean(TRAJECTORY_FINISHED_KEY).orElse(this.isInGround()));
+        this.headshotLevel = ConfigManager.limitEnchantmentLevel(
+                tag.getInt(HEADSHOT_LEVEL_KEY).orElse(0), 3);
         readReleaseVelocity(tag);
     }
 
@@ -711,13 +752,16 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         view.putInt(BURST_STAGGER_DELAY_KEY, Math.max(1, this.burstStaggerDelay));
         view.putInt(BURST_STAGGER_TIMER_KEY, Math.max(0, this.burstStaggerTimer));
         view.putBoolean(TRAJECTORY_FINISHED_KEY, this.isTrajectoryFinished());
+        view.putInt(HEADSHOT_LEVEL_KEY, ConfigManager.limitEnchantmentLevel(this.headshotLevel, 3));
         writeReleaseVelocity(view);
     }
 
     @Override
     protected void readCustomData(ReadView view) {
         super.readCustomData(view);
-        this.setArrowType(parseArrowType(view.getString(ARROW_TYPE_KEY, ArrowType.NORMAL.name())));
+        int dataVersion = view.getInt(DATA_VERSION_KEY, 0);
+        this.setArrowType(parseStoredArrowType(
+                view.getString(ARROW_TYPE_KEY, ArrowType.NORMAL.name()), dataVersion));
         this.ricochetLevel = ConfigManager.limitEnchantmentLevel(
                 readIntWithLegacy(view, RICOCHET_LEVEL_KEY, "bouncingLevel", 0), 5);
         this.bounceCount = Math.max(0, view.getInt(BOUNCE_COUNT_KEY, 0));
@@ -750,6 +794,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         this.burstStaggerTimer = Math.max(0, view.getInt(BURST_STAGGER_TIMER_KEY, 0));
         this.burstScheduled = false;
         this.setTrajectoryFinished(view.getBoolean(TRAJECTORY_FINISHED_KEY, this.isInGround()));
+        this.headshotLevel = ConfigManager.limitEnchantmentLevel(view.getInt(HEADSHOT_LEVEL_KEY, 0), 3);
         readReleaseVelocity(view);
     }
 
@@ -815,5 +860,14 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         } catch (IllegalArgumentException exception) {
             return ArrowType.NORMAL;
         }
+    }
+
+    private static ArrowType parseStoredArrowType(String value, int dataVersion) {
+        // Before v1.2, IMPULSE meant the outward Shockwave behavior. Keep
+        // arrows already in loaded worlds consistent with their old effect.
+        if (dataVersion < 3 && "IMPULSE".equalsIgnoreCase(value)) {
+            return ArrowType.SHOCKWAVE;
+        }
+        return parseArrowType(value);
     }
 }

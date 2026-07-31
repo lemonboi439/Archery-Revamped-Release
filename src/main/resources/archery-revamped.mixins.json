@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "RangedWeaponItemMixin",
+    "HeadshotDamageMixin",
     "PersistentProjectileEntityAccessor",
     "FletchingTableBlockMixin"
   ],

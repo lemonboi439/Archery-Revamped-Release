@@ -38,20 +38,11 @@ public final class ArcheryCommand {
                         .executes(ArcheryCommand::config))
                 .then(CommandManager.literal("help")
                         .executes(ArcheryCommand::help))
-                .then(createRegularCommand())
                 .then(createPhysicsCommand())
                 .then(CommandManager.literal("trajectory")
                         .executes(ArcheryCommand::showTrajectory)
                         .then(CommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(ArcheryCommand::setTrajectory)));
-    }
-
-    private static LiteralArgumentBuilder<ServerCommandSource> createRegularCommand() {
-        return CommandManager.literal("regular")
-                .then(CommandManager.literal("infinite_levels")
-                        .executes(ArcheryCommand::showInfiniteLevels)
-                        .then(CommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(ArcheryCommand::setInfiniteLevels)));
     }
 
     private static LiteralArgumentBuilder<ServerCommandSource> createPhysicsCommand() {
@@ -103,9 +94,6 @@ public final class ArcheryCommand {
         helpHeader(source, "Trajectory");
         helpLine(source, "/archeryrevamped trajectory <true|false>", "show or hide fired-arrow trajectory trails and forward predictions");
 
-        helpHeader(source, "Regular");
-        helpLine(source, "/archeryrevamped regular infinite_levels", "show the infinite custom-enchantment level setting");
-        helpLine(source, "/archeryrevamped regular infinite_levels <true|false>", "enable or disable uncapped custom-enchantment levels");
         return 1;
     }
 
@@ -160,22 +148,6 @@ public final class ArcheryCommand {
         ConfigManager.resetPhysicsToDefaults();
         context.getSource().sendFeedback(
                 () -> Text.literal("Physics settings reset to defaults."), true);
-        return 1;
-    }
-
-    private static int showInfiniteLevels(CommandContext<ServerCommandSource> context) {
-        context.getSource().sendFeedback(
-                () -> Text.literal("Infinite Archery Revamped enchantment levels are "
-                        + (ConfigManager.isInfiniteLevels() ? "enabled" : "disabled") + "."), false);
-        return 1;
-    }
-
-    private static int setInfiniteLevels(CommandContext<ServerCommandSource> context) {
-        boolean enabled = BoolArgumentType.getBool(context, "enabled");
-        ConfigManager.setInfiniteLevels(enabled);
-        context.getSource().sendFeedback(
-                () -> Text.literal("Infinite Archery Revamped enchantment levels "
-                        + (enabled ? "enabled" : "disabled") + "."), true);
         return 1;
     }
 

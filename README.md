@@ -15,11 +15,11 @@ The mod is server-safe and does not require JEI, REI, EMI, Cloth Config, or Mod 
 ## Installation
 
 1. Install Fabric Loader for Minecraft 1.21.11 and Java 21.
-2. Put `archery-revamped-1.1.jar` in the `mods` directory.
+2. Put `archery-revamped-1.2.jar` in the `mods` directory.
 3. Install Fabric API for 1.21.11.
 4. Start the game. The mod creates `config/archery_revamped-config.json` on the first server start.
 
-The release JAR is produced at `build/libs/archery-revamped-1.1.jar`.
+The release JAR is produced at `build/libs/archery-revamped-1.2.jar`.
 
 ## Features
 
@@ -30,20 +30,20 @@ All bow and crossbow shots use the custom `archery-revamped:archery_arrow` entit
 | Arrow | Effect |
 | --- | --- |
 | Ender Arrow | Teleports the shooter to a safe impact position. |
-| Impulse Arrow | Applies radial knockback with distance falloff and splash effects. |
+| Shockwave Arrow | Pushes nearby entities away from its landing point with distance falloff. |
+| Impulse Arrow | Pulls nearby entities toward its landing point with distance falloff. |
 | Explosive Arrow | Creates a configurable impact explosion. |
-| Sticky Arrow | Applies configurable Slowness to a living target. |
 
 The special arrows are available from the Archery Revamped item group, the Combat item group, the fletching table, and villager trades.
 
 ### Enchantments
 
-- **Ricochet I–V**: reflects an arrow from solid blocks, with one bounce per level.
-- **Overdraw I–II**: increases bow damage while the bow is held beyond normal charge time.
-- **Longshot I**: scales damage at 16, 32, 48, and 64 blocks of travelled distance.
-- **Fracture I–II**: splits an arrow into child arrows after a speed-scaled delay. Disabled by default.
-- **Burst I–III**: fires additional arrows with staggered timing and charges ammunition/durability appropriately.
-- **Sharpshooter I–III**: reduces draw movement slowdown while worn on leggings. Disabled by default.
+- **Ricochet**: reflects an arrow from solid blocks, with one bounce per level.
+- **Overdraw**: increases bow damage while the bow is held beyond normal charge time.
+- **Longshot**: scales damage at 16, 32, 48, and 64 blocks of travelled distance.
+- **Fracture**: splits an arrow into `level + 1` child arrows after a speed-scaled delay. Disabled by default.
+- **Burst**: fires additional arrows with staggered timing and charges ammunition/durability appropriately.
+- **Headshot I–III**: experimental eye-region damage multiplier for any living entity. Disabled by default.
 
 All custom enchantments are included in the non-treasure enchantment tag. Because vanilla includes that tag in `in_enchanting_table`, they can be offered by enchanting tables when compatible with the item. They are also included in random-loot selection.
 
@@ -51,14 +51,14 @@ Rare custom enchanted books are added to built-in late-game loot tables: End Cit
 
 ### Fletching table
 
-The vanilla Fletching Table opens the Archery Revamped screen when used. Crafting takes 20 ticks by default and produces four results:
+The vanilla Fletching Table opens the Archery Revamped screen when used. Valid recipes craft instantly, one batch per server tick, and produce four results by default:
 
 | Input | Ingredient | Result |
 | --- | --- | --- |
 | 1 arrow | Ender Pearl | 4 Ender Arrows |
-| 1 arrow | Feather | 4 Impulse Arrows |
+| 1 arrow | Wind Charge | 4 Shockwave Arrows |
+| 1 arrow | Iron Nugget | 4 Impulse Arrows |
 | 1 arrow | Gunpowder | 4 Explosive Arrows |
-| 1 arrow | Honeycomb | 4 Sticky Arrows |
 | 4 arrows | Potion | 4 matching tipped arrows |
 
 The output is a real inventory item. Closing the screen returns input and output items to the player.
@@ -84,13 +84,11 @@ Commands require permission level 2.
 /archeryrevamped physics randomness <double>
 /archeryrevamped physics terminal_velocity <double>
 /archeryrevamped physics lifetime <int>
-/archeryrevamped regular infinite_levels
-/archeryrevamped regular infinite_levels <true|false>
 /archeryrevamped trajectory
 /archeryrevamped trajectory <true|false>
 ```
 
-There is intentionally no `/ar` alias. `/archeryrevamped reload` reloads the JSON configuration without restarting the server. `/archeryrevamped regular infinite_levels` displays the current setting, and the boolean form changes it. When enabled, Archery Revamped enchantments no longer use their normal maximum level; the setting is disabled by default.
+There is intentionally no `/ar` alias. `/archeryrevamped reload` reloads the JSON configuration without restarting the server.
 
 `/archeryrevamped config` explains how to open the optional GUI. Install Cloth Config and Mod Menu, then open Archery Revamped from Mod Menu. The GUI shows the live configuration, including every physics value exposed by the physics commands, and saves changes when the screen is closed. Without those optional mods, use the JSON file or commands.
 
@@ -124,20 +122,23 @@ The packaged valid template is [`src/main/resources/config/archery_revamped-conf
 | fracture | min_split_delay_ticks | `1` |
 | fracture | max_split_delay_ticks | `40` |
 | arrow_types.ender | enabled | `true` |
-| arrow_types.impulse | enabled | `true` |
-| arrow_types.impulse | blast_radius / knockback_strength | `4.0` / `2.0` |
+| arrow_types.shockwave | enabled / radius / strength | `true` / `4.0` / `2.0` |
+| arrow_types.impulse | enabled / radius / strength | `true` / `4.0` / `2.0` |
 | arrow_types.explosive | enabled | `true` |
 | arrow_types.explosive | explosion_size | `2.5` |
-| arrow_types.sticky | enabled | `true` |
-| arrow_types.sticky | movement_reduction / duration / slowness | `50.0%` / `100` / `1` |
-| sharpshooter | enabled | `false` |
-| sharpshooter | level reductions | `70.0%`, `40.0%`, `10.0%` |
-| fletching | crafting_time_ticks / recipe_output_count | `20` / `4` |
+| fletching | recipe_output_count | `4` |
+| headshot | enableHeadshot | `false` |
+| headshot | headshotDamageBonusI / II / III | `15.0` / `30.0` / `45.0` |
+| headshot | headshotBoxRadius | `0.35` |
+| headshot | headshotFeedbackEnabled | `true` |
+| headshot | headshotPvpDamageBonusI / II / III | `15.0` / `30.0` / `45.0` |
 | trajectory | colour_visualisation | `false` |
 | regular | infinite_levels | `false` |
 | general | mod_enabled | `true` |
 
 Values are validated when loaded. Invalid or missing values fall back to defaults; physics commands also save their changes to disk. Drag is an air-resistance setting: higher values apply more resistance, with `0.99` retaining vanilla behavior.
+
+Shockwave and Impulse use the configured radius and strength with distance falloff. Players receive a stronger force response so both arrows remain useful across the full area rather than only on direct impact.
 
 ## Recipe viewers
 

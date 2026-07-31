@@ -131,11 +131,15 @@ public final class BurstArrowHandler {
             }
 
             ArcheryArrowEntity child = pending.template.createBurstChild();
-            Vec3d spawnPosition = pending.shooter.getEyePos().subtract(0.0D, 0.1D, 0.0D);
             Vec3d direction = pending.shooter.getRotationVector();
             if (direction.lengthSquared() <= 1.0E-7D) {
                 direction = pending.releaseVelocity.normalize();
             }
+            direction = direction.normalize();
+            // Spawn ahead of the eye, rather than inside the shooter. This
+            // prevents Burst children from colliding with the shooter's head
+            // on their first collision check.
+            Vec3d spawnPosition = pending.shooter.getEyePos().add(direction.multiply(0.45D));
             Vec3d velocity = direction.normalize().multiply(pending.releaseVelocity.length());
             child.setPosition(spawnPosition.x, spawnPosition.y, spawnPosition.z);
             child.setVelocity(velocity);

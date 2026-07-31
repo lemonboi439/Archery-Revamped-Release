@@ -5,7 +5,7 @@ import me.lemonboi439.archeryRevamped.enchantment.FractureEnchantment;
 import me.lemonboi439.archeryRevamped.enchantment.LongshotEnchantment;
 import me.lemonboi439.archeryRevamped.enchantment.OverdrawEnchantment;
 import me.lemonboi439.archeryRevamped.enchantment.RicochetEnchantment;
-import me.lemonboi439.archeryRevamped.enchantment.SharpshooterEnchantment;
+import me.lemonboi439.archeryRevamped.enchantment.HeadshotEnchantment;
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.Items;
@@ -33,7 +33,7 @@ public final class LateGameLootManager {
             LongshotEnchantment.KEY,
             FractureEnchantment.KEY,
             BurstEnchantment.KEY,
-            SharpshooterEnchantment.KEY
+            HeadshotEnchantment.KEY
     );
 
     private static final Map<RegistryKey<LootTable>, Float> LOOT_TABLE_CHANCES = Map.ofEntries(

@@ -22,9 +22,9 @@ public final class ModItemGroups {
                     .icon(() -> new ItemStack(ModItems.ENDER_ARROW))
                     .entries((displayContext, entries) -> {
                         entries.add(ModItems.ENDER_ARROW);
+                        entries.add(ModItems.SHOCKWAVE_ARROW);
                         entries.add(ModItems.IMPULSE_ARROW);
                         entries.add(ModItems.EXPLOSIVE_ARROW);
-                        entries.add(ModItems.STICKY_ARROW);
                         entries.add(Items.ARROW);
                     })
                     .build()

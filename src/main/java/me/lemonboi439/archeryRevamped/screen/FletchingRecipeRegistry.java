@@ -15,9 +15,9 @@ import java.util.List;
 public final class FletchingRecipeRegistry {
     private static final List<FletchingRecipe> RECIPES = List.of(
             new FletchingRecipe("ender_arrow", Items.ENDER_PEARL, ModItems.ENDER_ARROW, 1, false),
-            new FletchingRecipe("impulse_arrow", Items.FEATHER, ModItems.IMPULSE_ARROW, 1, false),
+            new FletchingRecipe("shockwave_arrow", Items.WIND_CHARGE, ModItems.SHOCKWAVE_ARROW, 1, false),
+            new FletchingRecipe("impulse_arrow", Items.IRON_NUGGET, ModItems.IMPULSE_ARROW, 1, false),
             new FletchingRecipe("explosive_arrow", Items.GUNPOWDER, ModItems.EXPLOSIVE_ARROW, 1, false),
-            new FletchingRecipe("sticky_arrow", Items.HONEYCOMB, ModItems.STICKY_ARROW, 1, false),
             new FletchingRecipe("tipped_arrow", Items.POTION, Items.TIPPED_ARROW, 4, true)
     );
 

@@ -1,17 +1,17 @@
 {
   "description": {
-    "translate": "enchantment.archery-revamped.fracture"
+    "translate": "enchantment.archery-revamped.headshot"
   },
   "supported_items": "#minecraft:enchantable/ranged",
-  "weight": 2,
+  "weight": 3,
   "max_level": 255,
   "min_cost": {
-    "base": 15,
-    "per_level_above_first": 12
+    "base": 12,
+    "per_level_above_first": 10
   },
   "max_cost": {
-    "base": 35,
-    "per_level_above_first": 12
+    "base": 32,
+    "per_level_above_first": 10
   },
   "anvil_cost": 4,
   "slots": [
