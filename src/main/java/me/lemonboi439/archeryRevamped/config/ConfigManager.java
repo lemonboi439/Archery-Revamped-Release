@@ -148,6 +148,10 @@ public final class ConfigManager {
         return config.explosiveArrowEnabled;
     }
 
+    public static boolean isExplosiveArrowAntiGriefEnabled() {
+        return config.explosiveArrowAntiGrief;
+    }
+
     public static double getShockwaveRadius() {
         return config.shockwaveRadius;
     }
@@ -337,6 +341,11 @@ public final class ConfigManager {
 
     public static void setExplosiveArrowEnabled(boolean value) {
         config.explosiveArrowEnabled = value;
+        saveAfterChange();
+    }
+
+    public static void setExplosiveArrowAntiGriefEnabled(boolean value) {
+        config.explosiveArrowAntiGrief = value;
         saveAfterChange();
     }
 
@@ -550,6 +559,7 @@ public final class ConfigManager {
         private boolean shockwaveArrowEnabled = true;
         private boolean impulseArrowEnabled = true;
         private boolean explosiveArrowEnabled = true;
+        private boolean explosiveArrowAntiGrief = true;
         private double shockwaveRadius = 4.0D;
         private double shockwaveStrength = 2.0D;
         private double impulseRadius = 4.0D;
@@ -640,6 +650,8 @@ public final class ConfigManager {
                     null, result.explosiveArrowEnabled);
             result.explosiveArrowSize = readDouble(json, "arrow_types", "explosive.explosion_size",
                     "explosiveArrowSize", result.explosiveArrowSize);
+            result.explosiveArrowAntiGrief = readBoolean(json, "arrow_types", "explosive.anti_grief",
+                    "explosiveArrowAntiGrief", result.explosiveArrowAntiGrief);
 
             result.overdrawDamageIncreasePerTickPercent = readDouble(json, "overdraw",
                     "damage_increase_per_tick_percent", "overdrawDamageIncreasePerTickPercent", result.overdrawDamageIncreasePerTickPercent);
@@ -784,6 +796,7 @@ public final class ConfigManager {
             JsonObject explosive = new JsonObject();
             explosive.addProperty("enabled", explosiveArrowEnabled);
             explosive.addProperty("explosion_size", explosiveArrowSize);
+            explosive.addProperty("anti_grief", explosiveArrowAntiGrief);
             arrowTypes.add("explosive", explosive);
             root.add("arrow_types", arrowTypes);
 

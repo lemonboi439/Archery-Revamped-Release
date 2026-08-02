@@ -4,6 +4,20 @@ All notable changes to Archery Revamped are documented here.
 
 ---
 
+## 1.2.1 - Explosive Arrow Anti-Grief
+
+### Added
+
+- Added configurable explosive-arrow anti-grief protection, enabled by default.
+- Added `/archeryrevamped explosive_antigrief` to view the current protection state.
+- Added `/archeryrevamped explosive_antigrief <true|false>` to change the setting in-game.
+- Protected explosions still affect entities but do not destroy blocks.
+- Added the setting to the Cloth Config screen and packaged JSON template.
+
+### Changed
+
+- Updated the release version to `1.2.1`.
+
 ## 1.2.0 - Arrow force, cleanup, and Headshot update
 
 ### Added

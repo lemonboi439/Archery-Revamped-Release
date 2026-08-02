@@ -96,6 +96,9 @@ public final class ArcheryRevampedConfigScreen {
                         ConfigManager.getExplosiveArrowSize())
                 .setDefaultValue(2.5D).setMin(0.0D)
                 .setSaveConsumer(ConfigManager::setExplosiveArrowSize).build());
+        category.addEntry(entries.startBooleanToggle(Text.literal("Explosive anti-grief"),
+                        ConfigManager.isExplosiveArrowAntiGriefEnabled())
+                .setDefaultValue(true).setSaveConsumer(ConfigManager::setExplosiveArrowAntiGriefEnabled).build());
     }
 
     private static void addOverdraw(ConfigBuilder builder, ConfigEntryBuilder entries) {

@@ -38,6 +38,10 @@ public final class ArcheryCommand {
                         .executes(ArcheryCommand::config))
                 .then(CommandManager.literal("help")
                         .executes(ArcheryCommand::help))
+                .then(CommandManager.literal("explosive_antigrief")
+                        .executes(ArcheryCommand::showExplosiveAntiGrief)
+                        .then(CommandManager.argument("enabled", BoolArgumentType.bool())
+                                .executes(ArcheryCommand::setExplosiveAntiGrief)))
                 .then(createPhysicsCommand())
                 .then(CommandManager.literal("trajectory")
                         .executes(ArcheryCommand::showTrajectory)
@@ -79,6 +83,8 @@ public final class ArcheryCommand {
         helpLine(source, "/archeryrevamped help", "show this colour-coded command guide");
         helpLine(source, "/archeryrevamped reload", "reload the JSON configuration");
         helpLine(source, "/archeryrevamped config", "explain how to open the optional Cloth Config screen");
+        helpLine(source, "/archeryrevamped explosive_antigrief", "show whether explosive arrows can destroy blocks");
+        helpLine(source, "/archeryrevamped explosive_antigrief <true|false>", "enable or disable explosive-arrow block protection");
 
         helpHeader(source, "Physics");
         helpLine(source, "/archeryrevamped physics get", "show the current physics values");
@@ -141,6 +147,22 @@ public final class ArcheryCommand {
                 + ", lifetime=" + ConfigManager.getMaxLifetimeTicks()
                 + ", ricochet_velocity_loss_percent=" + ConfigManager.getRicochetVelocityLossPercent();
         context.getSource().sendFeedback(() -> Text.literal(values), false);
+        return 1;
+    }
+
+    private static int showExplosiveAntiGrief(CommandContext<ServerCommandSource> context) {
+        boolean enabled = ConfigManager.isExplosiveArrowAntiGriefEnabled();
+        context.getSource().sendFeedback(() -> Text.literal(
+                "Explosive-arrow anti-grief is " + (enabled ? "enabled" : "disabled")
+                        + ". " + (enabled ? "Blocks are protected; entities can still be damaged." : "Explosions can destroy blocks.")), false);
+        return 1;
+    }
+
+    private static int setExplosiveAntiGrief(CommandContext<ServerCommandSource> context) {
+        boolean enabled = BoolArgumentType.getBool(context, "enabled");
+        ConfigManager.setExplosiveArrowAntiGriefEnabled(enabled);
+        context.getSource().sendFeedback(() -> Text.literal(
+                "Explosive-arrow anti-grief " + (enabled ? "enabled" : "disabled") + "."), true);
         return 1;
     }
 

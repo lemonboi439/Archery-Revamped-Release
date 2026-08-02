@@ -1,5 +1,12 @@
 # Archery Revamped Roadmap
 
+## v1.2.1 - Complete
+
+- [x] Add configurable explosive-arrow anti-grief protection, enabled by default.
+- [x] Add `/archeryrevamped explosive_antigrief` status and toggle commands.
+- [x] Expose explosive anti-grief protection in the Cloth Config screen.
+- [x] Update release documentation and build a v1.2.1 JAR.
+
 ## v1.2 — Complete
 
 - [x] Remove Sticky Arrows.

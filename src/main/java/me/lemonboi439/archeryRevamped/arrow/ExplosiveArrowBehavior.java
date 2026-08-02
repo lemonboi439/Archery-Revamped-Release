@@ -42,7 +42,9 @@ public final class ExplosiveArrowBehavior implements ArrowBehavior {
                     arrow.getY(),
                     arrow.getZ(),
                     (float) ConfigManager.getExplosiveArrowSize(),
-                    World.ExplosionSourceType.BLOCK
+                    ConfigManager.isExplosiveArrowAntiGriefEnabled()
+                            ? World.ExplosionSourceType.NONE
+                            : World.ExplosionSourceType.BLOCK
             );
         }
         arrow.discard();

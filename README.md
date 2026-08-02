@@ -15,11 +15,11 @@ The mod is server-safe and does not require JEI, REI, EMI, Cloth Config, or Mod 
 ## Installation
 
 1. Install Fabric Loader for Minecraft 1.21.11 and Java 21.
-2. Put `archery-revamped-1.2.jar` in the `mods` directory.
+2. Put `archery-revamped-1.2.1.jar` in the `mods` directory.
 3. Install Fabric API for 1.21.11.
 4. Start the game. The mod creates `config/archery_revamped-config.json` on the first server start.
 
-The release JAR is produced at `build/libs/archery-revamped-1.2.jar`.
+The release JAR is produced at `build/libs/archery-revamped-1.2.1.jar`.
 
 ## Features
 
@@ -32,7 +32,7 @@ All bow and crossbow shots use the custom `archery-revamped:archery_arrow` entit
 | Ender Arrow | Teleports the shooter to a safe impact position. |
 | Shockwave Arrow | Pushes nearby entities away from its landing point with distance falloff. |
 | Impulse Arrow | Pulls nearby entities toward its landing point with distance falloff. |
-| Explosive Arrow | Creates a configurable impact explosion. |
+| Explosive Arrow | Creates a configurable impact explosion; anti-grief mode protects blocks while retaining entity damage. |
 
 The special arrows are available from the Archery Revamped item group, the Combat item group, the fletching table, and villager trades.
 
@@ -75,6 +75,8 @@ Commands require permission level 2.
 /archeryrevamped reload
 /archeryrevamped config
 /archeryrevamped help
+/archeryrevamped explosive_antigrief
+/archeryrevamped explosive_antigrief <true|false>
 /archeryrevamped physics
 /archeryrevamped physics get
 /archeryrevamped physics reset
@@ -126,6 +128,7 @@ The packaged valid template is [`src/main/resources/config/archery_revamped-conf
 | arrow_types.impulse | enabled / radius / strength | `true` / `4.0` / `2.0` |
 | arrow_types.explosive | enabled | `true` |
 | arrow_types.explosive | explosion_size | `2.5` |
+| arrow_types.explosive | anti_grief | `true` |
 | fletching | recipe_output_count | `4` |
 | headshot | enableHeadshot | `false` |
 | headshot | headshotDamageBonusI / II / III | `15.0` / `30.0` / `45.0` |
