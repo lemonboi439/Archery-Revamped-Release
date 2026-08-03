@@ -15,17 +15,17 @@ The mod is server-safe and does not require JEI, REI, EMI, Cloth Config, or Mod 
 ## Installation
 
 1. Install Fabric Loader for Minecraft 1.21.11 and Java 21.
-2. Put `archery-revamped-1.2.1.jar` in the `mods` directory.
+2. Put `archery-revamped-1.3.jar` in the `mods` directory.
 3. Install Fabric API for 1.21.11.
 4. Start the game. The mod creates `config/archery_revamped-config.json` on the first server start.
 
-The release JAR is produced at `build/libs/archery-revamped-1.2.1.jar`.
+The release JAR is produced at `build/libs/archery-revamped-1.3.jar`.
 
 ## Features
 
 ### Special arrows
 
-All bow and crossbow shots use the custom `archery-revamped:archery_arrow` entity while preserving vanilla projectile state such as velocity, critical hits, pickup behavior, fire, pierce level, and weapon damage.
+All bow, crossbow, and dispenser shots use the custom `archery-revamped:archery_arrow` entity while preserving vanilla projectile state such as velocity, critical hits, pickup behavior, fire, pierce level, and weapon damage.
 
 | Arrow | Effect |
 | --- | --- |

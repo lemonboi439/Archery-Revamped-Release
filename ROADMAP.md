@@ -1,5 +1,11 @@
 # Archery Revamped Roadmap
 
+## v1.3 - Complete
+
+- [x] Make special arrows fire correctly from dispensers.
+- [x] Preserve vanilla dispenser launch, pickup, and consumption behavior.
+- [x] Update release documentation and build a v1.3 JAR.
+
 ## v1.2.1 - Complete
 
 - [x] Add configurable explosive-arrow anti-grief protection, enabled by default.

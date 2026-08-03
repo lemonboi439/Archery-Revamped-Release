@@ -147,6 +147,13 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
                 firedFromWeapon);
     }
 
+    public ArcheryArrowEntity(World world, double x, double y, double z,
+                              ItemStack pickupItemStack, ItemStack firedFromWeapon) {
+        super(ModEntities.ARCHERY_ARROW, x, y, z, world,
+                pickupItemStack.isEmpty() ? new ItemStack(Items.ARROW) : pickupItemStack,
+                firedFromWeapon);
+    }
+
     public ArcheryArrowEntity(EntityType<? extends ArcheryArrowEntity> type, World world) {
         super(type, world);
         this.setStack(new ItemStack(Items.ARROW));

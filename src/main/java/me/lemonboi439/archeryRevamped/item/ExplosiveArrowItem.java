@@ -1,10 +1,15 @@
 package me.lemonboi439.archeryRevamped.item;
 
-import net.minecraft.item.ArrowItem;
+import me.lemonboi439.archeryRevamped.arrow.ArrowType;
 import net.minecraft.item.Item;
 
-public final class ExplosiveArrowItem extends ArrowItem {
+public final class ExplosiveArrowItem extends SpecialArrowItem {
     public ExplosiveArrowItem(Item.Settings settings) {
         super(settings);
+    }
+
+    @Override
+    protected ArrowType arrowType() {
+        return ArrowType.EXPLOSIVE;
     }
 }

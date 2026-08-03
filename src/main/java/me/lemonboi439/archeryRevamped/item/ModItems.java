@@ -4,6 +4,7 @@ import me.lemonboi439.archeryRevamped.ArcheryRevamped;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
+import net.minecraft.block.DispenserBlock;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -52,6 +53,11 @@ public final class ModItems {
     }
 
     public static void register() {
+        DispenserBlock.registerProjectileBehavior(ENDER_ARROW);
+        DispenserBlock.registerProjectileBehavior(SHOCKWAVE_ARROW);
+        DispenserBlock.registerProjectileBehavior(IMPULSE_ARROW);
+        DispenserBlock.registerProjectileBehavior(EXPLOSIVE_ARROW);
+
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
             entries.add(ENDER_ARROW);
             entries.add(SHOCKWAVE_ARROW);
