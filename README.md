@@ -128,7 +128,7 @@ The packaged valid template is [`src/main/resources/config/archery_revamped-conf
 | arrow_types.impulse | enabled / radius / strength | `true` / `4.0` / `2.0` |
 | arrow_types.explosive | enabled | `true` |
 | arrow_types.explosive | explosion_size | `2.5` |
-| arrow_types.explosive | anti_grief | `true` |
+| arrow_types.explosive | anti_grief | `false` |
 | fletching | recipe_output_count | `4` |
 | headshot | enableHeadshot | `false` |
 | headshot | headshotDamageBonusI / II / III | `15.0` / `30.0` / `45.0` |

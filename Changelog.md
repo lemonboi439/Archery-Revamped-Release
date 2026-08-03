@@ -11,6 +11,7 @@ All notable changes to Archery Revamped are documented here.
 - Special arrows can now be fired from dispensers.
 - Ender, Shockwave, Impulse, and Explosive arrows spawned by dispensers use the custom arrow entity and retain their full effects.
 - Dispenser-launched arrows preserve vanilla dispenser launch velocity, pickup behavior, and item consumption.
+- Explosive-arrow anti-grief protection is disabled by default so explosive arrows behave as expected out of the box.
 
 ### Changed
 

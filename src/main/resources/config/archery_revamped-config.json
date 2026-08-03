@@ -57,7 +57,7 @@
     "explosive": {
       "enabled": true,
       "explosion_size": 2.5,
-      "anti_grief": true
+      "anti_grief": false
     }
   },
   "fletching": {

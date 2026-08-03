@@ -559,7 +559,7 @@ public final class ConfigManager {
         private boolean shockwaveArrowEnabled = true;
         private boolean impulseArrowEnabled = true;
         private boolean explosiveArrowEnabled = true;
-        private boolean explosiveArrowAntiGrief = true;
+        private boolean explosiveArrowAntiGrief = false;
         private double shockwaveRadius = 4.0D;
         private double shockwaveStrength = 2.0D;
         private double impulseRadius = 4.0D;
