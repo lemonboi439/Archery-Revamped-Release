@@ -27,7 +27,7 @@ public abstract class SpecialArrowItem extends ArrowItem {
                 position.getY(),
                 position.getZ(),
                 stack.copyWithCount(1),
-                ItemStack.EMPTY
+                null
         );
         arrow.pickupType = PersistentProjectileEntity.PickupPermission.ALLOWED;
         arrow.setArrowType(arrowType());
