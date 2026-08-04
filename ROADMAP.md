@@ -1,6 +1,14 @@
 # Archery Revamped Roadmap
 
-## v1.4 - In development
+## v1.4.1 - Published
+
+- [x] Apply the supplied Shockwave, Impulse, and Shattering arrow textures.
+- [x] Render special arrows with the vanilla crossed in-flight arrow model.
+- [x] Improve Tidal Arrow gravity, acceleration, and torpedo spin.
+- [x] Increase Shattering Arrow spread to 6–8 higher, farther shards.
+- [x] Update release documentation and build a v1.4.1 JAR.
+
+## v1.4 - Published
 
 - [x] Add a short delayed activation window for Shockwave and Impulse impacts.
 - [x] Add Tidal Arrows with underwater acceleration, bubbles, and torpedo spin.
@@ -38,7 +46,7 @@
 - [x] Remove the obsolete `regular infinite_levels` command.
 - [x] Update release documentation and build a v1.2 JAR.
 
-## v1.3 — Planned
+## v1.5 - Planned
 
 - [ ] Add focused automated tests for arrow persistence, Headshot collision detection, force falloff, and fletching batches.
 - [ ] Improve Burst release-angle consistency and add stronger in-game diagnostics.

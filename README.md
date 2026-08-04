@@ -15,11 +15,11 @@ The mod is server-safe and does not require JEI, REI, EMI, Cloth Config, or Mod 
 ## Installation
 
 1. Install Fabric Loader for Minecraft 1.21.11 and Java 21.
-2. Put `archery-revamped-1.4.jar` in the `mods` directory.
+2. Put `archery-revamped-1.4.1.jar` in the `mods` directory.
 3. Install Fabric API for 1.21.11.
 4. Start the game. The mod creates `config/archery_revamped-config.json` on the first server start.
 
-The release JAR is produced at `build/libs/archery-revamped-1.4.jar`.
+The release JAR is produced at `build/libs/archery-revamped-1.4.1.jar`.
 
 ## Features
 

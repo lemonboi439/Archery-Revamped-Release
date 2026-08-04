@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "archery-revamped:item/impulse_arrow"
+  }
+}

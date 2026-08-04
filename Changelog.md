@@ -4,6 +4,21 @@ All notable changes to Archery Revamped are documented here.
 
 ---
 
+## 1.4.1 - Arrow Texture and Flight Polish
+
+### Added
+
+- Added dedicated in-flight crossed-arrow rendering for every special arrow type.
+- Added the new Shockwave Arrow texture supplied for the 1.4.1 release.
+- Added the previous Shockwave texture as the Impulse Arrow texture.
+- Added the supplied Shattering Arrow texture.
+
+### Changed
+
+- Tidal Arrows now fly flatter, accelerate over flight time, and spin continuously like torpedoes.
+- Shattering Arrows now launch 6–8 shards per impact with a higher and farther spread.
+- Updated the release version to `1.4.1`.
+
 ## 1.4 - New Arrow Types and Impact Fixes
 
 ### Added

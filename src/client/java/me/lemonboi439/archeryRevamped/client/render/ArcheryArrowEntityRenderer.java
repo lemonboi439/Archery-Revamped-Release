@@ -20,7 +20,25 @@ public final class ArcheryArrowEntityRenderer extends ProjectileEntityRenderer<
             "minecraft", "textures/entity/projectiles/arrow.png"
     );
     private static final Identifier ENDER_TEXTURE = Identifier.of(
-            "archery-revamped", "textures/item/ender_arrow.png"
+            "archery-revamped", "textures/entity/projectiles/ender_arrow.png"
+    );
+    private static final Identifier EXPLOSIVE_TEXTURE = Identifier.of(
+            "archery-revamped", "textures/entity/projectiles/explosive_arrow.png"
+    );
+    private static final Identifier ECHO_TEXTURE = Identifier.of(
+            "archery-revamped", "textures/entity/projectiles/echo_arrow.png"
+    );
+    private static final Identifier SHATTERING_TEXTURE = Identifier.of(
+            "archery-revamped", "textures/entity/projectiles/shattering_arrow.png"
+    );
+    private static final Identifier SHOCKWAVE_TEXTURE = Identifier.of(
+            "archery-revamped", "textures/entity/projectiles/shockwave_arrow.png"
+    );
+    private static final Identifier TIDAL_TEXTURE = Identifier.of(
+            "archery-revamped", "textures/entity/projectiles/tidal_arrow.png"
+    );
+    private static final Identifier IMPULSE_TEXTURE = Identifier.of(
+            "archery-revamped", "textures/entity/projectiles/impulse_arrow.png"
     );
     private final ArrowEntityModel model;
 
@@ -48,15 +66,15 @@ public final class ArcheryArrowEntityRenderer extends ProjectileEntityRenderer<
     @Override
     public void render(ArcheryArrowEntityRenderState state, MatrixStack matrices,
                        OrderedRenderCommandQueue queue, CameraRenderState camera) {
-        if (!state.tidal) {
-            super.render(state, matrices, queue, camera);
-            return;
-        }
-
+        // Always use Minecraft's crossed arrow model. The texture is selected
+        // per arrow type in updateRenderState, so special arrows keep the
+        // vanilla in-flight shape while showing their own fired-arrow texture.
         matrices.push();
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(state.yaw - 90.0F));
         matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(state.pitch));
-        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(state.tidalSpin));
+        if (state.tidal) {
+            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(state.tidalSpin));
+        }
         queue.submitModel(model, state, matrices, RenderLayers.entityCutout(state.texture),
                 state.light, OverlayTexture.DEFAULT_UV, state.outlineColor, null);
         matrices.pop();
@@ -68,7 +86,16 @@ public final class ArcheryArrowEntityRenderer extends ProjectileEntityRenderer<
     }
 
     private static Identifier textureFor(ArrowType arrowType) {
-        return arrowType == ArrowType.ENDER ? ENDER_TEXTURE : VANILLA_TEXTURE;
+        return switch (arrowType) {
+            case ENDER -> ENDER_TEXTURE;
+            case EXPLOSIVE -> EXPLOSIVE_TEXTURE;
+            case ECHO -> ECHO_TEXTURE;
+            case SHATTERING -> SHATTERING_TEXTURE;
+            case SHOCKWAVE -> SHOCKWAVE_TEXTURE;
+            case IMPULSE -> IMPULSE_TEXTURE;
+            case TIDAL -> TIDAL_TEXTURE;
+            default -> VANILLA_TEXTURE;
+        };
     }
 
 }
