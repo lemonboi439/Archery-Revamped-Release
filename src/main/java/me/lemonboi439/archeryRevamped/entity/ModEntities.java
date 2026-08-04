@@ -21,6 +21,17 @@ public final class ModEntities {
                             Identifier.of(ArcheryRevamped.MOD_ID, "archery_arrow")))
     );
 
+    public static final EntityType<ShatteringShardEntity> SHATTERING_SHARD = Registry.register(
+            Registries.ENTITY_TYPE,
+            Identifier.of(ArcheryRevamped.MOD_ID, "shattering_shard"),
+            EntityType.Builder.<ShatteringShardEntity>create(ShatteringShardEntity::new, SpawnGroup.MISC)
+                    .dimensions(0.18F, 0.18F)
+                    .maxTrackingRange(4)
+                    .trackingTickInterval(10)
+                    .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE,
+                            Identifier.of(ArcheryRevamped.MOD_ID, "shattering_shard")))
+    );
+
     private ModEntities() {
     }
 

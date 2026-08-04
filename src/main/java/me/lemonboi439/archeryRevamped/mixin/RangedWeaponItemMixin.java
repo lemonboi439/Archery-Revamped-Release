@@ -84,6 +84,12 @@ public abstract class RangedWeaponItemMixin {
             arrow.setArrowType(ArrowType.IMPULSE);
         } else if (projectileStack.isOf(ModItems.EXPLOSIVE_ARROW)) {
             arrow.setArrowType(ArrowType.EXPLOSIVE);
+        } else if (projectileStack.isOf(ModItems.TIDAL_ARROW)) {
+            arrow.setArrowType(ArrowType.TIDAL);
+        } else if (projectileStack.isOf(ModItems.SHATTERING_ARROW)) {
+            arrow.setArrowType(ArrowType.SHATTERING);
+        } else if (projectileStack.isOf(ModItems.ECHO_ARROW)) {
+            arrow.setArrowType(ArrowType.ECHO);
         }
         arrow.setProjectileStack(originalArrow.getItemStack().copy());
         arrow.setPosition(originalArrow.getX(), originalArrow.getY(), originalArrow.getZ());

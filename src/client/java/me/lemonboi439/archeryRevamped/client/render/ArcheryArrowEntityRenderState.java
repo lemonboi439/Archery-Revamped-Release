@@ -5,4 +5,6 @@ import net.minecraft.util.Identifier;
 
 public final class ArcheryArrowEntityRenderState extends ProjectileEntityRenderState {
     public Identifier texture;
+    public boolean tidal;
+    public float tidalSpin;
 }

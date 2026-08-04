@@ -1,6 +1,7 @@
 package me.lemonboi439.archeryRevamped.client;
 
 import me.lemonboi439.archeryRevamped.client.render.ArcheryArrowEntityRenderer;
+import me.lemonboi439.archeryRevamped.client.render.ShatteringShardEntityRenderer;
 import me.lemonboi439.archeryRevamped.client.render.ClientTrajectoryPreview;
 import me.lemonboi439.archeryRevamped.debug.TrajectoryNetworking;
 import me.lemonboi439.archeryRevamped.entity.ModEntities;
@@ -15,6 +16,7 @@ public class ArcheryRevampedClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         EntityRendererRegistry.register(ModEntities.ARCHERY_ARROW, ArcheryArrowEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.SHATTERING_SHARD, ShatteringShardEntityRenderer::new);
         HandledScreens.register(ModScreenHandlers.FLETCHING_TABLE, FletchingTableScreen::new);
         OverdrawClientHandler.register();
         ClientTrajectoryPreview.register();

@@ -16,6 +16,9 @@ public final class ModItems {
     private static final Identifier SHOCKWAVE_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "shockwave_arrow");
     private static final Identifier IMPULSE_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "impulse_arrow");
     private static final Identifier EXPLOSIVE_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "explosive_arrow");
+    private static final Identifier TIDAL_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "tidal_arrow");
+    private static final Identifier SHATTERING_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "shattering_arrow");
+    private static final Identifier ECHO_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "echo_arrow");
 
     public static final Item ENDER_ARROW = Registry.register(
             Registries.ITEM,
@@ -49,6 +52,30 @@ public final class ModItems {
                     .maxCount(64))
     );
 
+    public static final Item TIDAL_ARROW = Registry.register(
+            Registries.ITEM,
+            TIDAL_ARROW_ID,
+            new TidalArrowItem(new Item.Settings()
+                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, TIDAL_ARROW_ID))
+                    .maxCount(64))
+    );
+
+    public static final Item SHATTERING_ARROW = Registry.register(
+            Registries.ITEM,
+            SHATTERING_ARROW_ID,
+            new ShatteringArrowItem(new Item.Settings()
+                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, SHATTERING_ARROW_ID))
+                    .maxCount(64))
+    );
+
+    public static final Item ECHO_ARROW = Registry.register(
+            Registries.ITEM,
+            ECHO_ARROW_ID,
+            new EchoArrowItem(new Item.Settings()
+                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, ECHO_ARROW_ID))
+                    .maxCount(64))
+    );
+
     private ModItems() {
     }
 
@@ -57,12 +84,18 @@ public final class ModItems {
         DispenserBlock.registerProjectileBehavior(SHOCKWAVE_ARROW);
         DispenserBlock.registerProjectileBehavior(IMPULSE_ARROW);
         DispenserBlock.registerProjectileBehavior(EXPLOSIVE_ARROW);
+        DispenserBlock.registerProjectileBehavior(TIDAL_ARROW);
+        DispenserBlock.registerProjectileBehavior(SHATTERING_ARROW);
+        DispenserBlock.registerProjectileBehavior(ECHO_ARROW);
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
             entries.add(ENDER_ARROW);
             entries.add(SHOCKWAVE_ARROW);
             entries.add(IMPULSE_ARROW);
             entries.add(EXPLOSIVE_ARROW);
+            entries.add(TIDAL_ARROW);
+            entries.add(SHATTERING_ARROW);
+            entries.add(ECHO_ARROW);
         });
     }
 }

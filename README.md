@@ -15,11 +15,11 @@ The mod is server-safe and does not require JEI, REI, EMI, Cloth Config, or Mod 
 ## Installation
 
 1. Install Fabric Loader for Minecraft 1.21.11 and Java 21.
-2. Put `archery-revamped-1.3.jar` in the `mods` directory.
+2. Put `archery-revamped-1.4.jar` in the `mods` directory.
 3. Install Fabric API for 1.21.11.
 4. Start the game. The mod creates `config/archery_revamped-config.json` on the first server start.
 
-The release JAR is produced at `build/libs/archery-revamped-1.3.jar`.
+The release JAR is produced at `build/libs/archery-revamped-1.4.jar`.
 
 ## Features
 
@@ -33,6 +33,9 @@ All bow, crossbow, and dispenser shots use the custom `archery-revamped:archery_
 | Shockwave Arrow | Pushes nearby entities away from its landing point with distance falloff. |
 | Impulse Arrow | Pulls nearby entities toward its landing point with distance falloff. |
 | Explosive Arrow | Creates a configurable impact explosion; anti-grief mode protects blocks while retaining entity damage. |
+| Tidal Arrow | Accelerates underwater, ignores the stronger water drag, emits bubbles, and spins like a torpedo. |
+| Shattering Arrow | Shatters on impact into individual small amethyst shard projectiles; the stuck parent is collectible as a normal arrow. |
+| Echo Arrow | Applies five seconds of Darkness and spreads sculk around a lethal entity impact. |
 
 The special arrows are available from the Archery Revamped item group, the Combat item group, the fletching table, and villager trades.
 
@@ -59,6 +62,9 @@ The vanilla Fletching Table opens the Archery Revamped screen when used. Valid r
 | 1 arrow | Wind Charge | 4 Shockwave Arrows |
 | 1 arrow | Iron Nugget | 4 Impulse Arrows |
 | 1 arrow | Gunpowder | 4 Explosive Arrows |
+| 1 arrow | Heart of the Sea | 4 Tidal Arrows |
+| 1 arrow | Amethyst Shard | 4 Shattering Arrows |
+| 1 arrow | Echo Shard | 4 Echo Arrows |
 | 4 arrows | Potion | 4 matching tipped arrows |
 
 The output is a real inventory item. Closing the screen returns input and output items to the player.
@@ -142,6 +148,8 @@ The packaged valid template is [`src/main/resources/config/archery_revamped-conf
 Values are validated when loaded. Invalid or missing values fall back to defaults; physics commands also save their changes to disk. Drag is an air-resistance setting: higher values apply more resistance, with `0.99` retaining vanilla behavior.
 
 Shockwave and Impulse use the configured radius and strength with distance falloff. Players receive a stronger force response so both arrows remain useful across the full area rather than only on direct impact.
+
+Shockwave and Impulse activate after a short random 2–5 tick impact delay, allowing their effects to trigger after the arrow has sunk into a block or entity.
 
 ## Recipe viewers
 

@@ -64,7 +64,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private static final TrackedData<Float> TRACKED_TRAJECTORY_VELOCITY_Z = DataTracker.registerData(
             ArcheryArrowEntity.class, TrackedDataHandlerRegistry.FLOAT
     );
-    private static final int CURRENT_DATA_VERSION = 4;
+    private static final int CURRENT_DATA_VERSION = 5;
     private static final String DATA_VERSION_KEY = "archeryRevampedDataVersion";
     private static final String ARROW_TYPE_KEY = "arrowType";
     private static final String RICOCHET_LEVEL_KEY = "ricochetLevel";
@@ -97,6 +97,11 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private static final String BURST_STAGGER_TIMER_KEY = "burstStaggerTimer";
     private static final String TRAJECTORY_FINISHED_KEY = "trajectoryFinished";
     private static final String HEADSHOT_LEVEL_KEY = "headshotLevel";
+    private static final String DELAYED_IMPACT_DELAY_KEY = "delayedImpactDelay";
+    private static final String DELAYED_IMPACT_TYPE_KEY = "delayedImpactType";
+    private static final String DELAYED_IMPACT_X_KEY = "delayedImpactX";
+    private static final String DELAYED_IMPACT_Y_KEY = "delayedImpactY";
+    private static final String DELAYED_IMPACT_Z_KEY = "delayedImpactZ";
 
     private ArrowType arrowType = ArrowType.NORMAL;
     private int ricochetLevel;
@@ -132,6 +137,10 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private boolean burstScheduled;
     private int headshotLevel;
     private double pendingHeadshotDamageMultiplier = 1.0D;
+    private int delayedImpactDelay;
+    private ArrowType delayedImpactType;
+    private Vec3d delayedImpactPosition;
+    private float tidalSpin;
 
     public ArcheryArrowEntity(World world) {
         super(ModEntities.ARCHERY_ARROW, world);
@@ -179,6 +188,11 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         return new ItemStack(Items.ARROW);
     }
 
+    @Override
+    protected float getDragInWater() {
+        return this.getArrowType() == ArrowType.TIDAL ? 0.99F : super.getDragInWater();
+    }
+
     /** Never let a child arrow immediately collide with the shooter it inherits. */
     @Override
     protected boolean canHit(Entity entity) {
@@ -213,6 +227,9 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
 
         if (!this.isRemoved()) {
             ArrowPhysicsEngine.applyPhysics(this);
+            if (!this.isRemoved()) {
+                this.processDelayedImpact();
+            }
             if (!this.isRemoved()) {
                 if (this.burstArrowsRemaining > 0 && !this.burstScheduled
                         && this.getOwner() instanceof net.minecraft.server.network.ServerPlayerEntity) {
@@ -326,6 +343,40 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
 
     public boolean isArrowInGround() {
         return this.isInGround();
+    }
+
+    public void scheduleDelayedImpact(ArrowType type, Vec3d impact, int delay) {
+        if (this.delayedImpactDelay > 0 || type == null || impact == null) {
+            return;
+        }
+        this.delayedImpactType = type;
+        this.delayedImpactPosition = impact;
+        this.delayedImpactDelay = Math.max(1, delay);
+    }
+
+    public float getTidalSpin() {
+        return this.tidalSpin;
+    }
+
+    public void advanceTidalSpin(float amount) {
+        this.tidalSpin = (this.tidalSpin + amount) % 360.0F;
+    }
+
+    private void processDelayedImpact() {
+        if (this.delayedImpactDelay <= 0 || this.delayedImpactType == null
+                || this.delayedImpactPosition == null) {
+            return;
+        }
+        this.delayedImpactDelay--;
+        if (this.delayedImpactDelay > 0) {
+            return;
+        }
+
+        ArrowType type = this.delayedImpactType;
+        Vec3d impact = this.delayedImpactPosition;
+        this.delayedImpactType = null;
+        this.delayedImpactPosition = null;
+        ArrowBehaviorRegistry.getBehavior(type).onDelayedImpact(this, impact);
     }
 
     public int advancePhysicsAge() {
@@ -678,6 +729,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         tag.putInt(BURST_STAGGER_TIMER_KEY, Math.max(0, this.burstStaggerTimer));
         tag.putBoolean(TRAJECTORY_FINISHED_KEY, this.isTrajectoryFinished());
         tag.putInt(HEADSHOT_LEVEL_KEY, ConfigManager.limitEnchantmentLevel(this.headshotLevel, 3));
+        writeDelayedImpact(tag);
         writeReleaseVelocity(tag);
     }
 
@@ -726,6 +778,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         this.setTrajectoryFinished(tag.getBoolean(TRAJECTORY_FINISHED_KEY).orElse(this.isInGround()));
         this.headshotLevel = ConfigManager.limitEnchantmentLevel(
                 tag.getInt(HEADSHOT_LEVEL_KEY).orElse(0), 3);
+        readDelayedImpact(tag);
         readReleaseVelocity(tag);
     }
 
@@ -760,6 +813,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         view.putInt(BURST_STAGGER_TIMER_KEY, Math.max(0, this.burstStaggerTimer));
         view.putBoolean(TRAJECTORY_FINISHED_KEY, this.isTrajectoryFinished());
         view.putInt(HEADSHOT_LEVEL_KEY, ConfigManager.limitEnchantmentLevel(this.headshotLevel, 3));
+        writeDelayedImpact(view);
         writeReleaseVelocity(view);
     }
 
@@ -802,7 +856,54 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         this.burstScheduled = false;
         this.setTrajectoryFinished(view.getBoolean(TRAJECTORY_FINISHED_KEY, this.isInGround()));
         this.headshotLevel = ConfigManager.limitEnchantmentLevel(view.getInt(HEADSHOT_LEVEL_KEY, 0), 3);
+        readDelayedImpact(view);
         readReleaseVelocity(view);
+    }
+
+    private void writeDelayedImpact(NbtCompound tag) {
+        tag.putInt(DELAYED_IMPACT_DELAY_KEY, Math.max(0, this.delayedImpactDelay));
+        if (this.delayedImpactDelay > 0 && this.delayedImpactType != null
+                && this.delayedImpactPosition != null) {
+            tag.putString(DELAYED_IMPACT_TYPE_KEY, this.delayedImpactType.name());
+            tag.putDouble(DELAYED_IMPACT_X_KEY, finiteOrZero(this.delayedImpactPosition.x));
+            tag.putDouble(DELAYED_IMPACT_Y_KEY, finiteOrZero(this.delayedImpactPosition.y));
+            tag.putDouble(DELAYED_IMPACT_Z_KEY, finiteOrZero(this.delayedImpactPosition.z));
+        }
+    }
+
+    private void writeDelayedImpact(WriteView view) {
+        view.putInt(DELAYED_IMPACT_DELAY_KEY, Math.max(0, this.delayedImpactDelay));
+        if (this.delayedImpactDelay > 0 && this.delayedImpactType != null
+                && this.delayedImpactPosition != null) {
+            view.putString(DELAYED_IMPACT_TYPE_KEY, this.delayedImpactType.name());
+            view.putDouble(DELAYED_IMPACT_X_KEY, finiteOrZero(this.delayedImpactPosition.x));
+            view.putDouble(DELAYED_IMPACT_Y_KEY, finiteOrZero(this.delayedImpactPosition.y));
+            view.putDouble(DELAYED_IMPACT_Z_KEY, finiteOrZero(this.delayedImpactPosition.z));
+        }
+    }
+
+    private void readDelayedImpact(NbtCompound tag) {
+        this.delayedImpactDelay = Math.max(0, tag.getInt(DELAYED_IMPACT_DELAY_KEY).orElse(0));
+        String type = tag.getString(DELAYED_IMPACT_TYPE_KEY).orElse("");
+        this.delayedImpactType = type.isEmpty() ? null : parseArrowType(type);
+        this.delayedImpactPosition = this.delayedImpactDelay > 0 && this.delayedImpactType != null
+                ? new Vec3d(
+                finiteOrZero(tag.getDouble(DELAYED_IMPACT_X_KEY).orElse(0.0D)),
+                finiteOrZero(tag.getDouble(DELAYED_IMPACT_Y_KEY).orElse(0.0D)),
+                finiteOrZero(tag.getDouble(DELAYED_IMPACT_Z_KEY).orElse(0.0D)))
+                : null;
+    }
+
+    private void readDelayedImpact(ReadView view) {
+        this.delayedImpactDelay = Math.max(0, view.getInt(DELAYED_IMPACT_DELAY_KEY, 0));
+        String type = view.getString(DELAYED_IMPACT_TYPE_KEY, "");
+        this.delayedImpactType = type.isEmpty() ? null : parseArrowType(type);
+        this.delayedImpactPosition = this.delayedImpactDelay > 0 && this.delayedImpactType != null
+                ? new Vec3d(
+                finiteOrZero(view.getDouble(DELAYED_IMPACT_X_KEY, 0.0D)),
+                finiteOrZero(view.getDouble(DELAYED_IMPACT_Y_KEY, 0.0D)),
+                finiteOrZero(view.getDouble(DELAYED_IMPACT_Z_KEY, 0.0D)))
+                : null;
     }
 
     private void writeReleaseVelocity(NbtCompound tag) {

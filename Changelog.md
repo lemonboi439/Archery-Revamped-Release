@@ -4,6 +4,24 @@ All notable changes to Archery Revamped are documented here.
 
 ---
 
+## 1.4 - New Arrow Types and Impact Fixes
+
+### Added
+
+- Added Tidal Arrows, which accelerate underwater, use normal air drag underwater, emit bubbles, and spin like torpedoes.
+- Added Shattering Arrows, crafted with Amethyst Shards, which create individual small amethyst shard projectiles on impact.
+- Added Echo Arrows, crafted with Echo Shards, which apply five seconds of Darkness and spread sculk when their hit kills an entity.
+- Added fletching recipes, item-group entries, dispenser support, and custom entity rendering for the new arrow types.
+
+### Fixed
+
+- Shockwave and Impulse effects now activate after a short random 2–5 tick delay, including after the arrow has sunk into a block or entity.
+- Shattering Arrow parents remain collectible as normal arrows after block impact, while their individual shards despawn on block impact.
+
+### Changed
+
+- Updated the development release version to `1.4`.
+
 ## 1.3 - Dispenser Projectile Support
 
 ### Added

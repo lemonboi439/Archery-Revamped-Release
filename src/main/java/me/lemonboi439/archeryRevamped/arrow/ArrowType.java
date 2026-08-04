@@ -5,5 +5,8 @@ public enum ArrowType {
     ENDER,
     SHOCKWAVE,
     IMPULSE,
-    EXPLOSIVE
+    EXPLOSIVE,
+    TIDAL,
+    SHATTERING,
+    ECHO
 }

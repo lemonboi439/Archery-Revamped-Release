@@ -1,5 +1,14 @@
 # Archery Revamped Roadmap
 
+## v1.4 - In development
+
+- [x] Add a short delayed activation window for Shockwave and Impulse impacts.
+- [x] Add Tidal Arrows with underwater acceleration, bubbles, and torpedo spin.
+- [x] Add Shattering Arrows with individual amethyst shard projectiles.
+- [x] Add Echo Arrows with Darkness and lethal-hit sculk spread.
+- [x] Add recipes, item-group entries, dispenser support, and rendering for the new arrows.
+- [ ] Playtest all new arrow types in bows, crossbows, dispensers, and the fletching table.
+
 ## v1.3 - Complete
 
 - [x] Make special arrows fire correctly from dispensers.

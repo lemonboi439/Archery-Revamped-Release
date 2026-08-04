@@ -25,6 +25,9 @@ public final class ModItemGroups {
                         entries.add(ModItems.SHOCKWAVE_ARROW);
                         entries.add(ModItems.IMPULSE_ARROW);
                         entries.add(ModItems.EXPLOSIVE_ARROW);
+                        entries.add(ModItems.TIDAL_ARROW);
+                        entries.add(ModItems.SHATTERING_ARROW);
+                        entries.add(ModItems.ECHO_ARROW);
                         entries.add(Items.ARROW);
                     })
                     .build()

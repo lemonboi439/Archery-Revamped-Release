@@ -18,6 +18,9 @@ public final class FletchingRecipeRegistry {
             new FletchingRecipe("shockwave_arrow", Items.WIND_CHARGE, ModItems.SHOCKWAVE_ARROW, 1, false),
             new FletchingRecipe("impulse_arrow", Items.IRON_NUGGET, ModItems.IMPULSE_ARROW, 1, false),
             new FletchingRecipe("explosive_arrow", Items.GUNPOWDER, ModItems.EXPLOSIVE_ARROW, 1, false),
+            new FletchingRecipe("tidal_arrow", Items.HEART_OF_THE_SEA, ModItems.TIDAL_ARROW, 1, false),
+            new FletchingRecipe("shattering_arrow", Items.AMETHYST_SHARD, ModItems.SHATTERING_ARROW, 1, false),
+            new FletchingRecipe("echo_arrow", Items.ECHO_SHARD, ModItems.ECHO_ARROW, 1, false),
             new FletchingRecipe("tipped_arrow", Items.POTION, Items.TIPPED_ARROW, 4, true)
     );
 
