@@ -33,11 +33,13 @@ All bow, crossbow, and dispenser shots use the custom `archery-revamped:archery_
 | Shockwave Arrow | Pushes nearby entities away from its landing point with distance falloff. |
 | Impulse Arrow | Pulls nearby entities toward its landing point with distance falloff. |
 | Explosive Arrow | Creates a configurable impact explosion; anti-grief mode protects blocks while retaining entity damage. |
-| Tidal Arrow | Accelerates underwater, ignores the stronger water drag, emits bubbles, and spins like a torpedo. |
+| Tidal Arrow | Uses slightly higher gravity and reduced speed with no acceleration, preserves underwater flight, emits bubbles, and spins like a torpedo. |
 | Shattering Arrow | Shatters on impact into individual small amethyst shard projectiles; the stuck parent is collectible as a normal arrow. |
 | Echo Arrow | Applies five seconds of Darkness and spreads sculk around a lethal entity impact. |
 
 The special arrows are available from the Archery Revamped item group, the Combat item group, the fletching table, and villager trades.
+
+Special arrows use dedicated crossed-arrow projectile textures while in flight; their 16×16 item sprites remain separate for inventory rendering.
 
 ### Enchantments
 

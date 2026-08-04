@@ -4,7 +4,7 @@
 
 - [x] Apply the supplied Shockwave, Impulse, and Shattering arrow textures.
 - [x] Render special arrows with the vanilla crossed in-flight arrow model.
-- [x] Improve Tidal Arrow gravity, acceleration, and torpedo spin.
+- [x] Stabilize Tidal Arrow flight with slightly higher gravity, reduced speed, no acceleration, and torpedo spin.
 - [x] Increase Shattering Arrow spread to 6–8 higher, farther shards.
 - [x] Update release documentation and build a v1.4.1 JAR.
 
