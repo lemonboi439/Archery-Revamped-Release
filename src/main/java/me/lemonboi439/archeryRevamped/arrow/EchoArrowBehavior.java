@@ -2,6 +2,7 @@ package me.lemonboi439.archeryRevamped.arrow;
 
 import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -53,13 +54,31 @@ public final class EchoArrowBehavior implements ArrowBehavior {
                 if (x * x + z * z > 5) {
                     continue;
                 }
-                BlockPos position = center.add(x, 0, z);
-                if (serverWorld.getBlockState(position).isAir()
-                        && !serverWorld.getBlockState(position.down()).isAir()) {
+
+                BlockPos position = findInfectableGround(serverWorld, center.add(x, 0, z));
+                if (position != null) {
+                    // Sculk catalyst-style spreading converts the ground itself; it never
+                    // fills air above it or overwrites replaceable plants such as grass.
                     serverWorld.setBlockState(position, Blocks.SCULK.getDefaultState());
                 }
             }
         }
         EffectManager.spawnParticles(serverWorld, impact, ParticleTypes.SCULK_CHARGE_POP, 16);
+    }
+
+    private static BlockPos findInfectableGround(ServerWorld world, BlockPos start) {
+        // An entity can die several blocks above its footing. Search down to the nearby
+        // terrain, but only ever replace a real solid block already in the world.
+        for (int yOffset = 0; yOffset <= 5; yOffset++) {
+            BlockPos position = start.down(yOffset);
+            BlockState state = world.getBlockState(position);
+            if (state.isOf(Blocks.SCULK)) {
+                return null;
+            }
+            if (!state.isAir() && !state.isReplaceable() && state.isSolidBlock(world, position)) {
+                return position;
+            }
+        }
+        return null;
     }
 }

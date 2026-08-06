@@ -12,7 +12,7 @@ public final class FletchingTableScreen extends HandledScreen<FletchingTableScre
     private static final int BACKGROUND_WIDTH = 176;
     private static final int BACKGROUND_HEIGHT = 166;
     private static final Identifier TEXTURE = Identifier.of(
-            "minecraft", "textures/gui/container/anvil.png"
+            "archery-revamped", "textures/gui/fletching_table.png"
     );
 
     public FletchingTableScreen(FletchingTableScreenHandler handler, PlayerInventory inventory, Text title) {

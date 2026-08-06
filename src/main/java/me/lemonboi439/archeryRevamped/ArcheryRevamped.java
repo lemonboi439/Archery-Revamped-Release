@@ -24,6 +24,8 @@ import me.lemonboi439.archeryRevamped.command.ArcheryCommand;
 import me.lemonboi439.archeryRevamped.trade.VillagerTradeManager;
 import me.lemonboi439.archeryRevamped.loot.LateGameLootManager;
 import me.lemonboi439.archeryRevamped.debug.TrajectoryNetworking;
+import me.lemonboi439.archeryRevamped.component.ModDataComponents;
+import me.lemonboi439.archeryRevamped.quiver.QuiverNetworking;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
@@ -33,6 +35,7 @@ public class ArcheryRevamped implements ModInitializer {
     @Override
     public void onInitialize() {
         ConfigManager.load();
+        ModDataComponents.register();
         ModEntities.register();
         ModItems.register();
         ModItemGroups.register();
@@ -52,6 +55,7 @@ public class ArcheryRevamped implements ModInitializer {
         FractureScheduler.register();
         BurstArrowHandler.register();
         TrajectoryNetworking.register();
+        QuiverNetworking.register();
         ServerTickEvents.END_SERVER_TICK.register(FletchingTableScreenHandler::tickServer);
         ArcheryCommand.register();
     }

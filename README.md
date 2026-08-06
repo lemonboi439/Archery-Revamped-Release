@@ -15,11 +15,11 @@ The mod is server-safe and does not require JEI, REI, EMI, Cloth Config, or Mod 
 ## Installation
 
 1. Install Fabric Loader for Minecraft 1.21.11 and Java 21.
-2. Put `archery-revamped-1.4.1.jar` in the `mods` directory.
+2. Put `archery-revamped-1.5.jar` in the `mods` directory.
 3. Install Fabric API for 1.21.11.
 4. Start the game. The mod creates `config/archery_revamped-config.json` on the first server start.
 
-The release JAR is produced at `build/libs/archery-revamped-1.4.1.jar`.
+The release JAR is produced at `build/libs/archery-revamped-1.5.jar`.
 
 ## Features
 
@@ -33,13 +33,27 @@ All bow, crossbow, and dispenser shots use the custom `archery-revamped:archery_
 | Shockwave Arrow | Pushes nearby entities away from its landing point with distance falloff. |
 | Impulse Arrow | Pulls nearby entities toward its landing point with distance falloff. |
 | Explosive Arrow | Creates a configurable impact explosion; anti-grief mode protects blocks while retaining entity damage. |
-| Tidal Arrow | Uses slightly higher gravity and reduced speed with no acceleration, preserves underwater flight, emits bubbles, and spins like a torpedo. |
+| Tidal Arrow | Uses vanilla air flight with slightly higher gravity; it preserves speed underwater, emits bubbles, and spins like a torpedo. |
 | Shattering Arrow | Shatters on impact into individual small amethyst shard projectiles; the stuck parent is collectible as a normal arrow. |
-| Echo Arrow | Applies five seconds of Darkness and spreads sculk around a lethal entity impact. |
+| Echo Arrow | Applies five seconds of Darkness and converts nearby solid ground to sculk around a lethal entity impact. It never fills air or replaces plants. |
 
 The special arrows are available from the Archery Revamped item group, the Combat item group, the fletching table, and villager trades.
 
-Special arrows use dedicated crossed-arrow projectile textures while in flight; their 16×16 item sprites remain separate for inventory rendering.
+Special arrows use the vanilla crossed-arrow texture layout while in flight, colour-tinted for each arrow type. Their 16×16 item sprites remain separate for inventory rendering.
+
+### Quiver
+
+The Quiver holds nine complete arrow stacks and gives its selected arrow priority over normal inventory ammo. Craft one with three Leather and one String in a descending diagonal pattern:
+
+```text
+. . Leather
+. Leather String
+Leather . .
+```
+
+Use it like a Bundle: hold an arrow stack on the cursor and click the Quiver to store the complete stack in the next free slot clockwise. Hold the Quiver on the cursor and right-click an empty inventory slot to release its next stored stack clockwise.
+
+Press `V` to open the radial selector, `Q`/`E` to choose a stored arrow type, then `V` again to confirm. Burst and Fracture consume matching Quiver arrows before regular inventory arrows.
 
 ### Enchantments
 
@@ -70,6 +84,8 @@ The vanilla Fletching Table opens the Archery Revamped screen when used. Valid r
 | 4 arrows | Potion | 4 matching tipped arrows |
 
 The output is a real inventory item. Closing the screen returns input and output items to the player.
+
+The GUI texture is editable at `src/main/resources/assets/archery-revamped/textures/gui/fletching_table.png`. The final Fletching Table UI redesign is planned for v1.6.
 
 ### Debug trajectory
 

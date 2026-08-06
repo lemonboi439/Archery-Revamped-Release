@@ -4,6 +4,30 @@ All notable changes to Archery Revamped are documented here.
 
 ---
 
+## 1.5 - Quiver and Projectile Polish
+
+### Added
+
+- Added the craftable Quiver, which stores nine complete arrow stacks and supplies the selected stack before regular inventory arrows.
+- Added Bundle-style Quiver storage and retrieval, with clockwise stack ordering.
+- Added a keyboard radial Quiver selector: `V` opens/confirms, and `Q`/`E` cycle stored arrow types.
+- Added an editable Fletching Table GUI texture template based on the vanilla anvil layout.
+
+### Changed
+
+- Rebuilt special in-flight arrow textures on the vanilla crossed-arrow layout for stable rendering.
+- Reworked loaded bow and crossbow arrow visuals to use intact vanilla weapon textures with special-arrow colour cues.
+- Tidal Arrows now use vanilla air movement with only slightly higher gravity; their torpedo spin and bubbles are water-only.
+- Echo Arrow sculk spreading now converts only existing solid ground. It does not place sculk in air or replace grass and flowers.
+- Improved Overdraw's random failure handling and visual configuration support.
+
+### Fixed
+
+- Fixed Quiver persistence so stored arrow stacks remain in their visible storage positions.
+- Fixed special projectile rendering that could stretch or distort item textures in flight.
+
+---
+
 ## 1.4.1 - Arrow Texture and Flight Polish
 
 ### Added

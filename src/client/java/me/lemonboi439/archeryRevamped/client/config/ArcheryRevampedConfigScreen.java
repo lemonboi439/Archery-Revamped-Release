@@ -111,10 +111,22 @@ public final class ArcheryRevampedConfigScreen {
                         ConfigManager.getOverdrawMaxDamageBonusPercent())
                 .setDefaultValue(100.0D).setMin(0.0D)
                 .setSaveConsumer(ConfigManager::setOverdrawMaxDamageBonusPercent).build());
-        category.addEntry(entries.startIntField(Text.literal("Auto-fire delay (ticks)"),
+        category.addEntry(entries.startIntField(Text.literal("Minimum failure delay (ticks)"),
+                        ConfigManager.getOverdrawMinimumFailureDelayTicks())
+                .setDefaultValue(40).setMin(1)
+                .setSaveConsumer(ConfigManager::setOverdrawMinimumFailureDelayTicks).build());
+        category.addEntry(entries.startIntField(Text.literal("Maximum failure delay (ticks)"),
                         ConfigManager.getOverdrawAutoFireDelayTicks())
                 .setDefaultValue(100).setMin(1)
                 .setSaveConsumer(ConfigManager::setOverdrawAutoFireDelayTicks).build());
+        category.addEntry(entries.startIntField(Text.literal("Bow disable time (ticks)"),
+                        ConfigManager.getOverdrawBowDisableTicks())
+                .setDefaultValue(60).setMin(1)
+                .setSaveConsumer(ConfigManager::setOverdrawBowDisableTicks).build());
+        category.addEntry(entries.startDoubleField(Text.literal("Misfire cone radius (degrees)"),
+                        ConfigManager.getOverdrawMisfireAngleDegrees())
+                .setDefaultValue(45.0D).setMin(0.0D).setMax(180.0D)
+                .setSaveConsumer(ConfigManager::setOverdrawMisfireAngleDegrees).build());
         category.addEntry(entries.startDoubleField(Text.literal("Durability loss (%)"),
                         ConfigManager.getOverdrawDurabilityLossPercent())
                 .setDefaultValue(25.0D).setMin(0.0D).setMax(100.0D)

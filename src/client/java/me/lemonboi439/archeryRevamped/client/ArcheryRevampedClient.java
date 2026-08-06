@@ -18,6 +18,8 @@ public class ArcheryRevampedClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModEntities.ARCHERY_ARROW, ArcheryArrowEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.SHATTERING_SHARD, ShatteringShardEntityRenderer::new);
         HandledScreens.register(ModScreenHandlers.FLETCHING_TABLE, FletchingTableScreen::new);
+        HandledScreens.register(ModScreenHandlers.QUIVER, QuiverScreen::new);
+        QuiverClientHandler.register();
         OverdrawClientHandler.register();
         ClientTrajectoryPreview.register();
         ClientPlayNetworking.registerGlobalReceiver(TrajectoryNetworking.TrajectoryStatePayload.ID,

@@ -11,6 +11,7 @@ import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
 import me.lemonboi439.archeryRevamped.arrow.ArrowType;
 import me.lemonboi439.archeryRevamped.item.ModItems;
 import me.lemonboi439.archeryRevamped.overdraw.OverdrawHandler;
+import me.lemonboi439.archeryRevamped.quiver.QuiverManager;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -100,6 +101,12 @@ public abstract class RangedWeaponItemMixin {
         boolean extraAmmoFree = shooter.isInCreativeMode()
                 || projectileStack.contains(DataComponentTypes.INTANGIBLE_PROJECTILE);
         arrow.setExtraAmmoFree(extraAmmoFree);
+        if (!world.isClient() && shooter instanceof PlayerEntity player
+                && !extraAmmoFree && QuiverManager.isSelectedArrow(player, projectileStack)) {
+            // The selected quiver stack is a render/selection copy, so vanilla
+            // cannot decrement the component-backed source itself.
+            QuiverManager.consumeArrow(player, projectileStack, 1);
+        }
         if (shooter instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
             BurstArrowHandler.schedule(arrow, serverPlayer, weaponStack, burstLevel);
         }

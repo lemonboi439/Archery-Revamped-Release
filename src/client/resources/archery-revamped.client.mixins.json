@@ -4,6 +4,7 @@
   "package": "me.lemonboi439.archeryRevamped.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "HeldItemRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

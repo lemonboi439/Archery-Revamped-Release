@@ -13,6 +13,11 @@ public final class ModScreenHandlers {
             Identifier.of(ArcheryRevamped.MOD_ID, "fletching_table"),
             new ScreenHandlerType<>(FletchingTableScreenHandler::new, FeatureFlags.VANILLA_FEATURES)
     );
+    public static final ScreenHandlerType<QuiverScreenHandler> QUIVER = Registry.register(
+            Registries.SCREEN_HANDLER,
+            Identifier.of(ArcheryRevamped.MOD_ID, "quiver"),
+            new ScreenHandlerType<>(QuiverScreenHandler::new, FeatureFlags.VANILLA_FEATURES)
+    );
 
     private ModScreenHandlers() {
     }

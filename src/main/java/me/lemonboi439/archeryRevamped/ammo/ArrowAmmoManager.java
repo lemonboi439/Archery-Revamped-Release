@@ -1,5 +1,6 @@
 package me.lemonboi439.archeryRevamped.ammo;
 
+import me.lemonboi439.archeryRevamped.quiver.QuiverManager;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -37,7 +38,10 @@ public final class ArrowAmmoManager {
         }
 
         PlayerInventory inventory = shooter.getInventory();
-        int available = 0;
+        int available = QuiverManager.countArrow(shooter, projectileStack);
+        if (available >= amount) {
+            return true;
+        }
         for (int slot = 0; slot < inventory.size(); slot++) {
             ItemStack candidate = inventory.getStack(slot);
             if (!candidate.isEmpty()
@@ -65,7 +69,7 @@ public final class ArrowAmmoManager {
         }
 
         PlayerInventory inventory = shooter.getInventory();
-        int remaining = amount;
+        int remaining = amount - QuiverManager.consumeArrow(shooter, projectileStack, amount);
         for (int slot = 0; slot < inventory.size() && remaining > 0; slot++) {
             ItemStack candidate = inventory.getStack(slot);
             if (candidate.isEmpty()

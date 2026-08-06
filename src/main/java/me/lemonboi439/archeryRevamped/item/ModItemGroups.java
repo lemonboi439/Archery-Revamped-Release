@@ -21,6 +21,7 @@ public final class ModItemGroups {
                     .displayName(Text.translatable("itemGroup.archery-revamped"))
                     .icon(() -> new ItemStack(ModItems.ENDER_ARROW))
                     .entries((displayContext, entries) -> {
+                        entries.add(ModItems.QUIVER);
                         entries.add(ModItems.ENDER_ARROW);
                         entries.add(ModItems.SHOCKWAVE_ARROW);
                         entries.add(ModItems.IMPULSE_ARROW);

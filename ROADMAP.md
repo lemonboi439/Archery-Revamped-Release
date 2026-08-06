@@ -1,5 +1,21 @@
 # Archery Revamped Roadmap
 
+## v1.6 - Final Fletching Table Update (Planned)
+
+- [ ] Replace the temporary anvil-based Fletching Table artwork with the final custom UI.
+- [ ] Map the two input slots, output slot, recipe label, and feedback indicator to the supplied UI texture.
+- [ ] Final visual, balance, and compatibility pass before the 1.6 release.
+
+## v1.5 - Published
+
+- [x] Add a craftable Quiver that holds nine complete arrow stacks.
+- [x] Add Bundle-style clockwise Quiver storage and retrieval.
+- [x] Add the `V` / `Q` / `E` keyboard radial selector and selected-arrow ammo priority.
+- [x] Make Burst and Fracture consume matching Quiver ammunition first.
+- [x] Add an editable Fletching Table GUI texture template for the upcoming redesign.
+- [x] Stabilize Tidal Arrow air flight and rebuild special in-flight arrow rendering on vanilla's crossed-arrow layout.
+- [x] Restrict Echo Arrow sculk spreading to existing solid ground.
+
 ## v1.4.1 - Published
 
 - [x] Apply the supplied Shockwave, Impulse, and Shattering arrow textures.
@@ -45,15 +61,6 @@
 - [x] Keep fletching output stacking and close-screen inventory return safe.
 - [x] Remove the obsolete `regular infinite_levels` command.
 - [x] Update release documentation and build a v1.2 JAR.
-
-## v1.5 - Planned
-
-- [ ] Add focused automated tests for arrow persistence, Headshot collision detection, force falloff, and fletching batches.
-- [ ] Improve Burst release-angle consistency and add stronger in-game diagnostics.
-- [ ] Review trajectory rendering performance in long-distance and high-arrow-count scenes.
-- [ ] Expand recipe-viewer surfaces for JEI, REI, and EMI where their APIs are present.
-- [ ] Add optional client-side configuration feedback for experimental features.
-- [ ] Profile dedicated-server behavior with large numbers of custom arrows.
 
 ## Long-term
 

@@ -19,6 +19,15 @@ public final class ModItems {
     private static final Identifier TIDAL_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "tidal_arrow");
     private static final Identifier SHATTERING_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "shattering_arrow");
     private static final Identifier ECHO_ARROW_ID = Identifier.of(ArcheryRevamped.MOD_ID, "echo_arrow");
+    private static final Identifier QUIVER_ID = Identifier.of(ArcheryRevamped.MOD_ID, "quiver");
+
+    public static final Item QUIVER = Registry.register(
+            Registries.ITEM,
+            QUIVER_ID,
+            new QuiverItem(new Item.Settings()
+                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, QUIVER_ID))
+                    .maxCount(1))
+    );
 
     public static final Item ENDER_ARROW = Registry.register(
             Registries.ITEM,
@@ -89,6 +98,7 @@ public final class ModItems {
         DispenserBlock.registerProjectileBehavior(ECHO_ARROW);
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
+            entries.add(QUIVER);
             entries.add(ENDER_ARROW);
             entries.add(SHOCKWAVE_ARROW);
             entries.add(IMPULSE_ARROW);

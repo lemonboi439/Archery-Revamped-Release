@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "L": "minecraft:leather",
+    "S": "minecraft:string"
+  },
+  "pattern": [
+    "  L",
+    " LS",
+    "L  "
+  ],
+  "result": {
+    "count": 1,
+    "id": "archery-revamped:quiver"
+  }
+}

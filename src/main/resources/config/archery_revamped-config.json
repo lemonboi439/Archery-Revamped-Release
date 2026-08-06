@@ -16,7 +16,10 @@
     "max_damage_bonus_percent": 100.0,
     "self_damage_hearts": 2.0,
     "durability_loss_percent": 25.0,
-    "auto_fire_delay_ticks": 100
+    "minimum_failure_delay_ticks": 40,
+    "auto_fire_delay_ticks": 100,
+    "bow_disable_ticks": 60,
+    "misfire_angle_degrees": 45.0
   },
   "longshot": {
     "threshold_16_blocks": 16.0,

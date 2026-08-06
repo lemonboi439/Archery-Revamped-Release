@@ -184,6 +184,22 @@ public final class ConfigManager {
         return config.overdrawAutoFireDelayTicks;
     }
 
+    public static int getOverdrawMinimumFailureDelayTicks() {
+        return config.overdrawMinimumFailureDelayTicks;
+    }
+
+    public static int getOverdrawMaximumFailureDelayTicks() {
+        return config.overdrawAutoFireDelayTicks;
+    }
+
+    public static int getOverdrawBowDisableTicks() {
+        return config.overdrawBowDisableTicks;
+    }
+
+    public static double getOverdrawMisfireAngleDegrees() {
+        return config.overdrawMisfireAngleDegrees;
+    }
+
     public static double getOverdrawDurabilityLossPercent() {
         return config.overdrawDurabilityLossPercent;
     }
@@ -389,6 +405,21 @@ public final class ConfigManager {
         saveAfterChange();
     }
 
+    public static void setOverdrawMinimumFailureDelayTicks(int value) {
+        config.overdrawMinimumFailureDelayTicks = value;
+        saveAfterChange();
+    }
+
+    public static void setOverdrawBowDisableTicks(int value) {
+        config.overdrawBowDisableTicks = value;
+        saveAfterChange();
+    }
+
+    public static void setOverdrawMisfireAngleDegrees(double value) {
+        config.overdrawMisfireAngleDegrees = value;
+        saveAfterChange();
+    }
+
     public static void setOverdrawDurabilityLossPercent(double value) {
         config.overdrawDurabilityLossPercent = value;
         saveAfterChange();
@@ -568,6 +599,9 @@ public final class ConfigManager {
         private double overdrawDamageIncreasePerTickPercent = 1.0D;
         private double overdrawMaxDamageBonusPercent = 100.0D;
         private int overdrawAutoFireDelayTicks = 100;
+        private int overdrawMinimumFailureDelayTicks = 40;
+        private int overdrawBowDisableTicks = 60;
+        private double overdrawMisfireAngleDegrees = 45.0D;
         private double overdrawDurabilityLossPercent = 25.0D;
         private double overdrawSelfDamageHearts = 2.0D;
         private double longshot16Threshold = 16.0D;
@@ -663,6 +697,12 @@ public final class ConfigManager {
                     "overdrawDurabilityLossPercent", result.overdrawDurabilityLossPercent);
             result.overdrawAutoFireDelayTicks = readInt(json, "overdraw", "auto_fire_delay_ticks",
                     "overdrawAutoFireDelayTicks", result.overdrawAutoFireDelayTicks);
+            result.overdrawMinimumFailureDelayTicks = readInt(json, "overdraw", "minimum_failure_delay_ticks",
+                    "overdrawMinimumFailureDelayTicks", result.overdrawMinimumFailureDelayTicks);
+            result.overdrawBowDisableTicks = readInt(json, "overdraw", "bow_disable_ticks",
+                    "overdrawBowDisableTicks", result.overdrawBowDisableTicks);
+            result.overdrawMisfireAngleDegrees = readDouble(json, "overdraw", "misfire_angle_degrees",
+                    "overdrawMisfireAngleDegrees", result.overdrawMisfireAngleDegrees);
 
             result.longshot32Threshold = readDouble(json, "longshot", "threshold_32_blocks",
                     "longshot32Threshold", result.longshot32Threshold);
@@ -752,6 +792,9 @@ public final class ConfigManager {
             overdraw.addProperty("self_damage_hearts", overdrawSelfDamageHearts);
             overdraw.addProperty("durability_loss_percent", overdrawDurabilityLossPercent);
             overdraw.addProperty("auto_fire_delay_ticks", overdrawAutoFireDelayTicks);
+            overdraw.addProperty("minimum_failure_delay_ticks", overdrawMinimumFailureDelayTicks);
+            overdraw.addProperty("bow_disable_ticks", overdrawBowDisableTicks);
+            overdraw.addProperty("misfire_angle_degrees", overdrawMisfireAngleDegrees);
             root.add("overdraw", overdraw);
 
             JsonObject longshot = new JsonObject();
@@ -846,6 +889,10 @@ public final class ConfigManager {
             overdrawDamageIncreasePerTickPercent = nonNegative(overdrawDamageIncreasePerTickPercent, 1.0D);
             overdrawMaxDamageBonusPercent = nonNegative(overdrawMaxDamageBonusPercent, 100.0D);
             overdrawAutoFireDelayTicks = Math.max(1, overdrawAutoFireDelayTicks);
+            overdrawMinimumFailureDelayTicks = Math.max(1,
+                    Math.min(overdrawMinimumFailureDelayTicks, overdrawAutoFireDelayTicks));
+            overdrawBowDisableTicks = Math.max(1, overdrawBowDisableTicks);
+            overdrawMisfireAngleDegrees = clamp(overdrawMisfireAngleDegrees, 0.0D, 180.0D, 45.0D);
             overdrawDurabilityLossPercent = clamp(overdrawDurabilityLossPercent, 0.0D, 100.0D, 25.0D);
             overdrawSelfDamageHearts = nonNegative(overdrawSelfDamageHearts, 2.0D);
             burstStaggerDelayTicks = Math.max(1, burstStaggerDelayTicks);
