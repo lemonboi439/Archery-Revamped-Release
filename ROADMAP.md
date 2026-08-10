@@ -1,5 +1,13 @@
 # Archery Revamped Roadmap
 
+## Minecraft 26.2 Port (In Progress)
+
+- [x] Update Minecraft and Fabric API build coordinates.
+- [x] Resolve 26.2 GUI, camera, and world-render submission API changes.
+- [x] Compile the full common and client source sets.
+- [ ] Launch and playtest the 26.2 development client.
+- [ ] Package and publish the 26.2 branch.
+
 ## v1.6 - Fletching Table Rework (Complete)
 
 - [x] Replace the temporary Anvil-based texture with the supplied Fletching Table UI.

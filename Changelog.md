@@ -4,6 +4,17 @@ All notable changes to Archery Revamped are documented here.
 
 ---
 
+## 1.6.2 - Minecraft 26.2 Port
+
+### Changed
+
+- Ported the official-mapping build from Minecraft 26.1 to 26.2.
+- Updated Fabric API to `0.154.2+26.2` while retaining Loader `0.19.3` and Java 25.
+- Migrated Quiver screen ownership and trajectory camera access to 26.2's GUI APIs.
+- Migrated the trajectory tube renderer to the new submit-node custom-geometry pipeline; it no longer relies on removed frame buffer-source APIs.
+
+---
+
 ## 1.6.2 - 26.1 Port and Release Polish
 
 ### Changed

@@ -27,16 +27,16 @@ public final class QuiverClientHandler {
             // close and reopen every other client tick (a visible flash).
             boolean selectorHeld = client.getWindow() != null
                     && GLFW.glfwGetKey(client.getWindow().handle(), GLFW.GLFW_KEY_V) == GLFW.GLFW_PRESS;
-            if (client.screen instanceof QuiverRadialScreen selector) {
+            if (client.gui.screen() instanceof QuiverRadialScreen selector) {
                 if (!selectorHeld) {
                     selector.confirmSelection();
                 }
                 return;
             }
 
-            if (selectorHeld && client.player != null && client.screen == null
+            if (selectorHeld && client.player != null && client.gui.screen() == null
                     && !QuiverManager.getActiveQuiver(client.player).isEmpty()) {
-                client.setScreen(new QuiverRadialScreen());
+                client.gui.setScreen(new QuiverRadialScreen());
             }
         });
     }

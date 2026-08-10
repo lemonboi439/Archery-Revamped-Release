@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.Direction;
@@ -66,7 +65,6 @@ public final class ClientTrajectoryPreview {
             "archery_revamped_trajectory",
             net.minecraft.client.renderer.rendertype.RenderSetup.builder(RenderPipelines.DEBUG_QUADS)
                     .sortOnUpload()
-                    .bufferSize(32768)
                     .createRenderSetup()
     );
 
@@ -98,8 +96,7 @@ public final class ClientTrajectoryPreview {
 
     private static void render(LevelRenderContext context) {
         Minecraft client = Minecraft.getInstance();
-        if (client.player == null || client.level == null
-                || context.poseStack() == null || context.bufferSource() == null) {
+        if (client.player == null || client.level == null || context.poseStack() == null) {
             return;
         }
 
@@ -173,14 +170,9 @@ public final class ClientTrajectoryPreview {
 
     private static void renderPaths(LevelRenderContext context, Minecraft client,
                                     Map<UUID, ArcheryArrowEntity> visibleArrows, long now) {
-        Camera camera = client.gameRenderer.getMainCamera();
+        Camera camera = client.gameRenderer.mainCamera();
         Vec3 cameraPosition = camera.position();
-        PoseStack matrices = context.poseStack();
-        MultiBufferSource consumers = context.bufferSource();
-        VertexConsumer vertices = consumers.getBuffer(TRAJECTORY_LAYER);
-
-        matrices.pushPose();
-        PoseStack.Pose matrix = matrices.last();
+        List<PathRenderRequest> requests = new ArrayList<>();
         for (Map.Entry<UUID, PathHistory> entry : PATHS.entrySet()) {
             PathHistory history = entry.getValue();
             if (history.actualPoints.size() < 2) {
@@ -200,10 +192,18 @@ public final class ClientTrajectoryPreview {
                 }
             }
 
-            renderSmoothPath(vertices, matrix, points, cameraPosition, history.finished, now,
-                    history.finishedAtMillis);
+            requests.add(new PathRenderRequest(points, history.finished, history.finishedAtMillis));
         }
-        matrices.popPose();
+
+        if (!requests.isEmpty()) {
+            context.submitNodeCollector().submitCustomGeometry(context.poseStack(), TRAJECTORY_LAYER,
+                    (matrix, vertices) -> {
+                        for (PathRenderRequest request : requests) {
+                            renderSmoothPath(vertices, matrix, request.points(), cameraPosition,
+                                    request.finished(), now, request.finishedAtMillis());
+                        }
+                    });
+        }
     }
 
     /**
@@ -317,7 +317,7 @@ public final class ClientTrajectoryPreview {
         // Start at the rendered camera/aim origin. Using the player's feet
         // plus standingEyeHeight puts the preview below the crosshair when
         // camera interpolation or first-person bobbing is active.
-        Camera camera = client.gameRenderer.getMainCamera();
+        Camera camera = client.gameRenderer.mainCamera();
         Vec3 start = camera.position().add(direction.scale(0.16D));
         double speed = getAimingSpeed(player, weapon);
         int ricochetLevel = getRicochetLevel(client, weapon);
@@ -326,12 +326,9 @@ public final class ClientTrajectoryPreview {
             return;
         }
 
-        PoseStack matrices = context.poseStack();
-        VertexConsumer vertices = context.bufferSource().getBuffer(TRAJECTORY_LAYER);
-        matrices.pushPose();
-        renderSmoothPath(vertices, matrices.last(), points, camera.position(), false,
-                System.currentTimeMillis(), 0L);
-        matrices.popPose();
+        context.submitNodeCollector().submitCustomGeometry(context.poseStack(), TRAJECTORY_LAYER,
+                (matrix, vertices) -> renderSmoothPath(vertices, matrix, points, camera.position(), false,
+                        System.currentTimeMillis(), 0L));
     }
 
     private static double getAimingSpeed(Player player, ItemStack weapon) {
@@ -526,6 +523,9 @@ public final class ClientTrajectoryPreview {
                 (int) Math.round(first[1] + (second[1] - first[1]) * blend),
                 (int) Math.round(first[2] + (second[2] - first[2]) * blend)
         };
+    }
+
+    private record PathRenderRequest(List<Vec3> points, boolean finished, long finishedAtMillis) {
     }
 
     private static final class PathHistory {
