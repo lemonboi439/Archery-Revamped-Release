@@ -5,11 +5,11 @@ import me.lemonboi439.archeryRevamped.client.render.ShatteringShardEntityRendere
 import me.lemonboi439.archeryRevamped.client.render.ClientTrajectoryPreview;
 import me.lemonboi439.archeryRevamped.debug.TrajectoryNetworking;
 import me.lemonboi439.archeryRevamped.entity.ModEntities;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import me.lemonboi439.archeryRevamped.screen.ModScreenHandlers;
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.client.gui.screen.ingame.HandledScreens;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.gui.screens.MenuScreens;
 
 public class ArcheryRevampedClient implements ClientModInitializer {
 
@@ -17,14 +17,11 @@ public class ArcheryRevampedClient implements ClientModInitializer {
     public void onInitializeClient() {
         EntityRendererRegistry.register(ModEntities.ARCHERY_ARROW, ArcheryArrowEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.SHATTERING_SHARD, ShatteringShardEntityRenderer::new);
-        HandledScreens.register(ModScreenHandlers.FLETCHING_TABLE, FletchingTableScreen::new);
-        HandledScreens.register(ModScreenHandlers.QUIVER, QuiverScreen::new);
+        MenuScreens.register(ModScreenHandlers.FLETCHING_TABLE, FletchingTableScreen::new);
         QuiverClientHandler.register();
-        OverdrawClientHandler.register();
         ClientTrajectoryPreview.register();
         ClientPlayNetworking.registerGlobalReceiver(TrajectoryNetworking.TrajectoryStatePayload.ID,
-                (payload, context) -> context.client().execute(
-                        () -> ClientTrajectoryPreview.setTrajectoryState(
-                                payload.enabled(), payload.colourVisualisation())));
+                (payload, context) -> context.client().execute(() ->
+                        ClientTrajectoryPreview.setTrajectoryState(payload.enabled(), payload.colourVisualisation())));
     }
 }

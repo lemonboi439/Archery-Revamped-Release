@@ -1,50 +1,44 @@
 package me.lemonboi439.archeryRevamped.client.render;
 
-import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
+import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import me.lemonboi439.archeryRevamped.arrow.ArrowType;
-import net.minecraft.client.render.entity.ProjectileEntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.RenderLayers;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.entity.model.ArrowEntityModel;
-import net.minecraft.client.render.entity.model.EntityModelLayers;
-import net.minecraft.client.render.state.CameraRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.RotationAxis;
+import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.object.projectile.ArrowModel;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.ArrowRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.Identifier;
 
-public final class ArcheryArrowEntityRenderer extends ProjectileEntityRenderer<
-        ArcheryArrowEntity, ArcheryArrowEntityRenderState> {
-    private static final Identifier VANILLA_TEXTURE = Identifier.of(
-            "minecraft", "textures/entity/projectiles/arrow.png"
-    );
-    private static final Identifier ENDER_TEXTURE = Identifier.of(
-            "archery-revamped", "textures/entity/projectiles/ender_arrow.png"
-    );
-    private static final Identifier EXPLOSIVE_TEXTURE = Identifier.of(
-            "archery-revamped", "textures/entity/projectiles/explosive_arrow.png"
-    );
-    private static final Identifier ECHO_TEXTURE = Identifier.of(
-            "archery-revamped", "textures/entity/projectiles/echo_arrow.png"
-    );
-    private static final Identifier SHATTERING_TEXTURE = Identifier.of(
-            "archery-revamped", "textures/entity/projectiles/shattering_arrow.png"
-    );
-    private static final Identifier SHOCKWAVE_TEXTURE = Identifier.of(
-            "archery-revamped", "textures/entity/projectiles/shockwave_arrow.png"
-    );
-    private static final Identifier TIDAL_TEXTURE = Identifier.of(
-            "archery-revamped", "textures/entity/projectiles/tidal_arrow.png"
-    );
-    private static final Identifier IMPULSE_TEXTURE = Identifier.of(
-            "archery-revamped", "textures/entity/projectiles/impulse_arrow.png"
-    );
-    private final ArrowEntityModel model;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
-    public ArcheryArrowEntityRenderer(EntityRendererFactory.Context context) {
+/** Draws every custom arrow with Minecraft's crossed-arrow model and its matching texture. */
+public final class ArcheryArrowEntityRenderer extends ArrowRenderer<ArcheryArrowEntity, ArcheryArrowEntityRenderState> {
+    private static final Identifier VANILLA_TEXTURE = texture("minecraft", "arrow");
+    private static final Identifier TIPPED_TEXTURE = texture("minecraft", "tipped_arrow");
+    private static final Identifier ENDER_TEXTURE = texture("archery-revamped", "ender_arrow");
+    private static final Identifier EXPLOSIVE_TEXTURE = texture("archery-revamped", "explosive_arrow");
+    private static final Identifier ECHO_TEXTURE = texture("archery-revamped", "echo_arrow");
+    private static final Identifier SHATTERING_TEXTURE = texture("archery-revamped", "shattering_arrow");
+    private static final Identifier SHOCKWAVE_TEXTURE = texture("archery-revamped", "shockwave_arrow");
+    private static final Identifier TIDAL_TEXTURE = texture("archery-revamped", "tidal_arrow");
+    private static final Identifier IMPULSE_TEXTURE = texture("archery-revamped", "impulse_arrow");
+    private static final Map<Integer, Identifier> TIPPED_TEXTURES = new HashMap<>();
+
+    private final ArrowModel model;
+
+    public ArcheryArrowEntityRenderer(EntityRendererProvider.Context context) {
         super(context);
-        this.model = new ArrowEntityModel(context.getPart(EntityModelLayers.ARROW));
+        this.model = new ArrowModel(context.bakeLayer(ModelLayers.ARROW));
     }
 
     @Override
@@ -55,34 +49,41 @@ public final class ArcheryArrowEntityRenderer extends ProjectileEntityRenderer<
     }
 
     @Override
-    public void updateRenderState(ArcheryArrowEntity entity,
-                                  ArcheryArrowEntityRenderState state, float tickProgress) {
-        super.updateRenderState(entity, state, tickProgress);
-        state.texture = textureFor(entity.getArrowType());
-        state.tidal = entity.getArrowType() == ArrowType.TIDAL;
-        state.tidalSpin = entity.getTidalSpin();
+    public void extractRenderState(ArcheryArrowEntity arrow, ArcheryArrowEntityRenderState state, float tickProgress) {
+        super.extractRenderState(arrow, state, tickProgress);
+        state.tipped = arrow.getArrowType() == ArrowType.NORMAL && arrow.hasPotionContents();
+        state.potionColor = arrow.getPotionColor();
+        state.texture = state.tipped ? tippedTextureFor(state.potionColor) : textureFor(arrow.getArrowType());
+        state.tidal = arrow.getArrowType() == ArrowType.TIDAL;
+        state.tidalSpin = arrow.getTidalSpin();
     }
 
     @Override
-    public void render(ArcheryArrowEntityRenderState state, MatrixStack matrices,
-                       OrderedRenderCommandQueue queue, CameraRenderState camera) {
-        // Always use Minecraft's crossed arrow model. The texture is selected
-        // per arrow type in updateRenderState, so special arrows keep the
-        // vanilla in-flight shape while showing their own fired-arrow texture.
-        matrices.push();
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(state.yaw - 90.0F));
-        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(state.pitch));
-        if (state.tidal) {
-            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(state.tidalSpin));
+    public void submit(ArcheryArrowEntityRenderState state, PoseStack matrices,
+                       SubmitNodeCollector queue, CameraRenderState camera) {
+        if (!state.tidal) {
+            super.submit(state, matrices, queue, camera);
+            return;
         }
-        queue.submitModel(model, state, matrices, RenderLayers.entityCutout(state.texture),
-                state.light, OverlayTexture.DEFAULT_UV, state.outlineColor, null);
-        matrices.pop();
+
+        // ArrowRenderer has no axial rotation hook. Reproduce its normal pose
+        // and add a roll around the arrow's travel axis for the tidal torpedo.
+        matrices.pushPose();
+        matrices.mulPose(Axis.YP.rotationDegrees(state.yRot - 90.0F));
+        matrices.mulPose(Axis.ZP.rotationDegrees(state.xRot));
+        matrices.mulPose(Axis.XP.rotationDegrees(state.tidalSpin));
+        queue.submitModel(model, state, matrices, state.texture, state.lightCoords,
+                OverlayTexture.NO_OVERLAY, state.outlineColor, null);
+        matrices.popPose();
     }
 
     @Override
-    protected Identifier getTexture(ArcheryArrowEntityRenderState state) {
+    protected Identifier getTextureLocation(ArcheryArrowEntityRenderState state) {
         return state.texture;
+    }
+
+    private static Identifier texture(String namespace, String name) {
+        return Identifier.fromNamespaceAndPath(namespace, "textures/entity/projectiles/" + name + ".png");
     }
 
     private static Identifier textureFor(ArrowType arrowType) {
@@ -98,4 +99,59 @@ public final class ArcheryArrowEntityRenderer extends ProjectileEntityRenderer<
         };
     }
 
+    private static Identifier tippedTextureFor(int potionColor) {
+        // Potion colours are opaque ARGB values. Their alpha byte makes most
+        // valid colours negative as signed ints; only -1 is our no-potion
+        // sentinel from ArcheryArrowEntity.
+        if (potionColor == -1) {
+            return TIPPED_TEXTURE;
+        }
+        return TIPPED_TEXTURES.computeIfAbsent(potionColor, ArcheryArrowEntityRenderer::createTippedTexture);
+    }
+
+    private static Identifier createTippedTexture(int potionColor) {
+        Identifier identifier = Identifier.fromNamespaceAndPath("archery-revamped",
+                "dynamic/tipped_arrow_" + Integer.toUnsignedString(potionColor, 16));
+        Minecraft client = Minecraft.getInstance();
+        try {
+            var resource = client.getResourceManager().getResource(VANILLA_TEXTURE).orElse(null);
+            if (resource == null) {
+                return TIPPED_TEXTURE;
+            }
+
+            try (InputStream input = resource.open(); NativeImage source = NativeImage.read(input)) {
+                NativeImage tinted = new NativeImage(source.getWidth(), source.getHeight(), true);
+                int tintRed = potionColor >> 16 & 0xFF;
+                int tintGreen = potionColor >> 8 & 0xFF;
+                int tintBlue = potionColor & 0xFF;
+
+                for (int y = 0; y < source.getHeight(); y++) {
+                    for (int x = 0; x < source.getWidth(); x++) {
+                        int pixel = source.getPixel(x, y);
+                        int alpha = pixel & 0xFF000000;
+                        if (alpha == 0) {
+                            continue;
+                        }
+                        float brightness = ((pixel & 0xFF) + (pixel >> 8 & 0xFF) + (pixel >> 16 & 0xFF)) / 765.0F;
+                        float shade = 0.35F + brightness * 0.65F;
+                        int red = Math.round(tintRed * shade);
+                        int green = Math.round(tintGreen * shade);
+                        int blue = Math.round(tintBlue * shade);
+                        tinted.setPixel(x, y, alpha | red << 16 | green << 8 | blue);
+                    }
+                }
+
+                DynamicTexture texture = new DynamicTexture(
+                        () -> "archery-revamped tipped arrow", tinted);
+                // TextureManager#register only stores a DynamicTexture in
+                // 26.1; it no longer uploads its pixels. Upload first so the
+                // arrow model never samples an uninitialised GPU texture.
+                texture.upload();
+                client.getTextureManager().register(identifier, texture);
+                return identifier;
+            }
+        } catch (IOException exception) {
+            return TIPPED_TEXTURE;
+        }
+    }
 }

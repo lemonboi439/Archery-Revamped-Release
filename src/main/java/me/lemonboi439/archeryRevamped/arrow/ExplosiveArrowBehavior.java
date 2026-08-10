@@ -3,13 +3,12 @@ package me.lemonboi439.archeryRevamped.arrow;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public final class ExplosiveArrowBehavior implements ArrowBehavior {
     @Override
@@ -31,20 +30,20 @@ public final class ExplosiveArrowBehavior implements ArrowBehavior {
             return;
         }
 
-        World world = arrow.getEntityWorld();
-        Vec3d impact = new Vec3d(arrow.getX(), arrow.getY(), arrow.getZ());
+        Level world = arrow.level();
+        Vec3 impact = new Vec3(arrow.getX(), arrow.getY(), arrow.getZ());
         EffectManager.spawnParticles(world, impact, ParticleTypes.EXPLOSION_EMITTER, 1);
-        EffectManager.playSound(world, impact, SoundEvents.ENTITY_GENERIC_EXPLODE, 1.0F, 1.0F);
-        if (!world.isClient()) {
-            world.createExplosion(
+        EffectManager.playSound(world, impact, SoundEvents.GENERIC_EXPLODE, 1.0F, 1.0F);
+        if (!world.isClientSide()) {
+            world.explode(
                     arrow,
                     arrow.getX(),
                     arrow.getY(),
                     arrow.getZ(),
                     (float) ConfigManager.getExplosiveArrowSize(),
                     ConfigManager.isExplosiveArrowAntiGriefEnabled()
-                            ? World.ExplosionSourceType.NONE
-                            : World.ExplosionSourceType.BLOCK
+                            ? Level.ExplosionInteraction.NONE
+                            : Level.ExplosionInteraction.BLOCK
             );
         }
         arrow.discard();

@@ -4,7 +4,7 @@
   },
   "supported_items": "#minecraft:enchantable/bow",
   "weight": 2,
-  "max_level": 255,
+  "max_level": 2,
   "min_cost": {
     "base": 12,
     "per_level_above_first": 12

@@ -1,25 +1,25 @@
 # Archery Revamped
 
-Archery Revamped is a vanilla+ Fabric mod for Minecraft 1.21.11. It adds custom arrow entities, special arrow types, configurable projectile physics, archery enchantments, a fletching table, villager trades, trajectory debugging, and optional recipe-viewer compatibility.
+Archery Revamped is a vanilla+ Fabric mod for Minecraft 26.1. It adds custom arrow entities, special arrow types, configurable projectile physics, archery enchantments, a fletching table, villager trades, trajectory debugging, and optional recipe-viewer compatibility.
 
 ## Compatibility
 
-- Minecraft: `1.21.11`
-- Yarn mappings: `1.21.11+build.6`
+- Minecraft: `26.1`
+- Official Mojang mappings
 - Fabric Loader: `0.19.3` or newer
-- Fabric API: `0.141.5+1.21.11`
-- Java: `21`
+- Fabric API: `0.145.1+26.1`
+- Java: `25`
 
 The mod is server-safe and does not require JEI, REI, EMI, Cloth Config, or Mod Menu. Those mods are optional suggestions in `fabric.mod.json`.
 
 ## Installation
 
-1. Install Fabric Loader for Minecraft 1.21.11 and Java 21.
-2. Put `archery-revamped-1.5.jar` in the `mods` directory.
-3. Install Fabric API for 1.21.11.
+1. Install Fabric Loader for Minecraft 26.1 and Java 25.
+2. Put `archery-revamped-1.6.2.jar` in the `mods` directory.
+3. Install Fabric API for 26.1.
 4. Start the game. The mod creates `config/archery_revamped-config.json` on the first server start.
 
-The release JAR is produced at `build/libs/archery-revamped-1.5.jar`.
+The current built JAR is produced at `build/libs/archery-revamped-1.6.2.jar`.
 
 ## Features
 
@@ -35,7 +35,7 @@ All bow, crossbow, and dispenser shots use the custom `archery-revamped:archery_
 | Explosive Arrow | Creates a configurable impact explosion; anti-grief mode protects blocks while retaining entity damage. |
 | Tidal Arrow | Uses vanilla air flight with slightly higher gravity; it preserves speed underwater, emits bubbles, and spins like a torpedo. |
 | Shattering Arrow | Shatters on impact into individual small amethyst shard projectiles; the stuck parent is collectible as a normal arrow. |
-| Echo Arrow | Applies five seconds of Darkness and converts nearby solid ground to sculk around a lethal entity impact. It never fills air or replaces plants. |
+| Echo Arrow | Applies five seconds of Darkness and converts nearby solid ground to XP-scaled sculk around a lethal entity impact. It never fills air or replaces plants; sparse veins and a 1% functional sculk-structure roll add rare ambience. |
 
 The special arrows are available from the Archery Revamped item group, the Combat item group, the fletching table, and villager trades.
 
@@ -53,7 +53,7 @@ Leather . .
 
 Use it like a Bundle: hold an arrow stack on the cursor and click the Quiver to store the complete stack in the next free slot clockwise. Hold the Quiver on the cursor and right-click an empty inventory slot to release its next stored stack clockwise.
 
-Press `V` to open the radial selector, `Q`/`E` to choose a stored arrow type, then `V` again to confirm. Burst and Fracture consume matching Quiver arrows before regular inventory arrows.
+Hold `V` to open the radial selector, use `Q`/`E` to choose a stored arrow type, then release `V` to confirm. Burst and Fracture consume matching Quiver arrows before regular inventory arrows.
 
 ### Enchantments
 
@@ -66,26 +66,29 @@ Press `V` to open the radial selector, `Q`/`E` to choose a stored arrow type, th
 
 All custom enchantments are included in the non-treasure enchantment tag. Because vanilla includes that tag in `in_enchanting_table`, they can be offered by enchanting tables when compatible with the item. They are also included in random-loot selection.
 
+The Archery Revamped creative tab contains each custom enchanted book at its intended normal levels only. Enabling the gameplay-only `regular.infinite_levels` option never adds 255-level books to creative inventory.
+
 Rare custom enchanted books are added to built-in late-game loot tables: End City, Bastion, Ancient City, Trial Chambers, Nether Fortress, Stronghold Library, and Woodland Mansion chests. Vanilla loot tables are modified through Fabric's loot event and are not replaced.
 
 ### Fletching table
 
-The vanilla Fletching Table opens the Archery Revamped screen when used. Valid recipes craft instantly, one batch per server tick, and produce four results by default:
+The vanilla Fletching Table opens the Archery Revamped screen when used. It works like a two-slot crafting table: place four arrows in the first slot and a recognised modifier in the second slot to preview four crafted arrows. Nothing is consumed until the output is clicked.
 
 | Input | Ingredient | Result |
 | --- | --- | --- |
-| 1 arrow | Ender Pearl | 4 Ender Arrows |
-| 1 arrow | Wind Charge | 4 Shockwave Arrows |
-| 1 arrow | Iron Nugget | 4 Impulse Arrows |
-| 1 arrow | Gunpowder | 4 Explosive Arrows |
-| 1 arrow | Heart of the Sea | 4 Tidal Arrows |
-| 1 arrow | Amethyst Shard | 4 Shattering Arrows |
-| 1 arrow | Echo Shard | 4 Echo Arrows |
-| 4 arrows | Potion | 4 matching tipped arrows |
+| 4 arrows | Ender Pearl | 4 Ender Arrows |
+| 4 arrows | Wind Charge | 4 Shockwave Arrows |
+| 4 arrows | Iron Nugget | 4 Impulse Arrows |
+| 4 arrows | Gunpowder | 4 Explosive Arrows |
+| 4 arrows | Heart of the Sea | 4 Tidal Arrows |
+| 4 arrows | Amethyst Shard | 4 Shattering Arrows |
+| 4 arrows | Echo Shard | 4 Echo Arrows |
+| 8 arrows | Any potion | 8 matching tipped arrows |
 
-The output is a real inventory item. Closing the screen returns input and output items to the player.
+Left-click the output to craft one batch into the cursor. Click it again to craft another batch into the same compatible cursor stack. Shift-click the output to craft the maximum number of batches that fit in the player inventory. Closing the screen returns the real input stacks; the output is a preview and cannot be duplicated.
 
-The GUI texture is editable at `src/main/resources/assets/archery-revamped/textures/gui/fletching_table.png`. The final Fletching Table UI redesign is planned for v1.6.
+The Fletching Table UI texture is editable at `src/main/resources/assets/archery-revamped/textures/gui/fletching_table.png`.
+Crafting tables intentionally cannot create special or tipped arrows; only regular vanilla arrows remain craftable there.
 
 ### Debug trajectory
 
@@ -112,6 +115,7 @@ Commands require permission level 2.
 /archeryrevamped physics lifetime <int>
 /archeryrevamped trajectory
 /archeryrevamped trajectory <true|false>
+/archeryrevamped trajectory colour <true|false>
 ```
 
 There is intentionally no `/ar` alias. `/archeryrevamped reload` reloads the JSON configuration without restarting the server.
@@ -148,12 +152,14 @@ The packaged valid template is [`src/main/resources/config/archery_revamped-conf
 | fracture | min_split_delay_ticks | `1` |
 | fracture | max_split_delay_ticks | `40` |
 | arrow_types.ender | enabled | `true` |
-| arrow_types.shockwave | enabled / radius / strength | `true` / `4.0` / `2.0` |
-| arrow_types.impulse | enabled / radius / strength | `true` / `4.0` / `2.0` |
+| arrow_types.shockwave | enabled / radius / strength | `true` / `1.0` / `1.0` |
+| arrow_types.impulse | enabled / radius / strength | `true` / `1.0` / `1.0` |
 | arrow_types.explosive | enabled | `true` |
 | arrow_types.explosive | explosion_size | `2.5` |
 | arrow_types.explosive | anti_grief | `false` |
 | fletching | recipe_output_count | `4` |
+| fletching | allow_modded_arrow_inputs | `true` |
+| compatibility | trinkets_quiver_overrides_inventory | `true` |
 | headshot | enableHeadshot | `false` |
 | headshot | headshotDamageBonusI / II / III | `15.0` / `30.0` / `45.0` |
 | headshot | headshotBoxRadius | `0.35` |
@@ -161,6 +167,7 @@ The packaged valid template is [`src/main/resources/config/archery_revamped-conf
 | headshot | headshotPvpDamageBonusI / II / III | `15.0` / `30.0` / `45.0` |
 | trajectory | colour_visualisation | `false` |
 | regular | infinite_levels | `false` |
+| general | limitless_anvil | `false` |
 | general | mod_enabled | `true` |
 
 Values are validated when loaded. Invalid or missing values fall back to defaults; physics commands also save their changes to disk. Drag is an air-resistance setting: higher values apply more resistance, with `0.99` retaining vanilla behavior.
@@ -182,8 +189,8 @@ See [`docs/DEVELOPER_GUIDE.md`](docs/DEVELOPER_GUIDE.md) for the package layout,
 Run the following from the project root:
 
 ```powershell
-$env:JAVA_HOME = 'C:\Program Files\Java\jdk-21'
+$env:JAVA_HOME = 'C:\Program Files\Java\jdk-25'
 ./gradlew.bat clean build --no-daemon
 ```
 
-The build produces the remapped runtime JAR and a sources JAR in `build/libs`. Before publishing, test the runtime JAR in a clean Fabric 1.21.11 instance with a new world and an existing test world containing arrows.
+The build produces the remapped runtime JAR and a sources JAR in `build/libs`. Before publishing, test the runtime JAR in a clean Fabric 26.1 instance with a new world and an existing test world containing arrows.

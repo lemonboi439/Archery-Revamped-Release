@@ -2,45 +2,45 @@ package me.lemonboi439.archeryRevamped.screen;
 
 import me.lemonboi439.archeryRevamped.quiver.QuiverInventory;
 import me.lemonboi439.archeryRevamped.quiver.QuiverManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ArrayPropertyDelegate;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 /** Nine quiver slots plus the player's standard inventory. Clicking a quiver stack selects it. */
-public final class QuiverScreenHandler extends ScreenHandler {
+public final class QuiverScreenHandler extends AbstractContainerMenu {
     private static final int QUIVER_SLOT_COUNT = QuiverManager.SLOT_COUNT;
-    private final Inventory quiverInventory;
-    private final PropertyDelegate properties;
+    private final Container quiverInventory;
+    private final ContainerData properties;
 
-    public QuiverScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, new SimpleInventory(QUIVER_SLOT_COUNT), new ArrayPropertyDelegate(1));
+    public QuiverScreenHandler(int syncId, Inventory playerInventory) {
+        this(syncId, playerInventory, new SimpleContainer(QUIVER_SLOT_COUNT), new SimpleContainerData(1));
     }
 
-    public QuiverScreenHandler(int syncId, PlayerInventory playerInventory, PlayerEntity owner, ItemStack quiver) {
+    public QuiverScreenHandler(int syncId, Inventory playerInventory, Player owner, ItemStack quiver) {
         this(syncId, playerInventory, new QuiverInventory(owner, quiver), selectedProperty(quiver));
     }
 
-    private QuiverScreenHandler(int syncId, PlayerInventory playerInventory, Inventory quiverInventory,
-                                PropertyDelegate properties) {
+    private QuiverScreenHandler(int syncId, Inventory playerInventory, Container quiverInventory,
+                                ContainerData properties) {
         super(ModScreenHandlers.QUIVER, syncId);
-        checkSize(quiverInventory, QUIVER_SLOT_COUNT);
-        checkDataCount(properties, 1);
+        checkContainerSize(quiverInventory, QUIVER_SLOT_COUNT);
+        checkContainerDataCount(properties, 1);
         this.quiverInventory = quiverInventory;
         this.properties = properties;
-        addProperties(properties);
+        addDataSlots(properties);
 
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 3; column++) {
                 int slot = column + row * 3;
                 this.addSlot(new Slot(quiverInventory, slot, 62 + column * 18, 18 + row * 18) {
                     @Override
-                    public boolean canInsert(ItemStack stack) {
+                    public boolean mayPlace(ItemStack stack) {
                         return QuiverManager.isArrow(stack);
                     }
                 });
@@ -49,8 +49,8 @@ public final class QuiverScreenHandler extends ScreenHandler {
         addPlayerSlots(playerInventory, 8, 84);
     }
 
-    private static PropertyDelegate selectedProperty(ItemStack quiver) {
-        return new PropertyDelegate() {
+    private static ContainerData selectedProperty(ItemStack quiver) {
+        return new ContainerData() {
             @Override
             public int get(int index) {
                 return index == 0 ? QuiverManager.getSelectedSlot(quiver) : 0;
@@ -64,59 +64,59 @@ public final class QuiverScreenHandler extends ScreenHandler {
             }
 
             @Override
-            public int size() {
+            public int getCount() {
                 return 1;
             }
         };
     }
 
     @Override
-    public void onSlotClick(int slotIndex, int button, net.minecraft.screen.slot.SlotActionType actionType,
-                            PlayerEntity player) {
-        if (slotIndex >= 0 && slotIndex < QUIVER_SLOT_COUNT && this.getSlot(slotIndex).hasStack()
-                && !player.getEntityWorld().isClient()) {
+    public void clicked(int slotIndex, int button, net.minecraft.world.inventory.ContainerInput actionType,
+                            Player player) {
+        if (slotIndex >= 0 && slotIndex < QUIVER_SLOT_COUNT && this.getSlot(slotIndex).hasItem()
+                && !player.level().isClientSide()) {
             this.properties.set(0, slotIndex);
-            sendContentUpdates();
+            broadcastChanges();
         }
-        super.onSlotClick(slotIndex, button, actionType, player);
+        super.clicked(slotIndex, button, actionType, player);
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int slotIndex) {
+    public ItemStack quickMoveStack(Player player, int slotIndex) {
         if (slotIndex < 0 || slotIndex >= this.slots.size()) {
             return ItemStack.EMPTY;
         }
         Slot slot = this.slots.get(slotIndex);
-        if (!slot.hasStack()) {
+        if (!slot.hasItem()) {
             return ItemStack.EMPTY;
         }
-        ItemStack source = slot.getStack();
+        ItemStack source = slot.getItem();
         ItemStack result = source.copy();
         if (slotIndex < QUIVER_SLOT_COUNT) {
-            if (!insertItem(source, QUIVER_SLOT_COUNT, this.slots.size(), true)) {
+            if (!moveItemStackTo(source, QUIVER_SLOT_COUNT, this.slots.size(), true)) {
                 return ItemStack.EMPTY;
             }
-        } else if (!insertItem(source, 0, QUIVER_SLOT_COUNT, false)) {
+        } else if (!moveItemStackTo(source, 0, QUIVER_SLOT_COUNT, false)) {
             return ItemStack.EMPTY;
         }
         if (source.isEmpty()) {
-            slot.setStack(ItemStack.EMPTY);
+            slot.setByPlayer(ItemStack.EMPTY);
         } else {
-            slot.markDirty();
+            slot.setChanged();
         }
         return result;
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        return this.quiverInventory.canPlayerUse(player);
+    public boolean stillValid(Player player) {
+        return this.quiverInventory.stillValid(player);
     }
 
     public int getSelectedSlot() {
         return this.properties.get(0);
     }
 
-    private void addPlayerSlots(PlayerInventory inventory, int x, int y) {
+    private void addPlayerSlots(Inventory inventory, int x, int y) {
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
                 this.addSlot(new Slot(inventory, column + row * 9 + 9, x + column * 18, y + row * 18));

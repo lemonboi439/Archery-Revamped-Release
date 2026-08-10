@@ -6,13 +6,12 @@ import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.minecraft.particle.ParticleTypes;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.Vec3d;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +29,7 @@ public final class FractureScheduler {
 
     public static void schedule(ArcheryArrowEntity parent) {
         if (parent.isRemoved() || parent.isArrowInGround()
-                || !(parent.getEntityWorld() instanceof ServerWorld serverWorld)) {
+                || !(parent.level() instanceof ServerLevel serverWorld)) {
             parent.setFractureScheduled(false);
             return;
         }
@@ -59,11 +58,11 @@ public final class FractureScheduler {
 
             ArcheryArrowEntity parent = pending.parent;
             if (!parent.isRemoved() && !parent.isArrowInGround()
-                    && parent.getEntityWorld() instanceof ServerWorld serverWorld) {
-                if (parent.getOwner() instanceof ServerPlayerEntity shooter
+                    && parent.level() instanceof ServerLevel serverWorld) {
+                if (parent.getOwner() instanceof ServerPlayer shooter
                         && !parent.isExtraAmmoFree()
                         && !ArrowAmmoManager.consumeExtraArrows(
-                        shooter, parent.getItemStack(), pending.childCount - 1)) {
+                        shooter, parent.getPickupItemStackOrigin(), pending.childCount - 1)) {
                     // Keep the original arrow alive and paid for. A split is
                     // cancelled rather than producing uncharged children. It
                     // is marked complete so it cannot retry every tick.
@@ -75,10 +74,10 @@ public final class FractureScheduler {
 
                 // The parent is the original paid-for arrow. A successful
                 // fracture replaces it with exactly childCount arrows.
-                Vec3d splitPosition = new Vec3d(parent.getX(), parent.getY(), parent.getZ());
+                Vec3 splitPosition = new Vec3(parent.getX(), parent.getY(), parent.getZ());
                 EffectManager.spawnParticles(serverWorld, splitPosition, ParticleTypes.PORTAL, 24);
                 EffectManager.playSound(serverWorld, splitPosition,
-                        SoundEvents.ENTITY_CHICKEN_EGG, 0.45F, 1.35F);
+                        SoundEvents.CHICKEN_EGG, 0.45F, 1.35F);
                 parent.setHasSpread(true);
                 parent.setFractureScheduled(false);
                 parent.discard();
@@ -92,8 +91,8 @@ public final class FractureScheduler {
         }
     }
 
-    private static void spawnChild(ServerWorld world, ArcheryArrowEntity parent, double angleDegrees) {
-        world.spawnEntity(parent.createFractureChild(angleDegrees));
+    private static void spawnChild(ServerLevel world, ArcheryArrowEntity parent, double angleDegrees) {
+        world.addFreshEntity(parent.createFractureChild(angleDegrees));
     }
 
     private static final class PendingSplit {

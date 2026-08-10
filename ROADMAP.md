@@ -1,10 +1,37 @@
 # Archery Revamped Roadmap
 
-## v1.6 - Final Fletching Table Update (Planned)
+## v1.6 - Fletching Table Rework (Complete)
 
-- [ ] Replace the temporary anvil-based Fletching Table artwork with the final custom UI.
-- [ ] Map the two input slots, output slot, recipe label, and feedback indicator to the supplied UI texture.
-- [ ] Final visual, balance, and compatibility pass before the 1.6 release.
+- [x] Replace the temporary Anvil-based texture with the supplied Fletching Table UI.
+- [x] Render the `Fletching Table` title above the custom screen art.
+- [x] Convert the table to four-arrow + modifier inputs and a live, non-consuming four-arrow output preview.
+- [x] Craft one batch into the cursor on normal output click.
+- [x] Craft the maximum possible batches into inventory on Shift-click.
+- [x] Change Quiver selection to hold `V`, cycle with `Q`/`E`, and release to confirm.
+- [x] Scale Echo Arrow sculk conversion from the killed entity's vanilla experience value, with sparse veins and rare functional sculk structures.
+- [x] Add optional Trinkets Updated Quiver slot support with configurable inventory override priority.
+- [x] Add smooth experimental trajectory speed-colour visualisation and command toggle.
+- [x] Add a configurable limitless-anvil option that preserves normal costs and enchantment compatibility.
+- [x] Validate normal clicks, repeated crafting, Shift-click crafting, and close-screen inventory return in the release build.
+
+## v1.6.2 - 26.1 Port and Polish (Complete)
+
+- [x] Port the complete 1.6 feature set to Minecraft 26.1 using official Mojang mappings.
+- [x] Restore special-arrow, tipped-arrow, loaded weapon, Quiver, and Fletching Table rendering paths.
+- [x] Add normal-level custom enchanted books to the dedicated creative tab.
+- [x] Verify production builds for both the 26.1 port and the 1.21.11 maintenance branch.
+
+## v1.5.2 - Quiver and Tipped Arrow Polish (Built locally)
+
+- [x] Tint the full in-flight tipped-arrow model using the potion colour.
+- [x] Prevent Quiver selector text from overflowing the centre panel.
+- [x] Restore player self-hits and self-applied arrow effects after vanilla release safety has elapsed.
+
+## v1.5.1 - Tipped Arrow Compatibility Fix (Completed)
+
+- [x] Preserve vanilla tipped-arrow potion contents and duration scaling on custom projectiles.
+- [x] Restore vanilla tipped-arrow rendering for normal potion arrows.
+- [x] Update the Quiver item artwork.
 
 ## v1.5 - Published
 

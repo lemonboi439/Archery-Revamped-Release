@@ -40,6 +40,7 @@
     "roughlyenoughitems": "*",
     "emi": "*",
     "cloth-config": "*",
-    "modmenu": "*"
+    "modmenu": "*",
+    "trinkets": "*"
   }
 }

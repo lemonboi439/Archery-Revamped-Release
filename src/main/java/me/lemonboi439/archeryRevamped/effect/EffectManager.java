@@ -1,25 +1,25 @@
 package me.lemonboi439.archeryRevamped.effect;
 
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 /** Centralized server-side particle and sound helpers. */
 public final class EffectManager {
     private EffectManager() {
     }
 
-    public static void spawnParticles(World world, Vec3d position,
-                                      ParticleEffect particle, int count) {
-        if (!(world instanceof ServerWorld serverWorld) || count <= 0) {
+    public static void spawnParticles(Level world, Vec3 position,
+                                      ParticleOptions particle, int count) {
+        if (!(world instanceof ServerLevel serverWorld) || count <= 0) {
             return;
         }
 
-        serverWorld.spawnParticles(
+        serverWorld.sendParticles(
                 particle,
                 position.x, position.y, position.z,
                 count,
@@ -28,9 +28,9 @@ public final class EffectManager {
         );
     }
 
-    public static void playSound(World world, Vec3d position, SoundEvent sound,
+    public static void playSound(Level world, Vec3 position, SoundEvent sound,
                                  float volume, float pitch) {
-        if (world.isClient()) {
+        if (world.isClientSide()) {
             return;
         }
 
@@ -38,16 +38,16 @@ public final class EffectManager {
                 null,
                 position.x, position.y, position.z,
                 sound,
-                SoundCategory.PLAYERS,
+                SoundSource.PLAYERS,
                 volume,
                 pitch
         );
     }
 
-    public static void playSound(World world, Vec3d position,
-                                 RegistryEntry<SoundEvent> sound,
+    public static void playSound(Level world, Vec3 position,
+                                 Holder<SoundEvent> sound,
                                  float volume, float pitch) {
-        if (world.isClient()) {
+        if (world.isClientSide()) {
             return;
         }
 
@@ -55,7 +55,7 @@ public final class EffectManager {
                 null,
                 position.x, position.y, position.z,
                 sound,
-                SoundCategory.PLAYERS,
+                SoundSource.PLAYERS,
                 volume,
                 pitch
         );

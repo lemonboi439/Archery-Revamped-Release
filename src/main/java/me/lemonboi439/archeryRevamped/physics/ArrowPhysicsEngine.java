@@ -2,12 +2,11 @@ package me.lemonboi439.archeryRevamped.physics;
 
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.Vec3;
 import java.util.concurrent.ThreadLocalRandom;
 
 public final class ArrowPhysicsEngine {
@@ -22,7 +21,7 @@ public final class ArrowPhysicsEngine {
             return;
         }
 
-        arrow.setVelocity(applyConfiguredPhysics(arrow.getVelocity()));
+        arrow.setDeltaMovement(applyConfiguredPhysics(arrow.getDeltaMovement()));
     }
 
     /**
@@ -30,15 +29,15 @@ public final class ArrowPhysicsEngine {
      * movement step. The client trajectory renderer uses this instead of
      * duplicating the configurable physics formula.
      */
-    public static Vec3d applyPreviewPhysics(World world, Vec3d position, Vec3d velocity) {
-        FluidState fluidState = world.getFluidState(BlockPos.ofFloored(position));
-        double vanillaDrag = fluidState.isIn(FluidTags.WATER) ? 0.6D : 0.99D;
-        Vec3d afterVanillaPhysics = velocity.multiply(vanillaDrag)
+    public static Vec3 applyPreviewPhysics(Level world, Vec3 position, Vec3 velocity) {
+        FluidState fluidState = world.getFluidState(BlockPos.containing(position));
+        double vanillaDrag = fluidState.is(FluidTags.WATER) ? 0.6D : 0.99D;
+        Vec3 afterVanillaPhysics = velocity.scale(vanillaDrag)
                 .add(0.0D, -0.05D, 0.0D);
         return applyConfiguredPhysics(afterVanillaPhysics);
     }
 
-    private static Vec3d applyConfiguredPhysics(Vec3d velocity) {
+    private static Vec3 applyConfiguredPhysics(Vec3 velocity) {
         double gravity = ConfigManager.getGravity();
         double drag = ConfigManager.getDrag();
         double speedMultiplier = ConfigManager.getSpeedMultiplier();
@@ -56,10 +55,10 @@ public final class ArrowPhysicsEngine {
             double dragMultiplier = drag <= 0.0D
                     ? 1.25D
                     : Math.min(1.25D, 0.99D / drag);
-            velocity = velocity.multiply(dragMultiplier);
+            velocity = velocity.scale(dragMultiplier);
         }
         if (Double.compare(speedMultiplier, 1.0D) != 0) {
-            velocity = velocity.multiply(speedMultiplier);
+            velocity = velocity.scale(speedMultiplier);
         }
 
         double randomness = ConfigManager.getRandomness();
@@ -73,9 +72,9 @@ public final class ArrowPhysicsEngine {
         }
 
         double terminalVelocity = ConfigManager.getTerminalVelocity();
-        double speedSquared = velocity.lengthSquared();
+        double speedSquared = velocity.lengthSqr();
         if (terminalVelocity >= 0.0D && speedSquared > terminalVelocity * terminalVelocity) {
-            velocity = velocity.normalize().multiply(terminalVelocity);
+            velocity = velocity.normalize().scale(terminalVelocity);
         }
 
         return velocity;

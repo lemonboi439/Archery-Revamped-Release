@@ -8,10 +8,9 @@
     "HeadshotDamageMixin",
     "PersistentProjectileEntityAccessor",
     "PlayerEntityQuiverMixin",
-    "FletchingTableBlockMixin"
-  ],
-  "client": [
-    "CameraMixin"
+    "FletchingTableBlockMixin",
+    "CraftingScreenHandlerMixin",
+    "AnvilScreenHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

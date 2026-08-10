@@ -5,64 +5,68 @@ import me.lemonboi439.archeryRevamped.arrow.ArrowType;
 import me.lemonboi439.archeryRevamped.arrow.RicochetBehavior;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.effect.EffectManager;
-import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
 import me.lemonboi439.archeryRevamped.physics.ArrowPhysicsEngine;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import me.lemonboi439.archeryRevamped.mixin.PersistentProjectileEntityAccessor;
 import me.lemonboi439.archeryRevamped.fracture.FractureScheduler;
 import me.lemonboi439.archeryRevamped.burst.BurstArrowHandler;
 import me.lemonboi439.archeryRevamped.debug.TrajectoryVisualizer;
 import me.lemonboi439.archeryRevamped.headshot.HeadshotManager;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 
-public class ArcheryArrowEntity extends PersistentProjectileEntity {
-    private static final TrackedData<String> TRACKED_ARROW_TYPE = DataTracker.registerData(
-            ArcheryArrowEntity.class, TrackedDataHandlerRegistry.STRING
+public class ArcheryArrowEntity extends AbstractArrow {
+    private static final EntityDataAccessor<String> TRACKED_ARROW_TYPE = SynchedEntityData.defineId(
+            ArcheryArrowEntity.class, EntityDataSerializers.STRING
     );
-    private static final TrackedData<Boolean> TRACKED_TRAJECTORY_ENABLED = DataTracker.registerData(
-            ArcheryArrowEntity.class, TrackedDataHandlerRegistry.BOOLEAN
+    private static final EntityDataAccessor<Integer> TRACKED_POTION_COLOR = SynchedEntityData.defineId(
+            ArcheryArrowEntity.class, EntityDataSerializers.INT
     );
-    private static final TrackedData<Boolean> TRACKED_TRAJECTORY_FINISHED = DataTracker.registerData(
-            ArcheryArrowEntity.class, TrackedDataHandlerRegistry.BOOLEAN
+    private static final EntityDataAccessor<Boolean> TRACKED_TRAJECTORY_ENABLED = SynchedEntityData.defineId(
+            ArcheryArrowEntity.class, EntityDataSerializers.BOOLEAN
     );
-    private static final TrackedData<Float> TRACKED_TRAJECTORY_SPAWN_X = DataTracker.registerData(
-            ArcheryArrowEntity.class, TrackedDataHandlerRegistry.FLOAT
+    private static final EntityDataAccessor<Boolean> TRACKED_TRAJECTORY_FINISHED = SynchedEntityData.defineId(
+            ArcheryArrowEntity.class, EntityDataSerializers.BOOLEAN
     );
-    private static final TrackedData<Float> TRACKED_TRAJECTORY_SPAWN_Y = DataTracker.registerData(
-            ArcheryArrowEntity.class, TrackedDataHandlerRegistry.FLOAT
+    private static final EntityDataAccessor<Float> TRACKED_TRAJECTORY_SPAWN_X = SynchedEntityData.defineId(
+            ArcheryArrowEntity.class, EntityDataSerializers.FLOAT
     );
-    private static final TrackedData<Float> TRACKED_TRAJECTORY_SPAWN_Z = DataTracker.registerData(
-            ArcheryArrowEntity.class, TrackedDataHandlerRegistry.FLOAT
+    private static final EntityDataAccessor<Float> TRACKED_TRAJECTORY_SPAWN_Y = SynchedEntityData.defineId(
+            ArcheryArrowEntity.class, EntityDataSerializers.FLOAT
     );
-    private static final TrackedData<Boolean> TRACKED_TRAJECTORY_SPAWN_CAPTURED = DataTracker.registerData(
-            ArcheryArrowEntity.class, TrackedDataHandlerRegistry.BOOLEAN
+    private static final EntityDataAccessor<Float> TRACKED_TRAJECTORY_SPAWN_Z = SynchedEntityData.defineId(
+            ArcheryArrowEntity.class, EntityDataSerializers.FLOAT
     );
-    private static final TrackedData<Float> TRACKED_TRAJECTORY_VELOCITY_X = DataTracker.registerData(
-            ArcheryArrowEntity.class, TrackedDataHandlerRegistry.FLOAT
+    private static final EntityDataAccessor<Boolean> TRACKED_TRAJECTORY_SPAWN_CAPTURED = SynchedEntityData.defineId(
+            ArcheryArrowEntity.class, EntityDataSerializers.BOOLEAN
     );
-    private static final TrackedData<Float> TRACKED_TRAJECTORY_VELOCITY_Y = DataTracker.registerData(
-            ArcheryArrowEntity.class, TrackedDataHandlerRegistry.FLOAT
+    private static final EntityDataAccessor<Float> TRACKED_TRAJECTORY_VELOCITY_X = SynchedEntityData.defineId(
+            ArcheryArrowEntity.class, EntityDataSerializers.FLOAT
     );
-    private static final TrackedData<Float> TRACKED_TRAJECTORY_VELOCITY_Z = DataTracker.registerData(
-            ArcheryArrowEntity.class, TrackedDataHandlerRegistry.FLOAT
+    private static final EntityDataAccessor<Float> TRACKED_TRAJECTORY_VELOCITY_Y = SynchedEntityData.defineId(
+            ArcheryArrowEntity.class, EntityDataSerializers.FLOAT
+    );
+    private static final EntityDataAccessor<Float> TRACKED_TRAJECTORY_VELOCITY_Z = SynchedEntityData.defineId(
+            ArcheryArrowEntity.class, EntityDataSerializers.FLOAT
     );
     private static final int CURRENT_DATA_VERSION = 5;
     private static final String DATA_VERSION_KEY = "archeryRevampedDataVersion";
@@ -130,7 +134,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private boolean extraAmmoFree;
     private boolean impactDamageModifiersApplied;
     private boolean spawnPositionCaptured;
-    private Vec3d releaseVelocity;
+    private Vec3 releaseVelocity;
     private int burstArrowsRemaining;
     private int burstStaggerDelay;
     private int burstStaggerTimer;
@@ -139,83 +143,91 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private double pendingHeadshotDamageMultiplier = 1.0D;
     private int delayedImpactDelay;
     private ArrowType delayedImpactType;
-    private Vec3d delayedImpactPosition;
+    private Vec3 delayedImpactPosition;
     private float tidalSpin;
 
-    public ArcheryArrowEntity(World world) {
+    public ArcheryArrowEntity(Level world) {
         super(ModEntities.ARCHERY_ARROW, world);
+        this.refreshPotionColor();
     }
 
-    public ArcheryArrowEntity(World world, LivingEntity owner) {
-        this(world, owner, new ItemStack(Items.ARROW), owner.getMainHandStack().copy());
+    public ArcheryArrowEntity(Level world, LivingEntity owner) {
+        this(world, owner, new ItemStack(Items.ARROW), owner.getMainHandItem().copy());
     }
 
-    public ArcheryArrowEntity(World world, LivingEntity owner, ItemStack pickupItemStack, ItemStack firedFromWeapon) {
+    public ArcheryArrowEntity(Level world, LivingEntity owner, ItemStack pickupItemStack, ItemStack firedFromWeapon) {
         super(ModEntities.ARCHERY_ARROW, owner, world,
                 pickupItemStack.isEmpty() ? new ItemStack(Items.ARROW) : pickupItemStack,
                 firedFromWeapon);
+        this.refreshPotionColor();
     }
 
-    public ArcheryArrowEntity(World world, double x, double y, double z,
+    public ArcheryArrowEntity(Level world, double x, double y, double z,
                               ItemStack pickupItemStack, ItemStack firedFromWeapon) {
         super(ModEntities.ARCHERY_ARROW, x, y, z, world,
                 pickupItemStack.isEmpty() ? new ItemStack(Items.ARROW) : pickupItemStack,
                 firedFromWeapon);
+        this.refreshPotionColor();
     }
 
-    public ArcheryArrowEntity(EntityType<? extends ArcheryArrowEntity> type, World world) {
+    public ArcheryArrowEntity(EntityType<? extends ArcheryArrowEntity> type, Level world) {
         super(type, world);
-        this.setStack(new ItemStack(Items.ARROW));
+        this.setPickupItemStack(new ItemStack(Items.ARROW));
+        this.refreshPotionColor();
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(TRACKED_ARROW_TYPE, ArrowType.NORMAL.name());
-        builder.add(TRACKED_TRAJECTORY_ENABLED, false);
-        builder.add(TRACKED_TRAJECTORY_FINISHED, false);
-        builder.add(TRACKED_TRAJECTORY_SPAWN_X, 0.0F);
-        builder.add(TRACKED_TRAJECTORY_SPAWN_Y, 0.0F);
-        builder.add(TRACKED_TRAJECTORY_SPAWN_Z, 0.0F);
-        builder.add(TRACKED_TRAJECTORY_SPAWN_CAPTURED, false);
-        builder.add(TRACKED_TRAJECTORY_VELOCITY_X, 0.0F);
-        builder.add(TRACKED_TRAJECTORY_VELOCITY_Y, 0.0F);
-        builder.add(TRACKED_TRAJECTORY_VELOCITY_Z, 0.0F);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(TRACKED_ARROW_TYPE, ArrowType.NORMAL.name());
+        builder.define(TRACKED_POTION_COLOR, -1);
+        builder.define(TRACKED_TRAJECTORY_ENABLED, false);
+        builder.define(TRACKED_TRAJECTORY_FINISHED, false);
+        builder.define(TRACKED_TRAJECTORY_SPAWN_X, 0.0F);
+        builder.define(TRACKED_TRAJECTORY_SPAWN_Y, 0.0F);
+        builder.define(TRACKED_TRAJECTORY_SPAWN_Z, 0.0F);
+        builder.define(TRACKED_TRAJECTORY_SPAWN_CAPTURED, false);
+        builder.define(TRACKED_TRAJECTORY_VELOCITY_X, 0.0F);
+        builder.define(TRACKED_TRAJECTORY_VELOCITY_Y, 0.0F);
+        builder.define(TRACKED_TRAJECTORY_VELOCITY_Z, 0.0F);
     }
 
     @Override
-    protected ItemStack getDefaultItemStack() {
+    protected ItemStack getDefaultPickupItem() {
         return new ItemStack(Items.ARROW);
     }
 
     @Override
-    protected float getDragInWater() {
-        return this.getArrowType() == ArrowType.TIDAL ? 0.99F : super.getDragInWater();
+    protected float getWaterInertia() {
+        return this.getArrowType() == ArrowType.TIDAL ? 0.99F : super.getWaterInertia();
     }
 
-    /** Never let a child arrow immediately collide with the shooter it inherits. */
+    /**
+     * Use vanilla projectile ownership handling. It avoids an immediate collision
+     * at release but still permits a returned or redirected arrow to hurt its shooter.
+     */
     @Override
-    protected boolean canHit(Entity entity) {
-        return entity != this.getOwner() && super.canHit(entity);
+    protected boolean canHitEntity(Entity entity) {
+        return super.canHitEntity(entity);
     }
 
     @Override
     public void tick() {
-        if (!this.getEntityWorld().isClient()) {
+        if (!this.level().isClientSide()) {
             this.setTrajectoryPreviewEnabled(TrajectoryVisualizer.isEnabled());
         }
 
         // RangedWeaponItem.createArrowEntity is called before vanilla applies
         // the bow's release velocity. Capture it on the first entity tick so
         // burst shots can reuse the actual shot speed and direction.
-        if (this.releaseVelocity == null && this.getVelocity().lengthSquared() > 1.0E-7D) {
-            this.releaseVelocity = this.getVelocity();
+        if (this.releaseVelocity == null && this.getDeltaMovement().lengthSqr() > 1.0E-7D) {
+            this.releaseVelocity = this.getDeltaMovement();
             this.setTrajectoryInitialVelocity(this.releaseVelocity);
         }
 
         this.captureFractureReleaseSpeedIfNeeded();
 
-        if (!this.getEntityWorld().isClient() && !this.spawnPositionCaptured) {
+        if (!this.level().isClientSide() && !this.spawnPositionCaptured) {
             this.spawnX = this.getX();
             this.spawnY = this.getY();
             this.spawnZ = this.getZ();
@@ -232,7 +244,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
             }
             if (!this.isRemoved()) {
                 if (this.burstArrowsRemaining > 0 && !this.burstScheduled
-                        && this.getOwner() instanceof net.minecraft.server.network.ServerPlayerEntity) {
+                        && this.getOwner() instanceof net.minecraft.server.level.ServerPlayer) {
                     BurstArrowHandler.scheduleRestored(this);
                 }
                 this.splitTimer++;
@@ -247,35 +259,35 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         }
     }
 
-    public Vec3d getReleaseVelocity() {
+    public Vec3 getReleaseVelocity() {
         return this.releaseVelocity;
     }
 
     public ArrowType getArrowType() {
-        return parseArrowType(this.dataTracker.get(TRACKED_ARROW_TYPE));
+        return parseArrowType(this.entityData.get(TRACKED_ARROW_TYPE));
     }
 
     public void setArrowType(ArrowType arrowType) {
         this.arrowType = arrowType == null ? ArrowType.NORMAL : arrowType;
-        this.dataTracker.set(TRACKED_ARROW_TYPE, this.arrowType.name());
+        this.entityData.set(TRACKED_ARROW_TYPE, this.arrowType.name());
     }
 
     public boolean isTrajectoryPreviewEnabled() {
-        return this.dataTracker.get(TRACKED_TRAJECTORY_ENABLED);
+        return this.entityData.get(TRACKED_TRAJECTORY_ENABLED);
     }
 
     public void setTrajectoryPreviewEnabled(boolean enabled) {
-        this.dataTracker.set(TRACKED_TRAJECTORY_ENABLED, enabled);
+        this.entityData.set(TRACKED_TRAJECTORY_ENABLED, enabled);
     }
 
-    public Vec3d getTrajectorySpawnPosition() {
-        if (!this.dataTracker.get(TRACKED_TRAJECTORY_SPAWN_CAPTURED)) {
+    public Vec3 getTrajectorySpawnPosition() {
+        if (!this.entityData.get(TRACKED_TRAJECTORY_SPAWN_CAPTURED)) {
             return null;
         }
-        return new Vec3d(
-                this.dataTracker.get(TRACKED_TRAJECTORY_SPAWN_X).doubleValue(),
-                this.dataTracker.get(TRACKED_TRAJECTORY_SPAWN_Y).doubleValue(),
-                this.dataTracker.get(TRACKED_TRAJECTORY_SPAWN_Z).doubleValue()
+        return new Vec3(
+                this.entityData.get(TRACKED_TRAJECTORY_SPAWN_X).doubleValue(),
+                this.entityData.get(TRACKED_TRAJECTORY_SPAWN_Y).doubleValue(),
+                this.entityData.get(TRACKED_TRAJECTORY_SPAWN_Z).doubleValue()
         );
     }
 
@@ -283,34 +295,34 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
      * Returns the immutable release velocity used to rebuild the first part
      * of a trail if the client sees an arrow only after it has travelled.
      */
-    public Vec3d getTrajectoryInitialVelocity() {
-        Vec3d velocity = new Vec3d(
-                this.dataTracker.get(TRACKED_TRAJECTORY_VELOCITY_X).doubleValue(),
-                this.dataTracker.get(TRACKED_TRAJECTORY_VELOCITY_Y).doubleValue(),
-                this.dataTracker.get(TRACKED_TRAJECTORY_VELOCITY_Z).doubleValue()
+    public Vec3 getTrajectoryInitialVelocity() {
+        Vec3 velocity = new Vec3(
+                this.entityData.get(TRACKED_TRAJECTORY_VELOCITY_X).doubleValue(),
+                this.entityData.get(TRACKED_TRAJECTORY_VELOCITY_Y).doubleValue(),
+                this.entityData.get(TRACKED_TRAJECTORY_VELOCITY_Z).doubleValue()
         );
-        return velocity.lengthSquared() < 1.0E-7D ? null : velocity;
+        return velocity.lengthSqr() < 1.0E-7D ? null : velocity;
     }
 
     private void setTrajectorySpawnPosition(double x, double y, double z) {
-        this.dataTracker.set(TRACKED_TRAJECTORY_SPAWN_X, (float) x);
-        this.dataTracker.set(TRACKED_TRAJECTORY_SPAWN_Y, (float) y);
-        this.dataTracker.set(TRACKED_TRAJECTORY_SPAWN_Z, (float) z);
-        this.dataTracker.set(TRACKED_TRAJECTORY_SPAWN_CAPTURED, true);
+        this.entityData.set(TRACKED_TRAJECTORY_SPAWN_X, (float) x);
+        this.entityData.set(TRACKED_TRAJECTORY_SPAWN_Y, (float) y);
+        this.entityData.set(TRACKED_TRAJECTORY_SPAWN_Z, (float) z);
+        this.entityData.set(TRACKED_TRAJECTORY_SPAWN_CAPTURED, true);
     }
 
-    private void setTrajectoryInitialVelocity(Vec3d velocity) {
-        this.dataTracker.set(TRACKED_TRAJECTORY_VELOCITY_X, (float) velocity.x);
-        this.dataTracker.set(TRACKED_TRAJECTORY_VELOCITY_Y, (float) velocity.y);
-        this.dataTracker.set(TRACKED_TRAJECTORY_VELOCITY_Z, (float) velocity.z);
+    private void setTrajectoryInitialVelocity(Vec3 velocity) {
+        this.entityData.set(TRACKED_TRAJECTORY_VELOCITY_X, (float) velocity.x);
+        this.entityData.set(TRACKED_TRAJECTORY_VELOCITY_Y, (float) velocity.y);
+        this.entityData.set(TRACKED_TRAJECTORY_VELOCITY_Z, (float) velocity.z);
     }
 
     public boolean isTrajectoryFinished() {
-        return this.dataTracker.get(TRACKED_TRAJECTORY_FINISHED);
+        return this.entityData.get(TRACKED_TRAJECTORY_FINISHED);
     }
 
     private void setTrajectoryFinished(boolean finished) {
-        this.dataTracker.set(TRACKED_TRAJECTORY_FINISHED, finished);
+        this.entityData.set(TRACKED_TRAJECTORY_FINISHED, finished);
     }
 
     public boolean canRicochet() {
@@ -330,7 +342,31 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     }
 
     public void setProjectileStack(ItemStack stack) {
-        this.setStack(stack.isEmpty() ? new ItemStack(Items.ARROW) : stack);
+        this.setPickupItemStack(stack.isEmpty() ? new ItemStack(Items.ARROW) : stack);
+        this.refreshPotionColor();
+    }
+
+    /** Mirrors vanilla ArrowEntity's potion component and duration handling. */
+    public boolean hasPotionContents() {
+        return this.entityData.get(TRACKED_POTION_COLOR) != -1;
+    }
+
+    public int getPotionColor() {
+        return this.entityData.get(TRACKED_POTION_COLOR);
+    }
+
+    private PotionContents getPotionContentsComponent() {
+        return this.getPickupItemStackOrigin().getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+    }
+
+    private float getPotionDurationScale() {
+        return this.getPickupItemStackOrigin().getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F);
+    }
+
+    private void refreshPotionColor() {
+        PotionContents contents = this.getPotionContentsComponent();
+        this.entityData.set(TRACKED_POTION_COLOR,
+                contents.equals(PotionContents.EMPTY) ? -1 : contents.getColor());
     }
 
     public void incrementBounceCount() {
@@ -345,7 +381,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         return this.isInGround();
     }
 
-    public void scheduleDelayedImpact(ArrowType type, Vec3d impact, int delay) {
+    public void scheduleDelayedImpact(ArrowType type, Vec3 impact, int delay) {
         if (this.delayedImpactDelay > 0 || type == null || impact == null) {
             return;
         }
@@ -373,7 +409,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         }
 
         ArrowType type = this.delayedImpactType;
-        Vec3d impact = this.delayedImpactPosition;
+        Vec3 impact = this.delayedImpactPosition;
         this.delayedImpactType = null;
         this.delayedImpactPosition = null;
         ArrowBehaviorRegistry.getBehavior(type).onDelayedImpact(this, impact);
@@ -475,17 +511,17 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         // The owner/weapon constructor validates that the firing weapon is a
         // real ranged weapon. A fracture child is not fired by a weapon, so
         // construct it directly and copy the projectile state below.
-        ArcheryArrowEntity child = new ArcheryArrowEntity(this.getEntityWorld());
+        ArcheryArrowEntity child = new ArcheryArrowEntity(this.level());
 
         child.setOwner(this.getOwner());
         child.setProjectileStack(this.createChildPickupStack());
-        Vec3d childVelocity = this.getVelocity().rotateY((float) Math.toRadians(angleDegrees));
-        Vec3d childDirection = childVelocity.lengthSquared() > 1.0E-7D
-                ? childVelocity.normalize() : new Vec3d(0.0D, 0.0D, 1.0D);
-        Vec3d childPosition = new Vec3d(this.getX(), this.getY(), this.getZ())
-                .add(childDirection.multiply(0.35D));
-        child.setPosition(childPosition.x, childPosition.y, childPosition.z);
-        child.setVelocity(childVelocity);
+        Vec3 childVelocity = this.getDeltaMovement().yRot((float) Math.toRadians(angleDegrees));
+        Vec3 childDirection = childVelocity.lengthSqr() > 1.0E-7D
+                ? childVelocity.normalize() : new Vec3(0.0D, 0.0D, 1.0D);
+        Vec3 childPosition = new Vec3(this.getX(), this.getY(), this.getZ())
+                .add(childDirection.scale(0.35D));
+        child.setPos(childPosition.x, childPosition.y, childPosition.z);
+        child.setDeltaMovement(childVelocity);
         child.setTrajectorySpawnPosition(child.getX(), child.getY(), child.getZ());
         this.copyVanillaProjectileStateTo(child);
 
@@ -523,12 +559,12 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     }
 
     public ArcheryArrowEntity createBurstChild() {
-        ArcheryArrowEntity child = new ArcheryArrowEntity(this.getEntityWorld());
+        ArcheryArrowEntity child = new ArcheryArrowEntity(this.level());
 
         child.setOwner(this.getOwner());
         child.setProjectileStack(this.createChildPickupStack());
-        child.setPosition(this.getX(), this.getY(), this.getZ());
-        child.setVelocity(this.getVelocity());
+        child.setPos(this.getX(), this.getY(), this.getZ());
+        child.setDeltaMovement(this.getDeltaMovement());
         this.copyVanillaProjectileStateTo(child);
 
         child.setArrowType(this.arrowType);
@@ -563,18 +599,18 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private void copyVanillaProjectileStateTo(ArcheryArrowEntity child) {
         PersistentProjectileEntityAccessor source = (PersistentProjectileEntityAccessor) (Object) this;
         PersistentProjectileEntityAccessor target = (PersistentProjectileEntityAccessor) (Object) child;
-        child.setCritical(this.isCritical());
-        child.setNoClip(this.isNoClip());
+        child.setCritArrow(this.isCritArrow());
+        child.setNoPhysics(this.isNoPhysics());
         target.archeryRevamped$setPierceLevel(this.getPierceLevel());
-        child.setDamage(source.archeryRevamped$getDamage());
-        child.setFireTicks(this.getFireTicks());
+        child.setBaseDamage(source.archeryRevamped$getDamage());
+        child.setRemainingFireTicks(this.getRemainingFireTicks());
         target.archeryRevamped$setWeapon(source.archeryRevamped$getWeapon().copy());
         target.archeryRevamped$setPickupType(source.archeryRevamped$getPickupType());
     }
 
     private void captureFractureReleaseSpeedIfNeeded() {
         if (!this.fractureReleaseSpeedCaptured) {
-            this.setFractureReleaseSpeed(this.getVelocity().length());
+            this.setFractureReleaseSpeed(this.getDeltaMovement().length());
         }
     }
 
@@ -585,8 +621,8 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
      * unpickable even when the original arrow was a normal pickup arrow.
      */
     private ItemStack createChildPickupStack() {
-        ItemStack pickupStack = this.getItemStack().copy();
-        pickupStack.remove(DataComponentTypes.INTANGIBLE_PROJECTILE);
+        ItemStack pickupStack = this.getPickupItemStackOrigin().copy();
+        pickupStack.remove(DataComponents.INTANGIBLE_PROJECTILE);
         return pickupStack;
     }
 
@@ -614,7 +650,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     }
 
     private void checkLongshotThresholds() {
-        if (this.longshotLevel <= 0 || !(this.getEntityWorld() instanceof ServerWorld serverWorld)) {
+        if (this.longshotLevel <= 0 || !(this.level() instanceof ServerLevel serverWorld)) {
             return;
         }
 
@@ -626,11 +662,11 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         if (!this.longshot32Triggered
                 && this.distanceTravelled >= ConfigManager.getLongshot32Threshold()) {
             this.longshot32Triggered = true;
-            Vec3d effectPosition = new Vec3d(this.getX(), this.getY(), this.getZ());
-            EffectManager.spawnParticles(this.getEntityWorld(), effectPosition,
+            Vec3 effectPosition = new Vec3(this.getX(), this.getY(), this.getZ());
+            EffectManager.spawnParticles(this.level(), effectPosition,
                     ParticleTypes.HAPPY_VILLAGER, 12);
-            EffectManager.playSound(this.getEntityWorld(), effectPosition,
-                    SoundEvents.BLOCK_NOTE_BLOCK_PLING, 0.6F, 0.65F);
+            EffectManager.playSound(this.level(), effectPosition,
+                    SoundEvents.NOTE_BLOCK_PLING, 0.6F, 0.65F);
         }
 
         if (!this.longshot48Triggered
@@ -641,11 +677,11 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         if (!this.longshot64Triggered
                 && this.distanceTravelled >= ConfigManager.getLongshot64Threshold()) {
             this.longshot64Triggered = true;
-            Vec3d effectPosition = new Vec3d(this.getX(), this.getY(), this.getZ());
-            EffectManager.spawnParticles(this.getEntityWorld(), effectPosition,
-                    new DustParticleEffect(0xFFD700, 1.0F), 16);
-            EffectManager.playSound(this.getEntityWorld(), effectPosition,
-                    SoundEvents.BLOCK_NOTE_BLOCK_PLING, 0.75F, 1.3F);
+            Vec3 effectPosition = new Vec3(this.getX(), this.getY(), this.getZ());
+            EffectManager.spawnParticles(this.level(), effectPosition,
+                    new DustParticleOptions(0xFFD700, 1.0F), 16);
+            EffectManager.playSound(this.level(), effectPosition,
+                    SoundEvents.NOTE_BLOCK_PLING, 0.75F, 1.3F);
         }
     }
 
@@ -671,12 +707,12 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
             damage *= multiplier;
         }
 
-        this.setDamage(damage);
+        this.setBaseDamage(damage);
         this.impactDamageModifiersApplied = true;
     }
 
     @Override
-    protected void onBlockHit(BlockHitResult hit) {
+    protected void onHitBlock(BlockHitResult hit) {
         this.updateDistanceTravelled();
         if (this.canRicochet() && !this.isInGround()) {
             RicochetBehavior.applyRicochet(this, hit);
@@ -686,21 +722,27 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         this.setTrajectoryFinished(true);
         ArrowBehaviorRegistry.getBehavior(this.arrowType).onBlockHit(this, hit);
         if (!this.isRemoved()) {
-            super.onBlockHit(hit);
+            super.onHitBlock(hit);
         }
     }
 
     @Override
-    protected void onEntityHit(EntityHitResult hit) {
+    protected void onHitEntity(EntityHitResult hit) {
         this.updateDistanceTravelled();
         this.applyImpactDamageModifiers();
         this.prepareHeadshot(hit);
         this.setTrajectoryFinished(true);
-        super.onEntityHit(hit);
+        super.onHitEntity(hit);
+        if (hit.getEntity() instanceof LivingEntity living) {
+            this.getPotionContentsComponent().forEachEffect(
+                    effect -> living.addEffect(effect, this.getOwner()),
+                    this.getPotionDurationScale()
+            );
+        }
         ArrowBehaviorRegistry.getBehavior(this.arrowType).onEntityHit(this, hit);
     }
 
-    protected void saveSyncData(NbtCompound tag) {
+    protected void saveSyncData(CompoundTag tag) {
         tag.putInt(DATA_VERSION_KEY, CURRENT_DATA_VERSION);
         tag.putString(ARROW_TYPE_KEY, this.arrowType.name());
         tag.putInt(RICOCHET_LEVEL_KEY, ConfigManager.limitEnchantmentLevel(this.ricochetLevel, 5));
@@ -733,7 +775,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         writeReleaseVelocity(tag);
     }
 
-    protected void loadSyncData(NbtCompound tag) {
+    protected void loadSyncData(CompoundTag tag) {
         int dataVersion = tag.getInt(DATA_VERSION_KEY).orElse(0);
         // Version 0 is the original format. Unknown future versions are
         // intentionally read using known keys so adding fields remains safe.
@@ -783,8 +825,8 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
-        super.writeCustomData(view);
+    protected void addAdditionalSaveData(ValueOutput view) {
+        super.addAdditionalSaveData(view);
         view.putInt(DATA_VERSION_KEY, CURRENT_DATA_VERSION);
         view.putString(ARROW_TYPE_KEY, this.arrowType.name());
         view.putInt(RICOCHET_LEVEL_KEY, ConfigManager.limitEnchantmentLevel(this.ricochetLevel, 5));
@@ -818,49 +860,50 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
-        super.readCustomData(view);
-        int dataVersion = view.getInt(DATA_VERSION_KEY, 0);
+    protected void readAdditionalSaveData(ValueInput view) {
+        super.readAdditionalSaveData(view);
+        this.refreshPotionColor();
+        int dataVersion = view.getIntOr(DATA_VERSION_KEY, 0);
         this.setArrowType(parseStoredArrowType(
-                view.getString(ARROW_TYPE_KEY, ArrowType.NORMAL.name()), dataVersion));
+                view.getStringOr(ARROW_TYPE_KEY, ArrowType.NORMAL.name()), dataVersion));
         this.ricochetLevel = ConfigManager.limitEnchantmentLevel(
                 readIntWithLegacy(view, RICOCHET_LEVEL_KEY, "bouncingLevel", 0), 5);
-        this.bounceCount = Math.max(0, view.getInt(BOUNCE_COUNT_KEY, 0));
-        this.distanceTravelled = finiteOrZero(view.getDouble(DISTANCE_TRAVELLED_KEY, 0.0D));
-        this.originalDamage = finiteOrZero(view.getDouble(ORIGINAL_DAMAGE_KEY, 0.0D));
-        this.spawnX = finiteOrZero(view.getDouble(SPAWN_X_KEY, 0.0D));
-        this.spawnY = finiteOrZero(view.getDouble(SPAWN_Y_KEY, 0.0D));
-        this.spawnZ = finiteOrZero(view.getDouble(SPAWN_Z_KEY, 0.0D));
-        this.physicsAge = Math.max(0, view.getInt(PHYSICS_AGE_KEY, 0));
-        this.overdrawDamageBonus = finiteOrZero(view.getDouble(OVERDRAW_DAMAGE_BONUS_KEY, 0.0D));
-        this.longshotLevel = ConfigManager.limitEnchantmentLevel(view.getInt(LONGSHOT_LEVEL_KEY, 0), 1);
-        this.longshot16Triggered = view.getBoolean(LONGSHOT_16_TRIGGERED_KEY, false);
-        this.longshot32Triggered = view.getBoolean(LONGSHOT_32_TRIGGERED_KEY, false);
-        this.longshot48Triggered = view.getBoolean(LONGSHOT_48_TRIGGERED_KEY, false);
-        this.longshot64Triggered = view.getBoolean(LONGSHOT_64_TRIGGERED_KEY, false);
-        this.fractureLevel = ConfigManager.limitEnchantmentLevel(view.getInt(FRACTURE_LEVEL_KEY, 0), 2);
-        this.splitTimer = Math.max(0, view.getInt(SPLIT_TIMER_KEY, 0));
-        this.hasSpread = view.getBoolean(HAS_SPREAD_KEY, false);
-        this.fractureReleaseSpeed = finiteOrZero(view.getDouble(FRACTURE_RELEASE_SPEED_KEY, 0.0D));
-        this.extraAmmoFree = view.getBoolean(EXTRA_AMMO_FREE_KEY, false);
-        this.impactDamageModifiersApplied = view.getBoolean(IMPACT_DAMAGE_MODIFIERS_APPLIED_KEY, false);
+        this.bounceCount = Math.max(0, view.getIntOr(BOUNCE_COUNT_KEY, 0));
+        this.distanceTravelled = finiteOrZero(view.getDoubleOr(DISTANCE_TRAVELLED_KEY, 0.0D));
+        this.originalDamage = finiteOrZero(view.getDoubleOr(ORIGINAL_DAMAGE_KEY, 0.0D));
+        this.spawnX = finiteOrZero(view.getDoubleOr(SPAWN_X_KEY, 0.0D));
+        this.spawnY = finiteOrZero(view.getDoubleOr(SPAWN_Y_KEY, 0.0D));
+        this.spawnZ = finiteOrZero(view.getDoubleOr(SPAWN_Z_KEY, 0.0D));
+        this.physicsAge = Math.max(0, view.getIntOr(PHYSICS_AGE_KEY, 0));
+        this.overdrawDamageBonus = finiteOrZero(view.getDoubleOr(OVERDRAW_DAMAGE_BONUS_KEY, 0.0D));
+        this.longshotLevel = ConfigManager.limitEnchantmentLevel(view.getIntOr(LONGSHOT_LEVEL_KEY, 0), 1);
+        this.longshot16Triggered = view.getBooleanOr(LONGSHOT_16_TRIGGERED_KEY, false);
+        this.longshot32Triggered = view.getBooleanOr(LONGSHOT_32_TRIGGERED_KEY, false);
+        this.longshot48Triggered = view.getBooleanOr(LONGSHOT_48_TRIGGERED_KEY, false);
+        this.longshot64Triggered = view.getBooleanOr(LONGSHOT_64_TRIGGERED_KEY, false);
+        this.fractureLevel = ConfigManager.limitEnchantmentLevel(view.getIntOr(FRACTURE_LEVEL_KEY, 0), 2);
+        this.splitTimer = Math.max(0, view.getIntOr(SPLIT_TIMER_KEY, 0));
+        this.hasSpread = view.getBooleanOr(HAS_SPREAD_KEY, false);
+        this.fractureReleaseSpeed = finiteOrZero(view.getDoubleOr(FRACTURE_RELEASE_SPEED_KEY, 0.0D));
+        this.extraAmmoFree = view.getBooleanOr(EXTRA_AMMO_FREE_KEY, false);
+        this.impactDamageModifiersApplied = view.getBooleanOr(IMPACT_DAMAGE_MODIFIERS_APPLIED_KEY, false);
         this.fractureReleaseSpeedCaptured = this.fractureReleaseSpeed > 1.0E-6D;
-        this.spawnPositionCaptured = view.getBoolean(SPAWN_POSITION_CAPTURED_KEY,
-                view.getOptionalString(ARROW_TYPE_KEY).isPresent());
+        this.spawnPositionCaptured = view.getBooleanOr(SPAWN_POSITION_CAPTURED_KEY,
+                view.getString(ARROW_TYPE_KEY).isPresent());
         if (this.spawnPositionCaptured) {
             this.setTrajectorySpawnPosition(this.spawnX, this.spawnY, this.spawnZ);
         }
-        this.burstArrowsRemaining = Math.max(0, view.getInt(BURST_ARROWS_REMAINING_KEY, 0));
-        this.burstStaggerDelay = Math.max(1, view.getInt(BURST_STAGGER_DELAY_KEY, 1));
-        this.burstStaggerTimer = Math.max(0, view.getInt(BURST_STAGGER_TIMER_KEY, 0));
+        this.burstArrowsRemaining = Math.max(0, view.getIntOr(BURST_ARROWS_REMAINING_KEY, 0));
+        this.burstStaggerDelay = Math.max(1, view.getIntOr(BURST_STAGGER_DELAY_KEY, 1));
+        this.burstStaggerTimer = Math.max(0, view.getIntOr(BURST_STAGGER_TIMER_KEY, 0));
         this.burstScheduled = false;
-        this.setTrajectoryFinished(view.getBoolean(TRAJECTORY_FINISHED_KEY, this.isInGround()));
-        this.headshotLevel = ConfigManager.limitEnchantmentLevel(view.getInt(HEADSHOT_LEVEL_KEY, 0), 3);
+        this.setTrajectoryFinished(view.getBooleanOr(TRAJECTORY_FINISHED_KEY, this.isInGround()));
+        this.headshotLevel = ConfigManager.limitEnchantmentLevel(view.getIntOr(HEADSHOT_LEVEL_KEY, 0), 3);
         readDelayedImpact(view);
         readReleaseVelocity(view);
     }
 
-    private void writeDelayedImpact(NbtCompound tag) {
+    private void writeDelayedImpact(CompoundTag tag) {
         tag.putInt(DELAYED_IMPACT_DELAY_KEY, Math.max(0, this.delayedImpactDelay));
         if (this.delayedImpactDelay > 0 && this.delayedImpactType != null
                 && this.delayedImpactPosition != null) {
@@ -871,7 +914,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         }
     }
 
-    private void writeDelayedImpact(WriteView view) {
+    private void writeDelayedImpact(ValueOutput view) {
         view.putInt(DELAYED_IMPACT_DELAY_KEY, Math.max(0, this.delayedImpactDelay));
         if (this.delayedImpactDelay > 0 && this.delayedImpactType != null
                 && this.delayedImpactPosition != null) {
@@ -882,31 +925,31 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         }
     }
 
-    private void readDelayedImpact(NbtCompound tag) {
+    private void readDelayedImpact(CompoundTag tag) {
         this.delayedImpactDelay = Math.max(0, tag.getInt(DELAYED_IMPACT_DELAY_KEY).orElse(0));
         String type = tag.getString(DELAYED_IMPACT_TYPE_KEY).orElse("");
         this.delayedImpactType = type.isEmpty() ? null : parseArrowType(type);
         this.delayedImpactPosition = this.delayedImpactDelay > 0 && this.delayedImpactType != null
-                ? new Vec3d(
+                ? new Vec3(
                 finiteOrZero(tag.getDouble(DELAYED_IMPACT_X_KEY).orElse(0.0D)),
                 finiteOrZero(tag.getDouble(DELAYED_IMPACT_Y_KEY).orElse(0.0D)),
                 finiteOrZero(tag.getDouble(DELAYED_IMPACT_Z_KEY).orElse(0.0D)))
                 : null;
     }
 
-    private void readDelayedImpact(ReadView view) {
-        this.delayedImpactDelay = Math.max(0, view.getInt(DELAYED_IMPACT_DELAY_KEY, 0));
-        String type = view.getString(DELAYED_IMPACT_TYPE_KEY, "");
+    private void readDelayedImpact(ValueInput view) {
+        this.delayedImpactDelay = Math.max(0, view.getIntOr(DELAYED_IMPACT_DELAY_KEY, 0));
+        String type = view.getStringOr(DELAYED_IMPACT_TYPE_KEY, "");
         this.delayedImpactType = type.isEmpty() ? null : parseArrowType(type);
         this.delayedImpactPosition = this.delayedImpactDelay > 0 && this.delayedImpactType != null
-                ? new Vec3d(
-                finiteOrZero(view.getDouble(DELAYED_IMPACT_X_KEY, 0.0D)),
-                finiteOrZero(view.getDouble(DELAYED_IMPACT_Y_KEY, 0.0D)),
-                finiteOrZero(view.getDouble(DELAYED_IMPACT_Z_KEY, 0.0D)))
+                ? new Vec3(
+                finiteOrZero(view.getDoubleOr(DELAYED_IMPACT_X_KEY, 0.0D)),
+                finiteOrZero(view.getDoubleOr(DELAYED_IMPACT_Y_KEY, 0.0D)),
+                finiteOrZero(view.getDoubleOr(DELAYED_IMPACT_Z_KEY, 0.0D)))
                 : null;
     }
 
-    private void writeReleaseVelocity(NbtCompound tag) {
+    private void writeReleaseVelocity(CompoundTag tag) {
         tag.putBoolean(RELEASE_VELOCITY_PRESENT_KEY, this.releaseVelocity != null);
         if (this.releaseVelocity != null) {
             tag.putDouble(RELEASE_VELOCITY_X_KEY, finiteOrZero(this.releaseVelocity.x));
@@ -915,7 +958,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         }
     }
 
-    private void writeReleaseVelocity(WriteView view) {
+    private void writeReleaseVelocity(ValueOutput view) {
         view.putBoolean(RELEASE_VELOCITY_PRESENT_KEY, this.releaseVelocity != null);
         if (this.releaseVelocity != null) {
             view.putDouble(RELEASE_VELOCITY_X_KEY, finiteOrZero(this.releaseVelocity.x));
@@ -924,12 +967,12 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         }
     }
 
-    private void readReleaseVelocity(NbtCompound tag) {
+    private void readReleaseVelocity(CompoundTag tag) {
         if (!tag.getBoolean(RELEASE_VELOCITY_PRESENT_KEY).orElse(false)) {
             this.releaseVelocity = null;
             return;
         }
-        this.releaseVelocity = new Vec3d(
+        this.releaseVelocity = new Vec3(
                 finiteOrZero(tag.getDouble(RELEASE_VELOCITY_X_KEY).orElse(0.0D)),
                 finiteOrZero(tag.getDouble(RELEASE_VELOCITY_Y_KEY).orElse(0.0D)),
                 finiteOrZero(tag.getDouble(RELEASE_VELOCITY_Z_KEY).orElse(0.0D))
@@ -937,21 +980,21 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         this.setTrajectoryInitialVelocity(this.releaseVelocity);
     }
 
-    private void readReleaseVelocity(ReadView view) {
-        if (!view.getBoolean(RELEASE_VELOCITY_PRESENT_KEY, false)) {
+    private void readReleaseVelocity(ValueInput view) {
+        if (!view.getBooleanOr(RELEASE_VELOCITY_PRESENT_KEY, false)) {
             this.releaseVelocity = null;
             return;
         }
-        this.releaseVelocity = new Vec3d(
-                finiteOrZero(view.getDouble(RELEASE_VELOCITY_X_KEY, 0.0D)),
-                finiteOrZero(view.getDouble(RELEASE_VELOCITY_Y_KEY, 0.0D)),
-                finiteOrZero(view.getDouble(RELEASE_VELOCITY_Z_KEY, 0.0D))
+        this.releaseVelocity = new Vec3(
+                finiteOrZero(view.getDoubleOr(RELEASE_VELOCITY_X_KEY, 0.0D)),
+                finiteOrZero(view.getDoubleOr(RELEASE_VELOCITY_Y_KEY, 0.0D)),
+                finiteOrZero(view.getDoubleOr(RELEASE_VELOCITY_Z_KEY, 0.0D))
         );
         this.setTrajectoryInitialVelocity(this.releaseVelocity);
     }
 
-    private static int readIntWithLegacy(ReadView view, String key, String legacyKey, int fallback) {
-        return view.getOptionalInt(key).orElse(view.getInt(legacyKey, fallback));
+    private static int readIntWithLegacy(ValueInput view, String key, String legacyKey, int fallback) {
+        return view.getInt(key).orElse(view.getIntOr(legacyKey, fallback));
     }
 
     private static int clamp(int value, int minimum, int maximum) {

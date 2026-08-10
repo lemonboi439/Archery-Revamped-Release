@@ -4,11 +4,11 @@ import me.lemonboi439.archeryRevamped.ArcheryRevamped;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 
 /** Synchronizes the admin trajectory toggle to clients for live aiming previews. */
 public final class TrajectoryNetworking {
@@ -16,34 +16,34 @@ public final class TrajectoryNetworking {
     }
 
     public static void register() {
-        PayloadTypeRegistry.playS2C().register(TrajectoryStatePayload.ID, TrajectoryStatePayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(TrajectoryStatePayload.ID, TrajectoryStatePayload.CODEC);
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
                 send(handler.player, TrajectoryVisualizer.isEnabled(),
                         TrajectoryVisualizer.isColourVisualisationEnabled()));
     }
 
-    public static void send(ServerPlayerEntity player, boolean enabled) {
+    public static void send(ServerPlayer player, boolean enabled) {
         send(player, enabled, TrajectoryVisualizer.isColourVisualisationEnabled());
     }
 
-    public static void send(ServerPlayerEntity player, boolean enabled, boolean colourVisualisation) {
+    public static void send(ServerPlayer player, boolean enabled, boolean colourVisualisation) {
         if (ServerPlayNetworking.canSend(player, TrajectoryStatePayload.ID)) {
             ServerPlayNetworking.send(player, new TrajectoryStatePayload(enabled, colourVisualisation));
         }
     }
 
-    public record TrajectoryStatePayload(boolean enabled, boolean colourVisualisation) implements CustomPayload {
-        public static final CustomPayload.Id<TrajectoryStatePayload> ID =
-                new CustomPayload.Id<>(Identifier.of(ArcheryRevamped.MOD_ID, "trajectory_state"));
-        public static final PacketCodec<RegistryByteBuf, TrajectoryStatePayload> CODEC =
-                PacketCodec.of((value, buf) -> {
+    public record TrajectoryStatePayload(boolean enabled, boolean colourVisualisation) implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<TrajectoryStatePayload> ID =
+                new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(ArcheryRevamped.MOD_ID, "trajectory_state"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, TrajectoryStatePayload> CODEC =
+                StreamCodec.ofMember((value, buf) -> {
                             buf.writeBoolean(value.enabled);
                             buf.writeBoolean(value.colourVisualisation);
                         },
                         buf -> new TrajectoryStatePayload(buf.readBoolean(), buf.readBoolean()));
 
         @Override
-        public Id<? extends CustomPayload> getId() {
+        public Type<? extends CustomPacketPayload> type() {
             return ID;
         }
     }

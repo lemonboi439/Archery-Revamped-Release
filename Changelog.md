@@ -4,6 +4,73 @@ All notable changes to Archery Revamped are documented here.
 
 ---
 
+## 1.6.2 - 26.1 Port and Release Polish
+
+### Changed
+
+- Ported the full 1.6 feature set to Minecraft 26.1 with official Mojang mappings.
+- Added normal-level custom enchanted books to the Archery Revamped creative tab. The optional infinite-level setting never populates creative inventory with high-level books.
+- Corrected the bundled Shockwave and Impulse defaults to `radius: 1.0` and `strength: 1.0`, matching their configured wind-charge-equivalent baseline.
+
+### Fixed
+
+- Verified the Fletching Table's virtual output flow: inputs are consumed only when crafting succeeds and only real inputs return when the screen closes.
+- Restored the full potion-tint rendering path for custom tipped arrows after the 26.1 mapping migration.
+
+---
+
+## 1.6 - Fletching Table Rework
+
+### Changed
+
+- Replaced the temporary vanilla-anvil-style Fletching Table art with the supplied 256×256 interface texture.
+- The Fletching Table now behaves as a two-input crafting table: four arrows in the first slot, a modifier in the second slot, and a non-consuming four-arrow output preview.
+- Input slots now reject invalid items: the first slot accepts arrows only, and the second accepts recognised recipe modifiers only.
+- Disabled vanilla crafting-table tipped-arrow conversion; every non-blank arrow is now made through the Fletching Table.
+- Matched vanilla tipped-arrow quantities in the Fletching Table: eight arrows plus any valid potion now yields eight tipped arrows.
+- Quiver selection is now hold-to-select: hold `V`, cycle with `Q`/`E`, and release `V` to confirm.
+- Echo Arrow sculk conversion now uses the slain entity's vanilla experience value for its spread budget, adds sparse sculk veins, and has a 1% chance to place a functional shrieker, sensor, or catalyst above the new sculk.
+- Left-clicking the output crafts one batch into the cursor; repeated clicks continue crafting and merge compatible results into that cursor stack.
+- Shift-clicking the output crafts the maximum possible number of batches into the player inventory.
+- The screen now explicitly renders the `Fletching Table` title independently of the texture.
+- Added optional Trinkets Updated support: the dedicated chest/quiver slot accepts only a Quiver and can override inventory Quiver priority through configuration.
+- Added `general.limitless_anvil`, disabled by default, for servers that want to remove the vanilla "Too Expensive" anvil gate while retaining normal costs and compatibility checks.
+- Added `fletching.allow_modded_arrow_inputs`, enabled by default, so other mods' ArrowItem stacks can be converted through the Fletching Table.
+- Smoothed the experimental trajectory speed-colour gradient and added `/archeryrevamped trajectory colour <true|false>`.
+
+### Fixed
+
+- Fletching recipes no longer auto-craft each server tick.
+- Closing the screen returns only the two real input stacks; the output preview cannot be duplicated or returned as an extra item.
+
+---
+
+## 1.5.2 - Quiver and Tipped Arrow Polish
+
+### Changed
+
+- Tipped arrows now tint their entire in-flight arrow model to match their potion colour.
+- Scaled and compacted the Quiver selector's selected-arrow name and keyboard hints.
+- Added `run-client.bat` for launching the development client without an IDE task.
+
+### Fixed
+
+- Returned or redirected player-fired arrows can once again damage and apply potion effects to their shooter, using vanilla owner-collision timing.
+- Shockwave and Impulse landing effects now include the firing player.
+
+---
+
+## 1.5.1 - Tipped Arrow Compatibility Fix
+
+### Fixed
+
+- Fixed normal vanilla tipped arrows losing their potion effects after Archery Revamped replaced the projectile entity.
+- Tipped-arrow potion contents and duration scaling now carry over exactly to the custom projectile.
+- Normal potion arrows now use vanilla's tipped-arrow in-flight rendering.
+- Replaced the Quiver item texture with the supplied artwork.
+
+---
+
 ## 1.5 - Quiver and Projectile Polish
 
 ### Added

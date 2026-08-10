@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.17-SNAPSHOT'
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
     id 'maven-publish'
 }
 
@@ -28,6 +28,10 @@ fabricApi {
 }
 
 repositories {
+    maven {
+        name = "Ladysnake Libs"
+        url = "https://maven.ladysnake.org/releases"
+    }
     exclusiveContent {
         forRepository {
             maven {
@@ -44,15 +48,40 @@ repositories {
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-    // Optional UI integrations. These are compile-only; the base mod still
-    // runs without Cloth Config or Mod Menu installed.
-    modCompileOnly "maven.modrinth:9s6osm5g:xuX40TN5" // Cloth Config 21.11.153+fabric
-    modCompileOnly "maven.modrinth:mOgUt4GM:Tyk71iSw" // Mod Menu 17.0.0
+    // Optional UI integrations. They are present in the development client,
+    // but remain optional for players using the published mod.
+    implementation "maven.modrinth:9s6osm5g:GFM8zh9J" // Cloth Config 26.1.154+fabric
+    implementation "maven.modrinth:mOgUt4GM:3rsoV1bk" // Mod Menu 18.0.0 for 26.1
+    compileOnly "maven.modrinth:XaT8sLP6:DHE2OnLP" // Trinkets Updated 3.11.0-beta.2+1.21.11
+    compileOnly "org.ladysnake.cardinal-components-api:cardinal-components-base:7.3.0"
+    compileOnly "org.ladysnake.cardinal-components-api:cardinal-components-entity:7.3.0"
+}
+
+// The published 1.21.11 Trinkets Updated binary is Yarn-mapped and cannot be
+// loaded by a Mojang-mapped 26.1 build. Villager trades are also being moved
+// away from Fabric's removed TradeOfferHelper API in a later migration slice.
+// Keep both integrations out of this first, testable core baseline.
+sourceSets {
+    main {
+        java {
+            exclude 'me/lemonboi439/archeryRevamped/compat/**'
+            exclude 'me/lemonboi439/archeryRevamped/trade/**'
+        }
+    }
+    client {
+        java {
+            // These use the 1.21.11 GUI extraction and Fabric rendering APIs.
+            // They return in a dedicated client/UI migration slice after the
+            // basic custom projectile client is verified on 26.1.
+            exclude 'me/lemonboi439/archeryRevamped/client/QuiverScreen.java'
+            exclude 'me/lemonboi439/archeryRevamped/client/OverdrawClientHandler.java'
+            exclude 'me/lemonboi439/archeryRevamped/mixin/CameraMixin.java'
+        }
+    }
 }
 
 processResources {
@@ -68,7 +97,7 @@ processResources {
     }
 }
 
-def targetJavaVersion = 21
+def targetJavaVersion = 25
 tasks.withType(JavaCompile).configureEach {
     // ensure that the encoding is set to UTF-8, no matter what the system default is
     // this fixes some edge cases with special characters not displaying correctly

@@ -1,28 +1,27 @@
 package me.lemonboi439.archeryRevamped.client.render;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import me.lemonboi439.archeryRevamped.entity.ShatteringShardEntity;
-import net.minecraft.client.item.ItemModelManager;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.ItemEntityRenderer;
-import net.minecraft.client.render.entity.state.ItemEntityRenderState;
-import net.minecraft.client.render.state.CameraRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.ItemEntityRenderer;
+import net.minecraft.client.renderer.entity.state.ItemEntityRenderState;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /** Renders each shattering shard as a small amethyst item projectile. */
 public final class ShatteringShardEntityRenderer
         extends EntityRenderer<ShatteringShardEntity, ItemEntityRenderState> {
-    private final ItemModelManager itemModelManager;
-    private final Random random = Random.create();
+    private final ItemModelResolver itemModelManager;
+    private final RandomSource random = RandomSource.create();
 
-    public ShatteringShardEntityRenderer(EntityRendererFactory.Context context) {
+    public ShatteringShardEntityRenderer(EntityRendererProvider.Context context) {
         super(context);
-        this.itemModelManager = context.getItemModelManager();
+        this.itemModelManager = context.getItemModelResolver();
         this.shadowRadius = 0.0F;
     }
 
@@ -32,21 +31,21 @@ public final class ShatteringShardEntityRenderer
     }
 
     @Override
-    public void updateRenderState(ShatteringShardEntity entity,
+    public void extractRenderState(ShatteringShardEntity entity,
                                   ItemEntityRenderState state, float tickProgress) {
-        super.updateRenderState(entity, state, tickProgress);
-        state.update(entity, new ItemStack(Items.AMETHYST_SHARD), itemModelManager);
-        state.uniqueOffset = 0.0F;
-        state.renderedAmount = 1;
+        super.extractRenderState(entity, state, tickProgress);
+        state.extractItemGroupRenderState(entity, new ItemStack(Items.AMETHYST_SHARD), itemModelManager);
+        state.bobOffset = 0.0F;
+        state.count = 1;
     }
 
     @Override
-    public void render(ItemEntityRenderState state, MatrixStack matrices,
-                       OrderedRenderCommandQueue queue, CameraRenderState camera) {
-        matrices.push();
+    public void submit(ItemEntityRenderState state, PoseStack matrices,
+                       SubmitNodeCollector queue, CameraRenderState camera) {
+        matrices.pushPose();
         matrices.scale(0.38F, 0.38F, 0.38F);
-        ItemEntityRenderer.render(matrices, queue, state.light, state, random);
-        matrices.pop();
-        super.render(state, matrices, queue, camera);
+        ItemEntityRenderer.submitMultipleFromCount(matrices, queue, state.lightCoords, state, random);
+        matrices.popPose();
+        super.submit(state, matrices, queue, camera);
     }
 }

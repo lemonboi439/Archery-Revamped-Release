@@ -1,40 +1,81 @@
 package me.lemonboi439.archeryRevamped.item;
 
 import me.lemonboi439.archeryRevamped.ArcheryRevamped;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import me.lemonboi439.archeryRevamped.enchantment.BurstEnchantment;
+import me.lemonboi439.archeryRevamped.enchantment.FractureEnchantment;
+import me.lemonboi439.archeryRevamped.enchantment.HeadshotEnchantment;
+import me.lemonboi439.archeryRevamped.enchantment.LongshotEnchantment;
+import me.lemonboi439.archeryRevamped.enchantment.OverdrawEnchantment;
+import me.lemonboi439.archeryRevamped.enchantment.RicochetEnchantment;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public final class ModItemGroups {
-    private static final Identifier ARCHERY_GROUP_ID = Identifier.of(
+    private static final Identifier ARCHERY_GROUP_ID = Identifier.fromNamespaceAndPath(
             ArcheryRevamped.MOD_ID, "archery_revamped"
     );
 
-    public static final ItemGroup ARCHERY_REVAMPED = Registry.register(
-            Registries.ITEM_GROUP,
+    public static final CreativeModeTab ARCHERY_REVAMPED = Registry.register(
+            BuiltInRegistries.CREATIVE_MODE_TAB,
             ARCHERY_GROUP_ID,
-            ItemGroup.create(ItemGroup.Row.TOP, 7)
-                    .displayName(Text.translatable("itemGroup.archery-revamped"))
+            CreativeModeTab.builder(CreativeModeTab.Row.TOP, 7)
+                    .title(Component.translatable("itemGroup.archery-revamped"))
                     .icon(() -> new ItemStack(ModItems.ENDER_ARROW))
-                    .entries((displayContext, entries) -> {
-                        entries.add(ModItems.QUIVER);
-                        entries.add(ModItems.ENDER_ARROW);
-                        entries.add(ModItems.SHOCKWAVE_ARROW);
-                        entries.add(ModItems.IMPULSE_ARROW);
-                        entries.add(ModItems.EXPLOSIVE_ARROW);
-                        entries.add(ModItems.TIDAL_ARROW);
-                        entries.add(ModItems.SHATTERING_ARROW);
-                        entries.add(ModItems.ECHO_ARROW);
-                        entries.add(Items.ARROW);
+                    .displayItems((displayContext, entries) -> {
+                        entries.accept(ModItems.QUIVER);
+                        entries.accept(ModItems.ENDER_ARROW);
+                        entries.accept(ModItems.SHOCKWAVE_ARROW);
+                        entries.accept(ModItems.IMPULSE_ARROW);
+                        entries.accept(ModItems.EXPLOSIVE_ARROW);
+                        entries.accept(ModItems.TIDAL_ARROW);
+                        entries.accept(ModItems.SHATTERING_ARROW);
+                        entries.accept(ModItems.ECHO_ARROW);
+                        entries.accept(Items.ARROW);
+                        addEnchantmentBooks(entries, displayContext.holders());
                     })
                     .build()
     );
 
     private ModItemGroups() {
+    }
+
+    /**
+     * Creative books always use the enchantment's authored maximum, never the
+     * optional gameplay-only infinite-level cap. Keeping them in this tab also
+     * avoids cluttering vanilla creative categories.
+     */
+    private static void addEnchantmentBooks(CreativeModeTab.Output entries,
+                                            HolderLookup.Provider registries) {
+        addEnchantmentBooks(entries, registries, RicochetEnchantment.KEY, RicochetEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(entries, registries, OverdrawEnchantment.KEY, OverdrawEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(entries, registries, LongshotEnchantment.KEY, LongshotEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(entries, registries, FractureEnchantment.KEY, FractureEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(entries, registries, BurstEnchantment.KEY, BurstEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(entries, registries, HeadshotEnchantment.KEY, HeadshotEnchantment.MAX_LEVEL);
+    }
+
+    private static void addEnchantmentBooks(CreativeModeTab.Output entries,
+                                            HolderLookup.Provider registries,
+                                            ResourceKey<Enchantment> key, int normalMaximum) {
+        Holder<Enchantment> enchantment = registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key);
+        for (int level = 1; level <= normalMaximum; level++) {
+            ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
+            int bookLevel = level;
+            EnchantmentHelper.updateEnchantments(book,
+                    enchantments -> enchantments.set(enchantment, bookLevel));
+            entries.accept(book);
+        }
     }
 
     public static void register() {

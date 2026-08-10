@@ -4,16 +4,15 @@ import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.enchantment.OverdrawEnchantment;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.Vec3d;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.phys.Vec3;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,8 +31,8 @@ public final class OverdrawHandler {
         ServerTickEvents.END_SERVER_TICK.register(OverdrawHandler::tick);
     }
 
-    public static double consumeDamageBonus(PlayerEntity player) {
-        DrawState state = STATES.remove(player.getUuid());
+    public static double consumeDamageBonus(Player player) {
+        DrawState state = STATES.remove(player.getUUID());
         if (state == null || state.damageBonus <= 0.0D) {
             return 0.0D;
         }
@@ -43,33 +42,33 @@ public final class OverdrawHandler {
     private static void tick(MinecraftServer server) {
         serverTick++;
         Set<UUID> onlinePlayers = new HashSet<>();
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            onlinePlayers.add(player.getUuid());
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            onlinePlayers.add(player.getUUID());
             updatePlayer(player);
         }
         STATES.keySet().removeIf(uuid -> !onlinePlayers.contains(uuid));
     }
 
-    private static void updatePlayer(ServerPlayerEntity player) {
-        ItemStack activeStack = player.getActiveItem();
+    private static void updatePlayer(ServerPlayer player) {
+        ItemStack activeStack = player.getUseItem();
         if (!player.isUsingItem() || activeStack.isEmpty() || !(activeStack.getItem() instanceof BowItem)) {
-            STATES.remove(player.getUuid());
+            STATES.remove(player.getUUID());
             return;
         }
 
         int level = getOverdrawLevel(player, activeStack);
         if (level <= 0) {
-            STATES.remove(player.getUuid());
+            STATES.remove(player.getUUID());
             return;
         }
 
-        int drawTime = player.getItemUseTime();
+        int drawTime = player.getTicksUsingItem();
         if (drawTime < 20) {
-            STATES.remove(player.getUuid());
+            STATES.remove(player.getUUID());
             return;
         }
 
-        DrawState state = STATES.computeIfAbsent(player.getUuid(), uuid -> new DrawState(
+        DrawState state = STATES.computeIfAbsent(player.getUUID(), uuid -> new DrawState(
                 randomFailureDelayTicks()));
         state.level = level;
         state.overdrawDuration = drawTime - 20;
@@ -80,16 +79,16 @@ public final class OverdrawHandler {
 
         if (state.overdrawDuration > 0 && state.overdrawDuration % 10 == 0) {
             float pitch = 0.8F + Math.min(0.8F, (float) (state.damageBonus / Math.max(cap, 0.01D)) * 0.8F);
-            EffectManager.playSound(player.getEntityWorld(),
-                    new Vec3d(player.getX(), player.getY(), player.getZ()),
-                    SoundEvents.ITEM_CROSSBOW_LOADING_MIDDLE, 0.35F, pitch);
+            EffectManager.playSound(player.level(),
+                    new Vec3(player.getX(), player.getY(), player.getZ()),
+                    SoundEvents.CROSSBOW_LOADING_MIDDLE, 0.35F, pitch);
         }
 
         if (!state.punishmentApplied
                 && state.overdrawDuration >= state.failureDelayTicks) {
             state.punishmentApplied = true;
             applyPunishment(player, activeStack, level);
-            player.getItemCooldownManager().set(activeStack, ConfigManager.getOverdrawBowDisableTicks());
+            player.getCooldowns().addCooldown(activeStack, ConfigManager.getOverdrawBowDisableTicks());
             fireMisfireShot(player, activeStack);
         }
     }
@@ -100,70 +99,70 @@ public final class OverdrawHandler {
         return ThreadLocalRandom.current().nextInt(minimum, maximum + 1);
     }
 
-    private static int getOverdrawLevel(ServerPlayerEntity player, ItemStack bow) {
-        var enchantments = player.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
-        return enchantments.getOptional(OverdrawEnchantment.KEY)
-                .map(entry -> EnchantmentHelper.getLevel(entry, bow))
+    private static int getOverdrawLevel(ServerPlayer player, ItemStack bow) {
+        var enchantments = player.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        return enchantments.get(OverdrawEnchantment.KEY)
+                .map(entry -> EnchantmentHelper.getItemEnchantmentLevel(entry, bow))
                 .map(level -> ConfigManager.limitEnchantmentLevel(level, OverdrawEnchantment.MAX_LEVEL))
                 .orElse(0);
     }
 
-    private static void applyPunishment(ServerPlayerEntity player, ItemStack bow, int level) {
+    private static void applyPunishment(ServerPlayer player, ItemStack bow, int level) {
         double durabilityPercent = ConfigManager.getOverdrawDurabilityLossPercent();
         if (durabilityPercent > 0.0D) {
             int durabilityLoss = Math.max(1, (int) Math.ceil(
                     bow.getMaxDamage() * durabilityPercent / 100.0D));
-            bow.damage(durabilityLoss, player, player.getActiveHand().getEquipmentSlot());
+            bow.hurtAndBreak(durabilityLoss, player, player.getUsedItemHand().asEquipmentSlot());
         }
         double selfDamageHearts = ConfigManager.getOverdrawSelfDamageHearts();
         if (selfDamageHearts > 0.0D) {
-            player.damage(player.getEntityWorld(), player.getDamageSources().generic(),
+            player.hurtServer(player.level(), player.damageSources().generic(),
                     (float) (selfDamageHearts * 2.0D * level));
         }
     }
 
     /** Fires the failed release inside a uniformly random cone around the player's original aim. */
-    private static void fireMisfireShot(ServerPlayerEntity player, ItemStack bow) {
-        Vec3d direction = randomDirectionInCone(player.getRotationVector(),
+    private static void fireMisfireShot(ServerPlayer player, ItemStack bow) {
+        Vec3 direction = randomDirectionInCone(player.getLookAngle(),
                 ConfigManager.getOverdrawMisfireAngleDegrees());
-        float originalYaw = player.getYaw();
-        float originalPitch = player.getPitch();
-        player.setYaw((float) Math.toDegrees(Math.atan2(-direction.x, direction.z)));
-        player.setPitch((float) Math.toDegrees(-Math.asin(direction.y)));
+        float originalYaw = player.getYRot();
+        float originalPitch = player.getXRot();
+        player.setYRot((float) Math.toDegrees(Math.atan2(-direction.x, direction.z)));
+        player.setXRot((float) Math.toDegrees(-Math.asin(direction.y)));
         try {
-            bow.getItem().onStoppedUsing(bow, player.getEntityWorld(), player, player.getItemUseTimeLeft());
+            bow.getItem().releaseUsing(bow, player.level(), player, player.getUseItemRemainingTicks());
         } finally {
-            player.setYaw(originalYaw);
-            player.setPitch(originalPitch);
-            player.stopUsingItem();
-            STATES.remove(player.getUuid());
+            player.setYRot(originalYaw);
+            player.setXRot(originalPitch);
+            player.releaseUsingItem();
+            STATES.remove(player.getUUID());
         }
     }
 
-    private static Vec3d randomDirectionInCone(Vec3d forward, double angleDegrees) {
-        Vec3d normalizedForward = forward.normalize();
+    private static Vec3 randomDirectionInCone(Vec3 forward, double angleDegrees) {
+        Vec3 normalizedForward = forward.normalize();
         double maxAngleRadians = Math.toRadians(angleDegrees);
         double cosTheta = 1.0D - ThreadLocalRandom.current().nextDouble()
                 * (1.0D - Math.cos(maxAngleRadians));
         double sinTheta = Math.sqrt(Math.max(0.0D, 1.0D - cosTheta * cosTheta));
         double azimuth = ThreadLocalRandom.current().nextDouble() * Math.PI * 2.0D;
 
-        Vec3d reference = Math.abs(normalizedForward.y) > 0.99D
-                ? new Vec3d(1.0D, 0.0D, 0.0D)
-                : new Vec3d(0.0D, 1.0D, 0.0D);
-        Vec3d right = new Vec3d(
+        Vec3 reference = Math.abs(normalizedForward.y) > 0.99D
+                ? new Vec3(1.0D, 0.0D, 0.0D)
+                : new Vec3(0.0D, 1.0D, 0.0D);
+        Vec3 right = new Vec3(
                 normalizedForward.y * reference.z - normalizedForward.z * reference.y,
                 normalizedForward.z * reference.x - normalizedForward.x * reference.z,
                 normalizedForward.x * reference.y - normalizedForward.y * reference.x
         ).normalize();
-        Vec3d up = new Vec3d(
+        Vec3 up = new Vec3(
                 right.y * normalizedForward.z - right.z * normalizedForward.y,
                 right.z * normalizedForward.x - right.x * normalizedForward.z,
                 right.x * normalizedForward.y - right.y * normalizedForward.x
         ).normalize();
-        return normalizedForward.multiply(cosTheta)
-                .add(right.multiply(Math.cos(azimuth) * sinTheta))
-                .add(up.multiply(Math.sin(azimuth) * sinTheta))
+        return normalizedForward.scale(cosTheta)
+                .add(right.scale(Math.cos(azimuth) * sinTheta))
+                .add(up.scale(Math.sin(azimuth) * sinTheta))
                 .normalize();
     }
 

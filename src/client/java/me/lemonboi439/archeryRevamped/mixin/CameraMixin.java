@@ -1,9 +1,9 @@
 package me.lemonboi439.archeryRevamped.mixin;
 
 import me.lemonboi439.archeryRevamped.client.OverdrawClientHandler;
-import net.minecraft.client.render.Camera;
-import net.minecraft.entity.Entity;
-import net.minecraft.world.World;
+import net.minecraft.client.Camera;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,9 +17,9 @@ public abstract class CameraMixin {
     @Shadow
     protected abstract void setRotation(float yaw, float pitch);
 
-    @Inject(method = "update", at = @At("TAIL"))
+    @Inject(method = "setup", at = @At("TAIL"))
     private void archeryRevamped$applyOverdrawShake(
-            World area, Entity focusedEntity, boolean thirdPerson, boolean inverseView,
+            Level area, Entity focusedEntity, boolean thirdPerson, boolean inverseView,
             float tickProgress, CallbackInfo callbackInfo
     ) {
         float intensity = OverdrawClientHandler.getShakeIntensity();
@@ -28,6 +28,6 @@ public abstract class CameraMixin {
         float pitchOffset = (float) ((ThreadLocalRandom.current().nextDouble() - 0.5D) * intensity);
         float yawOffset = (float) ((ThreadLocalRandom.current().nextDouble() - 0.5D) * intensity);
         Camera camera = (Camera) (Object) this;
-        this.setRotation(camera.getYaw() + yawOffset, camera.getPitch() + pitchOffset);
+        this.setRotation(camera.yRot() + yawOffset, camera.xRot() + pitchOffset);
     }
 }

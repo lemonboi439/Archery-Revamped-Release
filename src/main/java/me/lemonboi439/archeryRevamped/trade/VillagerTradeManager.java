@@ -2,14 +2,14 @@ package me.lemonboi439.archeryRevamped.trade;
 
 import me.lemonboi439.archeryRevamped.item.ModItems;
 import net.fabricmc.fabric.api.object.builder.v1.trade.TradeOfferHelper;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.potion.Potions;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradedItem;
-import net.minecraft.village.VillagerProfession;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.trading.ItemCost;
+import net.minecraft.world.item.trading.MerchantOffer;
 
 /**
  * Adds Archery Revamped materials to the normal villager trade pools.
@@ -141,9 +141,9 @@ public final class VillagerTradeManager {
 
     }
 
-    private static TradeOffer emeraldTrade(int emeraldCost, ItemStack result, int experience) {
-        return new TradeOffer(
-                new TradedItem(Items.EMERALD, emeraldCost),
+    private static MerchantOffer emeraldTrade(int emeraldCost, ItemStack result, int experience) {
+        return new MerchantOffer(
+                new ItemCost(Items.EMERALD, emeraldCost),
                 result,
                 MAX_USES,
                 experience,
@@ -153,7 +153,7 @@ public final class VillagerTradeManager {
 
     private static ItemStack createWaterPotionStack() {
         ItemStack potion = new ItemStack(Items.POTION);
-        potion.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Potions.WATER));
+        potion.set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER));
         return potion;
     }
 }

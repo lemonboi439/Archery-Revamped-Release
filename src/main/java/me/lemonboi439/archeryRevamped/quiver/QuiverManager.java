@@ -2,15 +2,14 @@ package me.lemonboi439.archeryRevamped.quiver;
 
 import me.lemonboi439.archeryRevamped.component.ModDataComponents;
 import me.lemonboi439.archeryRevamped.item.ModItems;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ArrowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.collection.DefaultedList;
-
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArrowItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,11 +20,15 @@ public final class QuiverManager {
     private QuiverManager() {
     }
 
-    public static ItemStack getActiveQuiver(PlayerEntity player) {
-        PlayerInventory inventory = player.getInventory();
-        for (int slot = 0; slot < inventory.size(); slot++) {
-            ItemStack stack = inventory.getStack(slot);
-            if (stack.isOf(ModItems.QUIVER)) {
+    public static ItemStack getActiveQuiver(Player player) {
+        return getInventoryQuiver(player);
+    }
+
+    private static ItemStack getInventoryQuiver(Player player) {
+        Inventory inventory = player.getInventory();
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            ItemStack stack = inventory.getItem(slot);
+            if (stack.is(ModItems.QUIVER)) {
                 return stack;
             }
         }
@@ -33,8 +36,8 @@ public final class QuiverManager {
     }
 
     public static List<ItemStack> getContents(ItemStack quiver) {
-        DefaultedList<ItemStack> contents = DefaultedList.ofSize(SLOT_COUNT, ItemStack.EMPTY);
-        quiver.getOrDefault(DataComponentTypes.CONTAINER, ContainerComponent.DEFAULT).copyTo(contents);
+        NonNullList<ItemStack> contents = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+        quiver.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(contents);
         return contents;
     }
 
@@ -44,23 +47,23 @@ public final class QuiverManager {
             ItemStack stack = slot < contents.size() ? contents.get(slot) : ItemStack.EMPTY;
             normalized.add(stack.isEmpty() ? ItemStack.EMPTY : stack.copy());
         }
-        quiver.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(normalized));
+        quiver.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(normalized));
     }
 
     public static int getSelectedSlot(ItemStack quiver) {
-        return MathHelper.clamp(quiver.getOrDefault(ModDataComponents.QUIVER_SELECTED_SLOT, 0), 0, SLOT_COUNT - 1);
+        return Mth.clamp(quiver.getOrDefault(ModDataComponents.QUIVER_SELECTED_SLOT, 0), 0, SLOT_COUNT - 1);
     }
 
     public static void setSelectedSlot(ItemStack quiver, int slot) {
-        quiver.set(ModDataComponents.QUIVER_SELECTED_SLOT, MathHelper.clamp(slot, 0, SLOT_COUNT - 1));
+        quiver.set(ModDataComponents.QUIVER_SELECTED_SLOT, Mth.clamp(slot, 0, SLOT_COUNT - 1));
     }
 
     private static int getNextSlot(ItemStack quiver) {
-        return MathHelper.floorMod(quiver.getOrDefault(ModDataComponents.QUIVER_NEXT_SLOT, 0), SLOT_COUNT);
+        return Mth.positiveModulo(quiver.getOrDefault(ModDataComponents.QUIVER_NEXT_SLOT, 0), SLOT_COUNT);
     }
 
     private static void setNextSlot(ItemStack quiver, int slot) {
-        quiver.set(ModDataComponents.QUIVER_NEXT_SLOT, MathHelper.floorMod(slot, SLOT_COUNT));
+        quiver.set(ModDataComponents.QUIVER_NEXT_SLOT, Mth.positiveModulo(slot, SLOT_COUNT));
     }
 
     /** Stores a whole arrow stack in the next empty slot, proceeding clockwise. */
@@ -99,7 +102,7 @@ public final class QuiverManager {
         return ItemStack.EMPTY;
     }
 
-    public static void cycleSelectedSlot(PlayerEntity player) {
+    public static void cycleSelectedSlot(Player player) {
         ItemStack quiver = getActiveQuiver(player);
         if (quiver.isEmpty()) {
             return;
@@ -115,7 +118,7 @@ public final class QuiverManager {
         }
     }
 
-    public static ItemStack getSelectedArrow(PlayerEntity player) {
+    public static ItemStack getSelectedArrow(Player player) {
         ItemStack quiver = getActiveQuiver(player);
         if (quiver.isEmpty()) {
             return ItemStack.EMPTY;
@@ -124,17 +127,17 @@ public final class QuiverManager {
         return isArrow(selected) ? selected.copy() : ItemStack.EMPTY;
     }
 
-    public static boolean isSelectedArrow(PlayerEntity player, ItemStack arrow) {
+    public static boolean isSelectedArrow(Player player, ItemStack arrow) {
         ItemStack selected = getSelectedArrow(player);
-        return !selected.isEmpty() && ItemStack.areItemsAndComponentsEqual(selected, arrow);
+        return !selected.isEmpty() && ItemStack.isSameItemSameComponents(selected, arrow);
     }
 
-    public static int countArrow(PlayerEntity player, ItemStack arrow) {
+    public static int countArrow(Player player, ItemStack arrow) {
         int available = 0;
         ItemStack quiver = getActiveQuiver(player);
         if (!quiver.isEmpty()) {
             for (ItemStack stack : getContents(quiver)) {
-                if (ItemStack.areItemsAndComponentsEqual(stack, arrow)) {
+                if (ItemStack.isSameItemSameComponents(stack, arrow)) {
                     available += stack.getCount();
                 }
             }
@@ -143,7 +146,7 @@ public final class QuiverManager {
     }
 
     /** Consumes matching arrows from the active quiver, selected slot first. */
-    public static int consumeArrow(PlayerEntity player, ItemStack arrow, int amount) {
+    public static int consumeArrow(Player player, ItemStack arrow, int amount) {
         if (amount <= 0) {
             return 0;
         }
@@ -168,11 +171,11 @@ public final class QuiverManager {
 
     private static int consumeSlot(List<ItemStack> contents, int slot, ItemStack arrow, int remaining) {
         ItemStack candidate = contents.get(slot);
-        if (candidate.isEmpty() || !ItemStack.areItemsAndComponentsEqual(candidate, arrow)) {
+        if (candidate.isEmpty() || !ItemStack.isSameItemSameComponents(candidate, arrow)) {
             return remaining;
         }
         int removed = Math.min(remaining, candidate.getCount());
-        candidate.decrement(removed);
+        candidate.shrink(removed);
         if (candidate.isEmpty()) {
             contents.set(slot, ItemStack.EMPTY);
         }

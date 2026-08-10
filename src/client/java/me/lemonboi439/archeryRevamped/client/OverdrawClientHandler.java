@@ -4,12 +4,11 @@ import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.enchantment.OverdrawEnchantment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.ItemStack;
 
 public final class OverdrawClientHandler {
     private static float vignette;
@@ -27,26 +26,26 @@ public final class OverdrawClientHandler {
         return shakeIntensity;
     }
 
-    private static void tick(MinecraftClient client) {
-        if (client.player == null || client.world == null) {
+    private static void tick(Minecraft client) {
+        if (client.player == null || client.level == null) {
             vignette = 0.0F;
             shakeIntensity = 0.0F;
             return;
         }
 
-        ItemStack activeStack = client.player.getActiveItem();
+        ItemStack activeStack = client.player.getUseItem();
         if (!client.player.isUsingItem() || activeStack.isEmpty()
                 || !(activeStack.getItem() instanceof BowItem)) {
             fadeEffects();
             return;
         }
 
-        var enchantments = client.world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
-        int level = enchantments.getOptional(OverdrawEnchantment.KEY)
+        var enchantments = client.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        int level = enchantments.get(OverdrawEnchantment.KEY)
                 .map(entry -> EnchantmentHelper.getLevel(entry, activeStack))
                 .map(value -> ConfigManager.limitEnchantmentLevel(value, OverdrawEnchantment.MAX_LEVEL))
                 .orElse(0);
-        int overdrawTicks = client.player.getItemUseTime() - 20;
+        int overdrawTicks = client.player.getTicksUsingItem() - 20;
         if (level <= 0 || overdrawTicks <= 0) {
             fadeEffects();
             return;
@@ -65,11 +64,11 @@ public final class OverdrawClientHandler {
         if (shakeIntensity < 0.001F) shakeIntensity = 0.0F;
     }
 
-    private static void renderVignette(DrawContext context, net.minecraft.client.render.RenderTickCounter tickCounter) {
+    private static void renderVignette(GuiGraphics context, net.minecraft.client.DeltaTracker tickCounter) {
         if (vignette <= 0.001F) return;
 
-        int width = context.getScaledWindowWidth();
-        int height = context.getScaledWindowHeight();
+        int width = context.guiWidth();
+        int height = context.guiHeight();
         int alpha = Math.min(130, 20 + (int) (vignette * 110.0F));
         int color = (alpha << 24) | 0xAA0000;
         int border = Math.max(8, (int) (Math.min(width, height) * 0.08F));

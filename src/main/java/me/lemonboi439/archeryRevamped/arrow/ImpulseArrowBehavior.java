@@ -2,10 +2,10 @@ package me.lemonboi439.archeryRevamped.arrow;
 
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Vec3d;
-
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import java.util.concurrent.ThreadLocalRandom;
 
 public final class ImpulseArrowBehavior implements ArrowBehavior {
@@ -16,19 +16,21 @@ public final class ImpulseArrowBehavior implements ArrowBehavior {
     @Override
     public void onBlockHit(ArcheryArrowEntity arrow, BlockHitResult hit) {
         if (ConfigManager.isImpulseArrowEnabled()) {
-            arrow.scheduleDelayedImpact(ArrowType.IMPULSE, hit.getPos(), activationDelay());
+            Direction normal = hit.getDirection();
+            arrow.scheduleDelayedImpact(ArrowType.IMPULSE,
+                    hit.getLocation().add(normal.getUnitVec3().scale(0.25D)), activationDelay());
         }
     }
 
     @Override
     public void onEntityHit(ArcheryArrowEntity arrow, EntityHitResult hit) {
         if (ConfigManager.isImpulseArrowEnabled()) {
-            arrow.scheduleDelayedImpact(ArrowType.IMPULSE, hit.getPos(), activationDelay());
+            arrow.scheduleDelayedImpact(ArrowType.IMPULSE, hit.getLocation(), activationDelay());
         }
     }
 
     @Override
-    public void onDelayedImpact(ArcheryArrowEntity arrow, Vec3d impact) {
+    public void onDelayedImpact(ArcheryArrowEntity arrow, Vec3 impact) {
         if (ConfigManager.isImpulseArrowEnabled()) {
             AreaForceArrowBehavior.apply(arrow, impact, ConfigManager.getImpulseRadius(),
                     ConfigManager.getImpulseStrength(), true);

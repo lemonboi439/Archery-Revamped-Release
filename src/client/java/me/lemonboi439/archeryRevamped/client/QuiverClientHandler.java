@@ -1,19 +1,20 @@
 package me.lemonboi439.archeryRevamped.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import me.lemonboi439.archeryRevamped.ArcheryRevamped;
+import me.lemonboi439.archeryRevamped.quiver.QuiverManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.util.Identifier;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 public final class QuiverClientHandler {
-    private static final KeyBinding OPEN_SELECTOR = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+    private static final KeyMapping OPEN_SELECTOR = KeyMappingHelper.registerKeyMapping(new KeyMapping(
             "key.archery-revamped.quiver_selector",
-            InputUtil.Type.KEYSYM,
+            InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_V,
-            KeyBinding.Category.create(Identifier.of(ArcheryRevamped.MOD_ID, "archery_revamped"))
+            KeyMapping.Category.register(Identifier.fromNamespaceAndPath(ArcheryRevamped.MOD_ID, "archery_revamped"))
     ));
 
     private QuiverClientHandler() {
@@ -21,10 +22,21 @@ public final class QuiverClientHandler {
 
     public static void register() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (OPEN_SELECTOR.wasPressed()) {
-                if (client.player != null && client.currentScreen == null) {
-                    client.setScreen(new QuiverRadialScreen());
+            // Query the physical key state. KeyBinding#isPressed can be cleared while
+            // a Screen receives the same V key event, causing the selector to
+            // close and reopen every other client tick (a visible flash).
+            boolean selectorHeld = client.getWindow() != null
+                    && GLFW.glfwGetKey(client.getWindow().handle(), GLFW.GLFW_KEY_V) == GLFW.GLFW_PRESS;
+            if (client.screen instanceof QuiverRadialScreen selector) {
+                if (!selectorHeld) {
+                    selector.confirmSelection();
                 }
+                return;
+            }
+
+            if (selectorHeld && client.player != null && client.screen == null
+                    && !QuiverManager.getActiveQuiver(client.player).isEmpty()) {
+                client.setScreen(new QuiverRadialScreen());
             }
         });
     }

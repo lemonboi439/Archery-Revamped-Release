@@ -3,12 +3,12 @@ package me.lemonboi439.archeryRevamped.arrow;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public final class RicochetBehavior implements ArrowBehavior {
     @Override
@@ -25,28 +25,28 @@ public final class RicochetBehavior implements ArrowBehavior {
             return;
         }
 
-        Vec3d velocity = arrow.getVelocity();
-        Direction face = hit.getSide();
-        Vec3d normal = face.getDoubleVector();
-        double dot = velocity.dotProduct(normal);
+        Vec3 velocity = arrow.getDeltaMovement();
+        Direction face = hit.getDirection();
+        Vec3 normal = face.getUnitVec3();
+        double dot = velocity.dot(normal);
         double velocityLoss = ConfigManager.getRicochetVelocityLossPercent() / 100.0D;
-        Vec3d reflected = velocity.subtract(normal.multiply(2.0D * dot))
-                .multiply(1.0D - velocityLoss);
+        Vec3 reflected = velocity.subtract(normal.scale(2.0D * dot))
+                .scale(1.0D - velocityLoss);
 
-        arrow.setVelocity(reflected);
+        arrow.setDeltaMovement(reflected);
         arrow.clearInGround();
         arrow.incrementBounceCount();
-        arrow.setPosition(
+        arrow.setPos(
                 arrow.getX() + normal.x * 0.01D,
                 arrow.getY() + normal.y * 0.01D,
                 arrow.getZ() + normal.z * 0.01D
         );
 
-        Vec3d bouncePosition = new Vec3d(arrow.getX(), arrow.getY(), arrow.getZ());
-        EffectManager.spawnParticles(arrow.getEntityWorld(), bouncePosition,
+        Vec3 bouncePosition = new Vec3(arrow.getX(), arrow.getY(), arrow.getZ());
+        EffectManager.spawnParticles(arrow.level(), bouncePosition,
                 ParticleTypes.ITEM_SLIME, 12);
-        EffectManager.playSound(arrow.getEntityWorld(), bouncePosition,
-                SoundEvents.ENTITY_SLIME_JUMP, 0.8F, 1.15F);
+        EffectManager.playSound(arrow.level(), bouncePosition,
+                SoundEvents.SLIME_JUMP, 0.8F, 1.15F);
     }
 
     @Override

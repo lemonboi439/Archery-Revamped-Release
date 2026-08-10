@@ -4,16 +4,14 @@ import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
 import me.lemonboi439.archeryRevamped.entity.ModEntities;
 import me.lemonboi439.archeryRevamped.entity.ShatteringShardEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Vec3d;
-
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import java.util.concurrent.ThreadLocalRandom;
 
 /** Splits one arrow into individual, damage-dealing amethyst shard projectiles. */
@@ -31,41 +29,41 @@ public final class ShatteringArrowBehavior implements ArrowBehavior {
 
     @Override
     public void onBlockHit(ArcheryArrowEntity arrow, BlockHitResult hit) {
-        shatter(arrow, hit.getPos());
+        shatter(arrow, hit.getLocation());
         // The stuck projectile remains a normal collectible arrow.
         arrow.setProjectileStack(new ItemStack(Items.ARROW));
     }
 
     @Override
     public void onEntityHit(ArcheryArrowEntity arrow, EntityHitResult hit) {
-        shatter(arrow, hit.getPos());
+        shatter(arrow, hit.getLocation());
         arrow.discard();
     }
 
-    private static void shatter(ArcheryArrowEntity arrow, Vec3d impact) {
-        if (!(arrow.getEntityWorld() instanceof ServerWorld world)) {
+    private static void shatter(ArcheryArrowEntity arrow, Vec3 impact) {
+        if (!(arrow.level() instanceof ServerLevel world)) {
             return;
         }
 
         EffectManager.spawnParticles(world, impact, ParticleTypes.CRIT, 14);
-        EffectManager.playSound(world, impact, SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME,
+        EffectManager.playSound(world, impact, SoundEvents.AMETHYST_BLOCK_CHIME,
                 0.9F, 1.15F);
         int shardCount = ThreadLocalRandom.current().nextInt(MIN_SHARD_COUNT, MAX_SHARD_COUNT + 1);
         for (int i = 0; i < shardCount; i++) {
             ShatteringShardEntity shard = new ShatteringShardEntity(world);
             shard.setOwner(arrow.getOwner());
-            shard.setPosition(impact.x, impact.y, impact.z);
+            shard.setPos(impact.x, impact.y, impact.z);
 
             double angle = ThreadLocalRandom.current().nextDouble(0.0D, Math.PI * 2.0D);
             double horizontal = ThreadLocalRandom.current()
                     .nextDouble(MIN_HORIZONTAL_SPEED, MAX_HORIZONTAL_SPEED);
-            Vec3d velocity = new Vec3d(
+            Vec3 velocity = new Vec3(
                     Math.cos(angle) * horizontal,
                     ThreadLocalRandom.current().nextDouble(MIN_VERTICAL_SPEED, MAX_VERTICAL_SPEED),
                     Math.sin(angle) * horizontal
             );
-            shard.setVelocity(velocity);
-            world.spawnEntity(shard);
+            shard.setDeltaMovement(velocity);
+            world.addFreshEntity(shard);
         }
     }
 }

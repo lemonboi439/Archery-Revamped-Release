@@ -3,15 +3,15 @@ package me.lemonboi439.archeryRevamped.arrow;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public final class EnderArrowBehavior implements ArrowBehavior {
     @Override
@@ -20,15 +20,15 @@ public final class EnderArrowBehavior implements ArrowBehavior {
 
     @Override
     public void onBlockHit(ArcheryArrowEntity arrow, BlockHitResult hit) {
-        teleportAtImpact(arrow, hit.getPos());
+        teleportAtImpact(arrow, hit.getLocation());
     }
 
     @Override
     public void onEntityHit(ArcheryArrowEntity arrow, EntityHitResult hit) {
-        teleportAtImpact(arrow, hit.getPos());
+        teleportAtImpact(arrow, hit.getLocation());
     }
 
-    private static void teleportAtImpact(ArcheryArrowEntity arrow, Vec3d impactPosition) {
+    private static void teleportAtImpact(ArcheryArrowEntity arrow, Vec3 impactPosition) {
         if (!ConfigManager.isEnderArrowEnabled()) {
             return;
         }
@@ -39,29 +39,29 @@ public final class EnderArrowBehavior implements ArrowBehavior {
             return;
         }
 
-        World world = livingOwner.getEntityWorld();
-        if (world.isClient()) {
+        Level world = livingOwner.level();
+        if (world.isClientSide()) {
             return;
         }
 
-        Vec3d requestedPosition = new Vec3d(
+        Vec3 requestedPosition = new Vec3(
                 impactPosition.x,
                 impactPosition.y + 0.5D,
                 impactPosition.z
         );
-        Vec3d safePosition = findSafePosition(livingOwner, requestedPosition);
+        Vec3 safePosition = findSafePosition(livingOwner, requestedPosition);
         if (safePosition != null) {
-            Vec3d oldPosition = new Vec3d(livingOwner.getX(), livingOwner.getY(), livingOwner.getZ());
+            Vec3 oldPosition = new Vec3(livingOwner.getX(), livingOwner.getY(), livingOwner.getZ());
             spawnEffects(world, oldPosition);
-            livingOwner.requestTeleport(safePosition.x, safePosition.y, safePosition.z);
+            livingOwner.teleportTo(safePosition.x, safePosition.y, safePosition.z);
             spawnEffects(world, safePosition);
         }
 
         arrow.discard();
     }
 
-    private static Vec3d findSafePosition(LivingEntity owner, Vec3d requestedPosition) {
-        World world = owner.getEntityWorld();
+    private static Vec3 findSafePosition(LivingEntity owner, Vec3 requestedPosition) {
+        Level world = owner.level();
         double[][] offsets = {
                 {0.0D, 0.0D, 0.0D},
                 {0.0D, 1.0D, 0.0D},
@@ -77,13 +77,13 @@ public final class EnderArrowBehavior implements ArrowBehavior {
         };
 
         for (double[] offset : offsets) {
-            Vec3d candidate = requestedPosition.add(offset[0], offset[1], offset[2]);
-            Box candidateBox = owner.getBoundingBox().offset(
+            Vec3 candidate = requestedPosition.add(offset[0], offset[1], offset[2]);
+            AABB candidateBox = owner.getBoundingBox().move(
                     candidate.x - owner.getX(),
                     candidate.y - owner.getY(),
                     candidate.z - owner.getZ()
             );
-            if (world.isSpaceEmpty(owner, candidateBox)) {
+            if (world.noCollision(owner, candidateBox)) {
                 return candidate;
             }
         }
@@ -91,9 +91,9 @@ public final class EnderArrowBehavior implements ArrowBehavior {
         return null;
     }
 
-    private static void spawnEffects(World world, Vec3d position) {
+    private static void spawnEffects(Level world, Vec3 position) {
         EffectManager.spawnParticles(world, position, ParticleTypes.PORTAL, 32);
         EffectManager.playSound(world, position,
-                SoundEvents.ENTITY_ENDERMAN_TELEPORT, 1.0F, 1.0F);
+                SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);
     }
 }

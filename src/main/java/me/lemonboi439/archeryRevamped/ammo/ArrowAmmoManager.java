@@ -1,11 +1,11 @@
 package me.lemonboi439.archeryRevamped.ammo;
 
 import me.lemonboi439.archeryRevamped.quiver.QuiverManager;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Handles projectile costs for arrows created after vanilla has fired the
@@ -20,32 +20,32 @@ public final class ArrowAmmoManager {
      * Returns true when vanilla's rules make an additional projectile free.
      * This preserves creative mode and Infinity/intangible-projectile behavior.
      */
-    public static boolean isFreeExtraProjectile(ServerPlayerEntity shooter,
-                                                 ServerWorld world,
+    public static boolean isFreeExtraProjectile(ServerPlayer shooter,
+                                                 ServerLevel world,
                                                  ItemStack weaponStack,
                                                  ItemStack projectileStack) {
-        return shooter.isInCreativeMode()
-                || projectileStack.contains(DataComponentTypes.INTANGIBLE_PROJECTILE);
+        return shooter.hasInfiniteMaterials()
+                || projectileStack.has(DataComponents.INTANGIBLE_PROJECTILE);
     }
 
     /**
      * Checks whether the player can pay for all requested additional arrows.
      */
-    public static boolean hasExtraArrows(ServerPlayerEntity shooter, ItemStack projectileStack,
+    public static boolean hasExtraArrows(ServerPlayer shooter, ItemStack projectileStack,
                                          int amount) {
-        if (amount <= 0 || shooter.isInCreativeMode()) {
+        if (amount <= 0 || shooter.hasInfiniteMaterials()) {
             return true;
         }
 
-        PlayerInventory inventory = shooter.getInventory();
+        Inventory inventory = shooter.getInventory();
         int available = QuiverManager.countArrow(shooter, projectileStack);
         if (available >= amount) {
             return true;
         }
-        for (int slot = 0; slot < inventory.size(); slot++) {
-            ItemStack candidate = inventory.getStack(slot);
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            ItemStack candidate = inventory.getItem(slot);
             if (!candidate.isEmpty()
-                    && ItemStack.areItemsAndComponentsEqual(candidate, projectileStack)) {
+                    && ItemStack.isSameItemSameComponents(candidate, projectileStack)) {
                 available += candidate.getCount();
                 if (available >= amount) {
                     return true;
@@ -59,29 +59,29 @@ public final class ArrowAmmoManager {
      * Charges all requested extra arrows atomically. It returns false without
      * changing the inventory when the player cannot pay the complete amount.
      */
-    public static boolean consumeExtraArrows(ServerPlayerEntity shooter, ItemStack projectileStack,
+    public static boolean consumeExtraArrows(ServerPlayer shooter, ItemStack projectileStack,
                                              int amount) {
-        if (amount <= 0 || shooter.isInCreativeMode()) {
+        if (amount <= 0 || shooter.hasInfiniteMaterials()) {
             return true;
         }
         if (!hasExtraArrows(shooter, projectileStack, amount)) {
             return false;
         }
 
-        PlayerInventory inventory = shooter.getInventory();
+        Inventory inventory = shooter.getInventory();
         int remaining = amount - QuiverManager.consumeArrow(shooter, projectileStack, amount);
-        for (int slot = 0; slot < inventory.size() && remaining > 0; slot++) {
-            ItemStack candidate = inventory.getStack(slot);
+        for (int slot = 0; slot < inventory.getContainerSize() && remaining > 0; slot++) {
+            ItemStack candidate = inventory.getItem(slot);
             if (candidate.isEmpty()
-                    || !ItemStack.areItemsAndComponentsEqual(candidate, projectileStack)) {
+                    || !ItemStack.isSameItemSameComponents(candidate, projectileStack)) {
                 continue;
             }
 
             int removed = Math.min(remaining, candidate.getCount());
-            inventory.removeStack(slot, removed);
+            inventory.removeItem(slot, removed);
             remaining -= removed;
         }
-        inventory.markDirty();
+        inventory.setChanged();
         return remaining == 0;
     }
 }

@@ -3,14 +3,14 @@ package me.lemonboi439.archeryRevamped.headshot;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 /** Head-region detection and cosmetic feedback for Headshot arrows. */
 public final class HeadshotManager {
@@ -25,20 +25,20 @@ public final class HeadshotManager {
 
         double radius = ConfigManager.getHeadshotBoxRadius();
         double eyeY = target.getEyeY();
-        Box headBox = new Box(
+        AABB headBox = new AABB(
                 target.getX() - radius, eyeY - radius, target.getZ() - radius,
                 target.getX() + radius, eyeY + radius, target.getZ() + radius
         );
         // HitResult.getPos() is the exact collision point along the ray in
         // Yarn 1.21.11; this is deliberately not the entity's center/position.
-        if (!headBox.contains(hit.getPos())) {
+        if (!headBox.contains(hit.getLocation())) {
             return 1.0D;
         }
 
-        boolean pvp = target instanceof PlayerEntity;
+        boolean pvp = target instanceof Player;
         double multiplier = getDamageMultiplier(arrow.getHeadshotLevel(), pvp);
         if (ConfigManager.isHeadshotFeedbackEnabled()) {
-            playFeedback(arrow.getEntityWorld(), hit.getPos());
+            playFeedback(arrow.level(), hit.getLocation());
         }
         return multiplier;
     }
@@ -59,9 +59,9 @@ public final class HeadshotManager {
         return 1.0D + bonus / 100.0D;
     }
 
-    private static void playFeedback(World world, Vec3d position) {
+    private static void playFeedback(Level world, Vec3 position) {
         EffectManager.spawnParticles(world, position, ParticleTypes.CRIT, 5);
         EffectManager.playSound(world, position,
-                SoundEvents.BLOCK_NOTE_BLOCK_PLING, 0.7F, 1.8F);
+                SoundEvents.NOTE_BLOCK_PLING, 0.7F, 1.8F);
     }
 }

@@ -152,6 +152,14 @@ public final class ConfigManager {
         return config.explosiveArrowAntiGrief;
     }
 
+    public static double getEchoSonicBoomChancePercent() {
+        return config.echoSonicBoomChancePercent;
+    }
+
+    public static double getEchoSonicBoomDamage() {
+        return config.echoSonicBoomDamage;
+    }
+
     public static double getShockwaveRadius() {
         return config.shockwaveRadius;
     }
@@ -276,8 +284,41 @@ public final class ConfigManager {
         return config.fletchingRecipeOutputCount;
     }
 
+    /** Whether arrows supplied by other mods may be used as Fletching inputs. */
+    public static boolean allowsModdedFletchingArrowInputs() {
+        return config.allowModdedFletchingArrowInputs;
+    }
+
+    public static void setAllowModdedFletchingArrowInputs(boolean enabled) {
+        config.allowModdedFletchingArrowInputs = enabled;
+        saveAfterChange();
+    }
+
+    /** Prefer a quiver worn in the optional Trinkets slot over an inventory quiver. */
+    public static boolean doesTrinketsQuiverOverrideInventory() {
+        return config.trinketsQuiverOverridesInventory;
+    }
+
+    public static void setTrinketsQuiverOverridesInventory(boolean enabled) {
+        config.trinketsQuiverOverridesInventory = enabled;
+        saveAfterChange();
+    }
+
     public static boolean isModEnabled() {
         return config.modEnabled;
+    }
+
+    /**
+     * Allows anvil operations above vanilla's "Too Expensive" threshold.
+     * This intentionally does not disable enchantment compatibility checks.
+     */
+    public static boolean isLimitlessAnvilEnabled() {
+        return config.limitlessAnvil;
+    }
+
+    public static void setLimitlessAnvilEnabled(boolean enabled) {
+        config.limitlessAnvil = enabled;
+        saveAfterChange();
     }
 
     public static boolean isHeadshotEnabled() {
@@ -362,6 +403,16 @@ public final class ConfigManager {
 
     public static void setExplosiveArrowAntiGriefEnabled(boolean value) {
         config.explosiveArrowAntiGrief = value;
+        saveAfterChange();
+    }
+
+    public static void setEchoSonicBoomChancePercent(double value) {
+        config.echoSonicBoomChancePercent = value;
+        saveAfterChange();
+    }
+
+    public static void setEchoSonicBoomDamage(double value) {
+        config.echoSonicBoomDamage = value;
         saveAfterChange();
     }
 
@@ -591,10 +642,14 @@ public final class ConfigManager {
         private boolean impulseArrowEnabled = true;
         private boolean explosiveArrowEnabled = true;
         private boolean explosiveArrowAntiGrief = false;
-        private double shockwaveRadius = 4.0D;
-        private double shockwaveStrength = 2.0D;
-        private double impulseRadius = 4.0D;
-        private double impulseStrength = 2.0D;
+        private double echoSonicBoomChancePercent = 10.0D;
+        private double echoSonicBoomDamage = 10.0D;
+        // Radius and strength are wind-charge multipliers: 1.0 exactly
+        // reproduces a vanilla wind charge's entity-launch physics.
+        private double shockwaveRadius = 1.0D;
+        private double shockwaveStrength = 1.0D;
+        private double impulseRadius = 1.0D;
+        private double impulseStrength = 1.0D;
         private double explosiveArrowSize = 2.5D;
         private double overdrawDamageIncreasePerTickPercent = 1.0D;
         private double overdrawMaxDamageBonusPercent = 100.0D;
@@ -621,7 +676,10 @@ public final class ConfigManager {
         private int burstStaggerDelayTicks = 3;
         private int burstArrowsPerLevel = 1;
         private int fletchingRecipeOutputCount = 4;
+        private boolean allowModdedFletchingArrowInputs = true;
+        private boolean trinketsQuiverOverridesInventory = true;
         private boolean modEnabled = true;
+        private boolean limitlessAnvil = false;
         private boolean trajectoryColourVisualisation = false;
         private boolean infiniteLevels = false;
         private boolean headshotEnabled = false;
@@ -680,12 +738,30 @@ public final class ConfigManager {
                 result.impulseStrength = readDouble(json, "arrow_types", "impulse.strength",
                         null, result.impulseStrength);
             }
+            // Before wind-charge physics, the old area-force implementation
+            // shipped with a 4-block radius and strength 2. Those defaults
+            // represented absolute values. They now represent multipliers,
+            // where 1.0 is an exact vanilla wind charge, so migrate only the
+            // old default pair without touching intentionally customised
+            // values.
+            if (result.shockwaveRadius == 4.0D && result.shockwaveStrength == 2.0D) {
+                result.shockwaveRadius = 1.0D;
+                result.shockwaveStrength = 1.0D;
+            }
+            if (result.impulseRadius == 4.0D && result.impulseStrength == 2.0D) {
+                result.impulseRadius = 1.0D;
+                result.impulseStrength = 1.0D;
+            }
             result.explosiveArrowEnabled = readBoolean(json, "arrow_types", "explosive.enabled",
                     null, result.explosiveArrowEnabled);
             result.explosiveArrowSize = readDouble(json, "arrow_types", "explosive.explosion_size",
                     "explosiveArrowSize", result.explosiveArrowSize);
             result.explosiveArrowAntiGrief = readBoolean(json, "arrow_types", "explosive.anti_grief",
                     "explosiveArrowAntiGrief", result.explosiveArrowAntiGrief);
+            result.echoSonicBoomChancePercent = readDouble(json, "arrow_types", "echo.sonic_boom_chance_percent",
+                    "echoSonicBoomChancePercent", result.echoSonicBoomChancePercent);
+            result.echoSonicBoomDamage = readDouble(json, "arrow_types", "echo.sonic_boom_damage",
+                    "echoSonicBoomDamage", result.echoSonicBoomDamage);
 
             result.overdrawDamageIncreasePerTickPercent = readDouble(json, "overdraw",
                     "damage_increase_per_tick_percent", "overdrawDamageIncreasePerTickPercent", result.overdrawDamageIncreasePerTickPercent);
@@ -760,9 +836,16 @@ public final class ConfigManager {
 
             result.fletchingRecipeOutputCount = readInt(json, "fletching", "recipe_output_count",
                     "fletchingRecipeOutputCount", result.fletchingRecipeOutputCount);
+            result.allowModdedFletchingArrowInputs = readBoolean(json, "fletching", "allow_modded_arrow_inputs",
+                    "allowModdedFletchingArrowInputs", result.allowModdedFletchingArrowInputs);
+            result.trinketsQuiverOverridesInventory = readBoolean(json, "compatibility",
+                    "trinkets_quiver_overrides_inventory", "trinketsQuiverOverridesInventory",
+                    result.trinketsQuiverOverridesInventory);
             result.trajectoryColourVisualisation = readBoolean(json, "trajectory", "colour_visualisation",
                     "trajectoryColourVisualisation", result.trajectoryColourVisualisation);
             result.modEnabled = readBoolean(json, "general", "mod_enabled", "modEnabled", result.modEnabled);
+            result.limitlessAnvil = readBoolean(json, "general", "limitless_anvil",
+                    "limitlessAnvil", result.limitlessAnvil);
             result.infiniteLevels = readBoolean(json, "regular", "infinite_levels",
                     "infiniteLevels", result.infiniteLevels);
             result.validate();
@@ -841,11 +924,20 @@ public final class ConfigManager {
             explosive.addProperty("explosion_size", explosiveArrowSize);
             explosive.addProperty("anti_grief", explosiveArrowAntiGrief);
             arrowTypes.add("explosive", explosive);
+            JsonObject echo = new JsonObject();
+            echo.addProperty("sonic_boom_chance_percent", echoSonicBoomChancePercent);
+            echo.addProperty("sonic_boom_damage", echoSonicBoomDamage);
+            arrowTypes.add("echo", echo);
             root.add("arrow_types", arrowTypes);
 
             JsonObject fletching = new JsonObject();
             fletching.addProperty("recipe_output_count", fletchingRecipeOutputCount);
+            fletching.addProperty("allow_modded_arrow_inputs", allowModdedFletchingArrowInputs);
             root.add("fletching", fletching);
+
+            JsonObject compatibility = new JsonObject();
+            compatibility.addProperty("trinkets_quiver_overrides_inventory", trinketsQuiverOverridesInventory);
+            root.add("compatibility", compatibility);
 
             JsonObject headshot = new JsonObject();
             headshot.addProperty("enableHeadshot", headshotEnabled);
@@ -865,6 +957,7 @@ public final class ConfigManager {
 
             JsonObject general = new JsonObject();
             general.addProperty("mod_enabled", modEnabled);
+            general.addProperty("limitless_anvil", limitlessAnvil);
             root.add("general", general);
 
             JsonObject regular = new JsonObject();
@@ -881,11 +974,15 @@ public final class ConfigManager {
             terminalVelocity = nonNegative(terminalVelocity, 999.0D);
             maxLifetimeTicks = Math.max(1, maxLifetimeTicks);
             ricochetVelocityLossPercent = clamp(ricochetVelocityLossPercent, 0.0D, 100.0D, 10.0D);
-            shockwaveRadius = nonNegative(shockwaveRadius, 4.0D);
-            shockwaveStrength = nonNegative(shockwaveStrength, 2.0D);
-            impulseRadius = nonNegative(impulseRadius, 4.0D);
-            impulseStrength = nonNegative(impulseStrength, 2.0D);
-            explosiveArrowSize = nonNegative(explosiveArrowSize, 2.5D);
+            shockwaveRadius = nonNegative(shockwaveRadius, 1.0D);
+            shockwaveStrength = nonNegative(shockwaveStrength, 1.0D);
+            impulseRadius = nonNegative(impulseRadius, 1.0D);
+            impulseStrength = nonNegative(impulseStrength, 1.0D);
+            // Huge explosions can lock up world ticking. Keep the option
+            // configurable while enforcing a hard, recoverable ceiling.
+            explosiveArrowSize = clamp(explosiveArrowSize, 0.0D, 500.0D, 2.5D);
+            echoSonicBoomChancePercent = clamp(echoSonicBoomChancePercent, 0.0D, 100.0D, 10.0D);
+            echoSonicBoomDamage = nonNegative(echoSonicBoomDamage, 10.0D);
             overdrawDamageIncreasePerTickPercent = nonNegative(overdrawDamageIncreasePerTickPercent, 1.0D);
             overdrawMaxDamageBonusPercent = nonNegative(overdrawMaxDamageBonusPercent, 100.0D);
             overdrawAutoFireDelayTicks = Math.max(1, overdrawAutoFireDelayTicks);

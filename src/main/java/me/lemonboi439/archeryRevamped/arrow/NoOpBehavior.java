@@ -1,8 +1,8 @@
 package me.lemonboi439.archeryRevamped.arrow;
 
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 
 public final class NoOpBehavior implements ArrowBehavior {
     @Override

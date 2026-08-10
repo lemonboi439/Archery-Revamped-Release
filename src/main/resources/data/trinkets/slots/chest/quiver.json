@@ -1,0 +1,7 @@
+{
+  "icon": "archery-revamped:gui/slots/quiver",
+  "order": -500,
+  "validator_predicates": [
+    "trinkets:tag"
+  ]
+}

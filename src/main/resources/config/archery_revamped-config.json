@@ -49,22 +49,30 @@
     },
     "shockwave": {
       "enabled": true,
-      "radius": 4.0,
-      "strength": 2.0
+      "radius": 1.0,
+      "strength": 1.0
     },
     "impulse": {
       "enabled": true,
-      "radius": 4.0,
-      "strength": 2.0
+      "radius": 1.0,
+      "strength": 1.0
     },
     "explosive": {
       "enabled": true,
       "explosion_size": 2.5,
       "anti_grief": false
+    },
+    "echo": {
+      "sonic_boom_chance_percent": 10.0,
+      "sonic_boom_damage": 10.0
     }
   },
   "fletching": {
-    "recipe_output_count": 4
+    "recipe_output_count": 4,
+    "allow_modded_arrow_inputs": true
+  },
+  "compatibility": {
+    "trinkets_quiver_overrides_inventory": true
   },
   "headshot": {
     "enableHeadshot": false,
@@ -81,7 +89,8 @@
     "colour_visualisation": false
   },
   "general": {
-    "mod_enabled": true
+    "mod_enabled": true,
+    "limitless_anvil": false
   },
   "regular": {
     "infinite_levels": false
