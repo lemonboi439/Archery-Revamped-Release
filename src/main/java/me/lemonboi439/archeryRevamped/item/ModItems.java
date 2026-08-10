@@ -7,8 +7,6 @@ import net.minecraft.item.ItemGroups;
 import net.minecraft.block.DispenserBlock;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 
 public final class ModItems {
@@ -24,65 +22,49 @@ public final class ModItems {
     public static final Item QUIVER = Registry.register(
             Registries.ITEM,
             QUIVER_ID,
-            new QuiverItem(new Item.Settings()
-                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, QUIVER_ID))
-                    .maxCount(1))
+            new QuiverItem(new Item.Settings().maxCount(1))
     );
 
     public static final Item ENDER_ARROW = Registry.register(
             Registries.ITEM,
             ENDER_ARROW_ID,
-            new EnderArrowItem(new Item.Settings()
-                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, ENDER_ARROW_ID))
-                    .maxCount(64))
+            new EnderArrowItem(new Item.Settings().maxCount(64))
     );
 
     public static final Item SHOCKWAVE_ARROW = Registry.register(
             Registries.ITEM,
             SHOCKWAVE_ARROW_ID,
-            new ShockwaveArrowItem(new Item.Settings()
-                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, SHOCKWAVE_ARROW_ID))
-                    .maxCount(64))
+            new ShockwaveArrowItem(new Item.Settings().maxCount(64))
     );
 
     public static final Item IMPULSE_ARROW = Registry.register(
             Registries.ITEM,
             IMPULSE_ARROW_ID,
-            new ImpulseArrowItem(new Item.Settings()
-                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, IMPULSE_ARROW_ID))
-                    .maxCount(64))
+            new ImpulseArrowItem(new Item.Settings().maxCount(64))
     );
 
     public static final Item EXPLOSIVE_ARROW = Registry.register(
             Registries.ITEM,
             EXPLOSIVE_ARROW_ID,
-            new ExplosiveArrowItem(new Item.Settings()
-                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, EXPLOSIVE_ARROW_ID))
-                    .maxCount(64))
+            new ExplosiveArrowItem(new Item.Settings().maxCount(64))
     );
 
     public static final Item TIDAL_ARROW = Registry.register(
             Registries.ITEM,
             TIDAL_ARROW_ID,
-            new TidalArrowItem(new Item.Settings()
-                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, TIDAL_ARROW_ID))
-                    .maxCount(64))
+            new TidalArrowItem(new Item.Settings().maxCount(64))
     );
 
     public static final Item SHATTERING_ARROW = Registry.register(
             Registries.ITEM,
             SHATTERING_ARROW_ID,
-            new ShatteringArrowItem(new Item.Settings()
-                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, SHATTERING_ARROW_ID))
-                    .maxCount(64))
+            new ShatteringArrowItem(new Item.Settings().maxCount(64))
     );
 
     public static final Item ECHO_ARROW = Registry.register(
             Registries.ITEM,
             ECHO_ARROW_ID,
-            new EchoArrowItem(new Item.Settings()
-                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, ECHO_ARROW_ID))
-                    .maxCount(64))
+            new EchoArrowItem(new Item.Settings().maxCount(64))
     );
 
     private ModItems() {

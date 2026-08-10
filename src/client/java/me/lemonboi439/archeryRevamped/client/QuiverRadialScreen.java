@@ -4,9 +4,7 @@ import me.lemonboi439.archeryRevamped.quiver.QuiverManager;
 import me.lemonboi439.archeryRevamped.quiver.QuiverNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
@@ -70,9 +68,9 @@ public final class QuiverRadialScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (click.button() == 0) {
-            int slot = getHoveredSlot(click.x(), click.y(), this.width / 2, this.height / 2);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0) {
+            int slot = getHoveredSlot(mouseX, mouseY, this.width / 2, this.height / 2);
             MinecraftClient client = MinecraftClient.getInstance();
             if (slot >= 0 && client.player != null
                     && !QuiverManager.getContents(QuiverManager.getActiveQuiver(client.player)).get(slot).isEmpty()) {
@@ -80,28 +78,28 @@ public final class QuiverRadialScreen extends Screen {
                 return true;
             }
         }
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean keyPressed(KeyInput input) {
-        if (input.key() == GLFW.GLFW_KEY_Q) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_Q) {
             cycleSelection(-1);
             return true;
         }
-        if (input.key() == GLFW.GLFW_KEY_E) {
+        if (keyCode == GLFW.GLFW_KEY_E) {
             cycleSelection(1);
             return true;
         }
-        if (input.key() == GLFW.GLFW_KEY_V) {
+        if (keyCode == GLFW.GLFW_KEY_V) {
             confirmSelection();
             return true;
         }
-        if (input.key() == GLFW.GLFW_KEY_ESCAPE) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
             close();
             return true;
         }
-        return super.keyPressed(input);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     private int getPendingSlot(List<ItemStack> contents, ItemStack quiver) {

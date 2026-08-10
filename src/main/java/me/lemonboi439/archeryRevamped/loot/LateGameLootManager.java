@@ -79,7 +79,7 @@ public final class LateGameLootManager {
             RegistryWrapper.WrapperLookup registries,
             float chance
     ) {
-        var enchantmentLookup = registries.getOptional(RegistryKeys.ENCHANTMENT);
+        var enchantmentLookup = registries.getOptionalWrapper(RegistryKeys.ENCHANTMENT);
         if (enchantmentLookup.isEmpty()) {
             return;
         }

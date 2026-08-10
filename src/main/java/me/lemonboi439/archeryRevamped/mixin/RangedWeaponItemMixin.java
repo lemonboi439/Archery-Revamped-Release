@@ -44,14 +44,14 @@ public abstract class RangedWeaponItemMixin {
         ArcheryArrowEntity arrow = new ArcheryArrowEntity(
                 world, shooter, projectileStack.copy(), weaponStack.copy()
         );
-        var enchantments = world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
-        var ricochet = enchantments.getOptional(RicochetEnchantment.KEY);
+        var enchantments = world.getRegistryManager().get(RegistryKeys.ENCHANTMENT);
+        var ricochet = enchantments.getEntry(RicochetEnchantment.KEY);
         int ricochetLevel = ricochet
                 .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
                 .orElse(0);
         arrow.setRicochetLevel(ConfigManager.limitEnchantmentLevel(
                 ricochetLevel, RicochetEnchantment.MAX_LEVEL));
-        var longshot = enchantments.getOptional(LongshotEnchantment.KEY);
+        var longshot = enchantments.getEntry(LongshotEnchantment.KEY);
         int longshotLevel = longshot
                 .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
                 .orElse(0);
@@ -59,19 +59,19 @@ public abstract class RangedWeaponItemMixin {
                 longshotLevel, LongshotEnchantment.MAX_LEVEL));
         int fractureLevel = 0;
         if (ConfigManager.isFractureEnabled()) {
-            var fracture = enchantments.getOptional(FractureEnchantment.KEY);
+            var fracture = enchantments.getEntry(FractureEnchantment.KEY);
             fractureLevel = fracture
                     .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
                     .orElse(0);
         }
         arrow.setFractureLevel(ConfigManager.limitEnchantmentLevel(
                 fractureLevel, FractureEnchantment.MAX_LEVEL));
-        var burst = enchantments.getOptional(BurstEnchantment.KEY);
+        var burst = enchantments.getEntry(BurstEnchantment.KEY);
         int burstLevel = burst
                 .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
                 .orElse(0);
         burstLevel = ConfigManager.limitEnchantmentLevel(burstLevel, BurstEnchantment.MAX_LEVEL);
-        var headshot = enchantments.getOptional(HeadshotEnchantment.KEY);
+        var headshot = enchantments.getEntry(HeadshotEnchantment.KEY);
         int headshotLevel = headshot
                 .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
                 .orElse(0);

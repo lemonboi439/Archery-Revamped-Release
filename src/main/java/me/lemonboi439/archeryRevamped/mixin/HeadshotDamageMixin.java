@@ -13,7 +13,7 @@ public abstract class HeadshotDamageMixin {
             method = "onEntityHit",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;sidedDamage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
+                    target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
             ),
             index = 1
     )

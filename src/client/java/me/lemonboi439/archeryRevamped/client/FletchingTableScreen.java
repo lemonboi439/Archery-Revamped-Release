@@ -3,7 +3,6 @@ package me.lemonboi439.archeryRevamped.client;
 import me.lemonboi439.archeryRevamped.screen.FletchingTableScreenHandler;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -26,7 +25,6 @@ public final class FletchingTableScreen extends HandledScreen<FletchingTableScre
         int left = this.x;
         int top = this.y;
         context.drawTexture(
-                RenderPipelines.GUI_TEXTURED,
                 TEXTURE,
                 left,
                 top,

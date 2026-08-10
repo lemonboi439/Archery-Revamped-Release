@@ -10,14 +10,12 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.explosion.ExplosionImpl;
 
 /**
  * Shared landing-point force logic for Shockwave and Impulse arrows.
  *
  * <p>This mirrors vanilla wind-charge launch maths: a 1.2 power blast reaches
- * entities up to twice that radius, honours obstruction exposure and explosion
- * knockback resistance, and uses the wind charge's 1.22 knockback factor.
+ * entities up to twice that radius and honours explosion knockback resistance.
  * Impulse uses that same vector in reverse.</p>
  */
 public final class AreaForceArrowBehavior {
@@ -63,12 +61,10 @@ public final class AreaForceArrowBehavior {
             }
 
             Vec3d direction = entity.getEyePos().subtract(impact).normalize();
-            float exposure = ExplosionImpl.calculateReceivedDamage(impact, entity);
             double resistance = entity instanceof LivingEntity living
-                    ? living.getAttributeValue(EntityAttributes.EXPLOSION_KNOCKBACK_RESISTANCE)
+                    ? living.getAttributeValue(EntityAttributes.GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE)
                     : 0.0D;
             double windChargeForce = (1.0D - normalizedDistance)
-                    * exposure
                     * WIND_CHARGE_KNOCKBACK_MULTIPLIER
                     * Math.max(0.0D, 1.0D - resistance)
                     * forceMultiplier;

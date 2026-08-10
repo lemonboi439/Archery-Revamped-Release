@@ -3,7 +3,7 @@ package me.lemonboi439.archeryRevamped.mixin;
 import me.lemonboi439.archeryRevamped.client.OverdrawClientHandler;
 import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
-import net.minecraft.world.World;
+import net.minecraft.world.BlockView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +19,7 @@ public abstract class CameraMixin {
 
     @Inject(method = "update", at = @At("TAIL"))
     private void archeryRevamped$applyOverdrawShake(
-            World area, Entity focusedEntity, boolean thirdPerson, boolean inverseView,
+            BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView,
             float tickProgress, CallbackInfo callbackInfo
     ) {
         float intensity = OverdrawClientHandler.getShakeIntensity();

@@ -41,8 +41,8 @@ public final class OverdrawClientHandler {
             return;
         }
 
-        var enchantments = client.world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
-        int level = enchantments.getOptional(OverdrawEnchantment.KEY)
+        var enchantments = client.world.getRegistryManager().get(RegistryKeys.ENCHANTMENT);
+        int level = enchantments.getEntry(OverdrawEnchantment.KEY)
                 .map(entry -> EnchantmentHelper.getLevel(entry, activeStack))
                 .map(value -> ConfigManager.limitEnchantmentLevel(value, OverdrawEnchantment.MAX_LEVEL))
                 .orElse(0);

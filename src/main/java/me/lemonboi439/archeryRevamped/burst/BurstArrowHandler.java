@@ -47,8 +47,8 @@ public final class BurstArrowHandler {
         int arrowsPerLevel = Math.max(1, ConfigManager.getBurstArrowsPerLevel());
         int totalBurstArrows = Math.max(1, burstLevel * arrowsPerLevel);
         int multishotLevel = serverWorld.getRegistryManager()
-                .getOrThrow(RegistryKeys.ENCHANTMENT)
-                .getOptional(Enchantments.MULTISHOT)
+                .get(RegistryKeys.ENCHANTMENT)
+                .getEntry(Enchantments.MULTISHOT)
                 .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
                 .orElse(0);
         // Multishot already creates three base projectiles. Treat the burst
@@ -64,7 +64,7 @@ public final class BurstArrowHandler {
         int staggerDelay = Math.max(1, ConfigManager.getBurstStaggerDelayTicks());
         firstArrow.setBurstState(additionalArrows, staggerDelay);
         firstArrow.setBurstScheduled(true);
-        shooter.getItemCooldownManager().set(weaponStack, additionalArrows * staggerDelay + 1);
+        shooter.getItemCooldownManager().set(weaponStack.getItem(), additionalArrows * staggerDelay + 1);
 
         PENDING_BURSTS.add(new PendingBurst(
                 firstArrow,

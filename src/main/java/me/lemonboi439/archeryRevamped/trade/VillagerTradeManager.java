@@ -42,26 +42,26 @@ public final class VillagerTradeManager {
     private static void registerWeaponsmithTrades() {
         // Novice: a reliable source of Ender Pearls for Ender Arrow recipes.
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.WEAPONSMITH, 1, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         4, new ItemStack(Items.ENDER_PEARL), 5
                 ))
         );
 
         // Apprentice: Gunpowder for Explosive Arrows.
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.WEAPONSMITH, 2, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         2, new ItemStack(Items.GUNPOWDER, 2), 10
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.WEAPONSMITH, 3, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         3, new ItemStack(Items.WIND_CHARGE, 2), 15
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.WEAPONSMITH, 4, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         2, new ItemStack(Items.IRON_NUGGET, 8), 20
                 ))
         );
@@ -72,14 +72,14 @@ public final class VillagerTradeManager {
         // A water potion is a valid fletching-table potion ingredient and
         // keeps the trade useful without choosing a particular tipped effect.
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.CLERIC, 2, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         3, createWaterPotionStack(), 10
                 ))
         );
 
         // Clerics also provide the arrows needed by the tipped-arrow recipe.
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.CLERIC, 3, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         2, new ItemStack(Items.ARROW, 4), 15
                 ))
         );
@@ -87,25 +87,25 @@ public final class VillagerTradeManager {
 
     private static void registerCartographerTrades() {
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.CARTOGRAPHER, 1, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         5, new ItemStack(ModItems.ENDER_ARROW, 2), 5
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.CARTOGRAPHER, 2, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         4, new ItemStack(ModItems.SHOCKWAVE_ARROW, 4), 10
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.CARTOGRAPHER, 3, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         4, new ItemStack(ModItems.IMPULSE_ARROW, 4), 15
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.CARTOGRAPHER, 4, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         5, new ItemStack(ModItems.EXPLOSIVE_ARROW, 4), 20
                 ))
         );
@@ -116,25 +116,25 @@ public final class VillagerTradeManager {
         // The Fletcher is the fletching profession and is the primary
         // villager source for the finished special arrows.
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.FLETCHER, 2, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         3, new ItemStack(ModItems.SHOCKWAVE_ARROW, 4), 10
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.FLETCHER, 3, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         4, new ItemStack(ModItems.IMPULSE_ARROW, 4), 15
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.FLETCHER, 4, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         5, new ItemStack(ModItems.ENDER_ARROW, 2), 20
                 ))
         );
 
         TradeOfferHelper.registerVillagerOffers(VillagerProfession.FLETCHER, 5, factories ->
-                factories.add((world, entity, random) -> emeraldTrade(
+                factories.add((entity, random) -> emeraldTrade(
                         5, new ItemStack(ModItems.EXPLOSIVE_ARROW, 4), 30
                 ))
         );

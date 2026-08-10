@@ -8,8 +8,8 @@ import me.lemonboi439.archeryRevamped.enchantment.LongshotEnchantment;
 import me.lemonboi439.archeryRevamped.enchantment.OverdrawEnchantment;
 import me.lemonboi439.archeryRevamped.enchantment.RicochetEnchantment;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -52,7 +52,7 @@ public final class ModItemGroups {
     /** Adds only authored, normal enchantment levels to this mod's own tab. */
     private static void addEnchantmentBooks(ItemGroup.Entries entries,
                                             ItemGroup.DisplayContext displayContext) {
-        var enchantments = displayContext.lookup().getOrThrow(RegistryKeys.ENCHANTMENT);
+        var enchantments = displayContext.lookup().getWrapperOrThrow(RegistryKeys.ENCHANTMENT);
         addEnchantmentBooks(entries, enchantments, RicochetEnchantment.KEY, RicochetEnchantment.MAX_LEVEL);
         addEnchantmentBooks(entries, enchantments, OverdrawEnchantment.KEY, OverdrawEnchantment.MAX_LEVEL);
         addEnchantmentBooks(entries, enchantments, LongshotEnchantment.KEY, LongshotEnchantment.MAX_LEVEL);
@@ -66,7 +66,7 @@ public final class ModItemGroups {
                                             RegistryKey<Enchantment> key, int normalMaximum) {
         var enchantment = enchantments.getOrThrow(key);
         for (int level = 1; level <= normalMaximum; level++) {
-            entries.add(EnchantmentHelper.getEnchantedBookWith(new EnchantmentLevelEntry(enchantment, level)));
+            entries.add(EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(enchantment, level)));
         }
     }
 

@@ -18,12 +18,12 @@ public final class TidalArrowBehavior implements ArrowBehavior {
 
     @Override
     public void onTick(ArcheryArrowEntity arrow) {
-        FluidState fluid = arrow.getEntityWorld().getFluidState(BlockPos.ofFloored(arrow.getEntityPos()));
+        FluidState fluid = arrow.getEntityWorld().getFluidState(BlockPos.ofFloored(arrow.getPos()));
         if (fluid.isIn(FluidTags.WATER)) {
             // In water the custom drag override preserves speed and the arrow
             // spins like a torpedo. Air flight deliberately remains stable.
             arrow.advanceTidalSpin(SPIN_PER_TICK);
-            EffectManager.spawnParticles(arrow.getEntityWorld(), arrow.getEntityPos(), ParticleTypes.BUBBLE, 3);
+            EffectManager.spawnParticles(arrow.getEntityWorld(), arrow.getPos(), ParticleTypes.BUBBLE, 3);
             return;
         }
 
