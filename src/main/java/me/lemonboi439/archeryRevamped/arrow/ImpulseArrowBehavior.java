@@ -4,6 +4,7 @@ import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -16,7 +17,9 @@ public final class ImpulseArrowBehavior implements ArrowBehavior {
     @Override
     public void onBlockHit(ArcheryArrowEntity arrow, BlockHitResult hit) {
         if (ConfigManager.isImpulseArrowEnabled()) {
-            arrow.scheduleDelayedImpact(ArrowType.IMPULSE, hit.getPos(), activationDelay());
+            Direction normal = hit.getSide();
+            arrow.scheduleDelayedImpact(ArrowType.IMPULSE,
+                    hit.getPos().add(normal.getDoubleVector().multiply(0.25D)), activationDelay());
         }
     }
 

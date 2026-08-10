@@ -17,7 +17,6 @@ import me.lemonboi439.archeryRevamped.overdraw.OverdrawHandler;
 import me.lemonboi439.archeryRevamped.fracture.FractureScheduler;
 import me.lemonboi439.archeryRevamped.burst.BurstArrowHandler;
 import me.lemonboi439.archeryRevamped.arrow.RicochetBehavior;
-import me.lemonboi439.archeryRevamped.screen.FletchingTableScreenHandler;
 import me.lemonboi439.archeryRevamped.screen.ModScreenHandlers;
 import me.lemonboi439.archeryRevamped.screen.RecipeViewerCompat;
 import me.lemonboi439.archeryRevamped.command.ArcheryCommand;
@@ -56,7 +55,6 @@ public class ArcheryRevamped implements ModInitializer {
         BurstArrowHandler.register();
         TrajectoryNetworking.register();
         QuiverNetworking.register();
-        ServerTickEvents.END_SERVER_TICK.register(FletchingTableScreenHandler::tickServer);
         ArcheryCommand.register();
     }
 }

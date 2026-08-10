@@ -15,11 +15,11 @@ The mod is server-safe and does not require JEI, REI, EMI, Cloth Config, or Mod 
 ## Installation
 
 1. Install Fabric Loader for Minecraft 1.21.11 and Java 21.
-2. Put `archery-revamped-1.5.jar` in the `mods` directory.
+2. Put `archery-revamped-1.6.2.jar` in the `mods` directory.
 3. Install Fabric API for 1.21.11.
 4. Start the game. The mod creates `config/archery_revamped-config.json` on the first server start.
 
-The release JAR is produced at `build/libs/archery-revamped-1.5.jar`.
+The release JAR is produced at `build/libs/archery-revamped-1.6.2.jar`.
 
 ## Features
 
@@ -66,26 +66,28 @@ Press `V` to open the radial selector, `Q`/`E` to choose a stored arrow type, th
 
 All custom enchantments are included in the non-treasure enchantment tag. Because vanilla includes that tag in `in_enchanting_table`, they can be offered by enchanting tables when compatible with the item. They are also included in random-loot selection.
 
+The Archery Revamped creative tab contains each custom enchanted book at its intended normal levels only. Enabling the gameplay-only `regular.infinite_levels` option never adds 255-level books to creative inventory.
+
 Rare custom enchanted books are added to built-in late-game loot tables: End City, Bastion, Ancient City, Trial Chambers, Nether Fortress, Stronghold Library, and Woodland Mansion chests. Vanilla loot tables are modified through Fabric's loot event and are not replaced.
 
 ### Fletching table
 
-The vanilla Fletching Table opens the Archery Revamped screen when used. Valid recipes craft instantly, one batch per server tick, and produce four results by default:
+The vanilla Fletching Table opens the Archery Revamped screen when used. It works like a two-slot crafting table: place the required arrows in the first slot and a recognised modifier in the second slot to preview the result. Nothing is consumed until the output is clicked.
 
 | Input | Ingredient | Result |
 | --- | --- | --- |
-| 1 arrow | Ender Pearl | 4 Ender Arrows |
-| 1 arrow | Wind Charge | 4 Shockwave Arrows |
-| 1 arrow | Iron Nugget | 4 Impulse Arrows |
-| 1 arrow | Gunpowder | 4 Explosive Arrows |
-| 1 arrow | Heart of the Sea | 4 Tidal Arrows |
-| 1 arrow | Amethyst Shard | 4 Shattering Arrows |
-| 1 arrow | Echo Shard | 4 Echo Arrows |
-| 4 arrows | Potion | 4 matching tipped arrows |
+| 4 arrows | Ender Pearl | 4 Ender Arrows |
+| 4 arrows | Wind Charge | 4 Shockwave Arrows |
+| 4 arrows | Iron Nugget | 4 Impulse Arrows |
+| 4 arrows | Gunpowder | 4 Explosive Arrows |
+| 4 arrows | Heart of the Sea | 4 Tidal Arrows |
+| 4 arrows | Amethyst Shard | 4 Shattering Arrows |
+| 4 arrows | Echo Shard | 4 Echo Arrows |
+| 8 arrows | Potion | 8 matching tipped arrows |
 
-The output is a real inventory item. Closing the screen returns input and output items to the player.
+Left-click the output to craft one batch into the cursor. Click it again to craft another compatible batch into that cursor stack. Shift-click the output to craft as many batches as fit in the player inventory. Closing the screen returns the real input stacks; the output is a preview and cannot be duplicated.
 
-The GUI texture is editable at `src/main/resources/assets/archery-revamped/textures/gui/fletching_table.png`. The final Fletching Table UI redesign is planned for v1.6.
+The GUI texture is editable at `src/main/resources/assets/archery-revamped/textures/gui/fletching_table.png`. Tipped-arrow conversion is reserved for this table; crafting tables only make standard vanilla arrows.
 
 ### Debug trajectory
 
@@ -148,12 +150,13 @@ The packaged valid template is [`src/main/resources/config/archery_revamped-conf
 | fracture | min_split_delay_ticks | `1` |
 | fracture | max_split_delay_ticks | `40` |
 | arrow_types.ender | enabled | `true` |
-| arrow_types.shockwave | enabled / radius / strength | `true` / `4.0` / `2.0` |
-| arrow_types.impulse | enabled / radius / strength | `true` / `4.0` / `2.0` |
+| arrow_types.shockwave | enabled / radius / strength | `true` / `1.0` / `1.0` |
+| arrow_types.impulse | enabled / radius / strength | `true` / `1.0` / `1.0` |
 | arrow_types.explosive | enabled | `true` |
 | arrow_types.explosive | explosion_size | `2.5` |
 | arrow_types.explosive | anti_grief | `false` |
 | fletching | recipe_output_count | `4` |
+| fletching | allow_modded_arrow_inputs | `true` |
 | headshot | enableHeadshot | `false` |
 | headshot | headshotDamageBonusI / II / III | `15.0` / `30.0` / `45.0` |
 | headshot | headshotBoxRadius | `0.35` |

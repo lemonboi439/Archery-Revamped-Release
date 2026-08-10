@@ -72,22 +72,22 @@ public final class ArcheryRevampedConfigScreen {
                 .setDefaultValue(true).setSaveConsumer(ConfigManager::setShockwaveArrowEnabled).build());
         category.addEntry(entries.startDoubleField(Text.literal("Shockwave radius"),
                         ConfigManager.getShockwaveRadius())
-                .setDefaultValue(4.0D).setMin(0.0D)
+                .setDefaultValue(1.0D).setMin(0.0D)
                 .setSaveConsumer(ConfigManager::setShockwaveRadius).build());
         category.addEntry(entries.startDoubleField(Text.literal("Shockwave strength"),
                         ConfigManager.getShockwaveStrength())
-                .setDefaultValue(2.0D).setMin(0.0D)
+                .setDefaultValue(1.0D).setMin(0.0D)
                 .setSaveConsumer(ConfigManager::setShockwaveStrength).build());
         category.addEntry(entries.startBooleanToggle(Text.literal("Impulse arrows enabled"),
                         ConfigManager.isImpulseArrowEnabled())
                 .setDefaultValue(true).setSaveConsumer(ConfigManager::setImpulseArrowEnabled).build());
         category.addEntry(entries.startDoubleField(Text.literal("Impulse radius"),
                         ConfigManager.getImpulseRadius())
-                .setDefaultValue(4.0D).setMin(0.0D)
+                .setDefaultValue(1.0D).setMin(0.0D)
                 .setSaveConsumer(ConfigManager::setImpulseRadius).build());
         category.addEntry(entries.startDoubleField(Text.literal("Impulse pull strength"),
                         ConfigManager.getImpulseStrength())
-                .setDefaultValue(2.0D).setMin(0.0D)
+                .setDefaultValue(1.0D).setMin(0.0D)
                 .setSaveConsumer(ConfigManager::setImpulseStrength).build());
         category.addEntry(entries.startBooleanToggle(Text.literal("Explosive arrows enabled"),
                         ConfigManager.isExplosiveArrowEnabled())
@@ -201,6 +201,10 @@ public final class ArcheryRevampedConfigScreen {
         category.addEntry(entries.startIntField(Text.literal("Recipe output count"), ConfigManager.getFletchingRecipeOutputCount())
                 .setDefaultValue(4).setMin(1)
                 .setSaveConsumer(ConfigManager::setFletchingRecipeOutputCount).build());
+        category.addEntry(entries.startBooleanToggle(Text.literal("Allow other mods' arrows as Fletching inputs"),
+                        ConfigManager.allowsModdedFletchingArrowInputs())
+                .setDefaultValue(true)
+                .setSaveConsumer(ConfigManager::setAllowModdedFletchingArrowInputs).build());
     }
 
     private static void addHeadshot(ConfigBuilder builder, ConfigEntryBuilder entries) {

@@ -276,6 +276,16 @@ public final class ConfigManager {
         return config.fletchingRecipeOutputCount;
     }
 
+    /** Whether non-vanilla ArrowItem stacks may be converted in the Fletching Table. */
+    public static boolean allowsModdedFletchingArrowInputs() {
+        return config.allowModdedFletchingArrowInputs;
+    }
+
+    public static void setAllowModdedFletchingArrowInputs(boolean value) {
+        config.allowModdedFletchingArrowInputs = value;
+        saveAfterChange();
+    }
+
     public static boolean isModEnabled() {
         return config.modEnabled;
     }
@@ -591,10 +601,10 @@ public final class ConfigManager {
         private boolean impulseArrowEnabled = true;
         private boolean explosiveArrowEnabled = true;
         private boolean explosiveArrowAntiGrief = false;
-        private double shockwaveRadius = 4.0D;
-        private double shockwaveStrength = 2.0D;
-        private double impulseRadius = 4.0D;
-        private double impulseStrength = 2.0D;
+        private double shockwaveRadius = 1.0D;
+        private double shockwaveStrength = 1.0D;
+        private double impulseRadius = 1.0D;
+        private double impulseStrength = 1.0D;
         private double explosiveArrowSize = 2.5D;
         private double overdrawDamageIncreasePerTickPercent = 1.0D;
         private double overdrawMaxDamageBonusPercent = 100.0D;
@@ -621,6 +631,7 @@ public final class ConfigManager {
         private int burstStaggerDelayTicks = 3;
         private int burstArrowsPerLevel = 1;
         private int fletchingRecipeOutputCount = 4;
+        private boolean allowModdedFletchingArrowInputs = true;
         private boolean modEnabled = true;
         private boolean trajectoryColourVisualisation = false;
         private boolean infiniteLevels = false;
@@ -679,6 +690,18 @@ public final class ConfigManager {
                         null, result.impulseRadius);
                 result.impulseStrength = readDouble(json, "arrow_types", "impulse.strength",
                         null, result.impulseStrength);
+            }
+            // Previous releases used 4 / 2 as absolute radius and strength.
+            // Wind-charge mode uses multipliers, where 1 / 1 is exactly
+            // vanilla wind-charge launch force, so convert only those old
+            // stock values and leave intentionally customised values intact.
+            if (result.shockwaveRadius == 4.0D && result.shockwaveStrength == 2.0D) {
+                result.shockwaveRadius = 1.0D;
+                result.shockwaveStrength = 1.0D;
+            }
+            if (result.impulseRadius == 4.0D && result.impulseStrength == 2.0D) {
+                result.impulseRadius = 1.0D;
+                result.impulseStrength = 1.0D;
             }
             result.explosiveArrowEnabled = readBoolean(json, "arrow_types", "explosive.enabled",
                     null, result.explosiveArrowEnabled);
@@ -760,6 +783,8 @@ public final class ConfigManager {
 
             result.fletchingRecipeOutputCount = readInt(json, "fletching", "recipe_output_count",
                     "fletchingRecipeOutputCount", result.fletchingRecipeOutputCount);
+            result.allowModdedFletchingArrowInputs = readBoolean(json, "fletching", "allow_modded_arrow_inputs",
+                    "allowModdedFletchingArrowInputs", result.allowModdedFletchingArrowInputs);
             result.trajectoryColourVisualisation = readBoolean(json, "trajectory", "colour_visualisation",
                     "trajectoryColourVisualisation", result.trajectoryColourVisualisation);
             result.modEnabled = readBoolean(json, "general", "mod_enabled", "modEnabled", result.modEnabled);
@@ -845,6 +870,7 @@ public final class ConfigManager {
 
             JsonObject fletching = new JsonObject();
             fletching.addProperty("recipe_output_count", fletchingRecipeOutputCount);
+            fletching.addProperty("allow_modded_arrow_inputs", allowModdedFletchingArrowInputs);
             root.add("fletching", fletching);
 
             JsonObject headshot = new JsonObject();
@@ -881,10 +907,10 @@ public final class ConfigManager {
             terminalVelocity = nonNegative(terminalVelocity, 999.0D);
             maxLifetimeTicks = Math.max(1, maxLifetimeTicks);
             ricochetVelocityLossPercent = clamp(ricochetVelocityLossPercent, 0.0D, 100.0D, 10.0D);
-            shockwaveRadius = nonNegative(shockwaveRadius, 4.0D);
-            shockwaveStrength = nonNegative(shockwaveStrength, 2.0D);
-            impulseRadius = nonNegative(impulseRadius, 4.0D);
-            impulseStrength = nonNegative(impulseStrength, 2.0D);
+            shockwaveRadius = nonNegative(shockwaveRadius, 1.0D);
+            shockwaveStrength = nonNegative(shockwaveStrength, 1.0D);
+            impulseRadius = nonNegative(impulseRadius, 1.0D);
+            impulseStrength = nonNegative(impulseStrength, 1.0D);
             explosiveArrowSize = nonNegative(explosiveArrowSize, 2.5D);
             overdrawDamageIncreasePerTickPercent = nonNegative(overdrawDamageIncreasePerTickPercent, 1.0D);
             overdrawMaxDamageBonusPercent = nonNegative(overdrawMaxDamageBonusPercent, 100.0D);

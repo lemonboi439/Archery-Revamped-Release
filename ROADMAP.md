@@ -1,10 +1,17 @@
 # Archery Revamped Roadmap
 
-## v1.6 - Final Fletching Table Update (Planned)
+## v1.6 - Fletching Table Update (Complete)
 
-- [ ] Replace the temporary anvil-based Fletching Table artwork with the final custom UI.
-- [ ] Map the two input slots, output slot, recipe label, and feedback indicator to the supplied UI texture.
-- [ ] Final visual, balance, and compatibility pass before the 1.6 release.
+- [x] Replace the temporary anvil-based Fletching Table artwork with the final custom UI.
+- [x] Map the two input slots, output slot, recipe label, and feedback indicator to the supplied UI texture.
+- [x] Use four-arrow special batches and eight-arrow tipped batches.
+- [x] Use a virtual click-to-craft output, shift-craft support, and close-screen input return.
+- [x] Reserve tipped-arrow conversion for the Fletching Table.
+
+## v1.6.2 - Release Polish (Complete)
+
+- [x] Add normal-level custom enchantment books to the dedicated creative tab.
+- [x] Cross-verify Fletching behavior and bundled force-arrow defaults against the 26.1 port.
 
 ## v1.5 - Published
 

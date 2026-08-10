@@ -49,13 +49,13 @@
     },
     "shockwave": {
       "enabled": true,
-      "radius": 4.0,
-      "strength": 2.0
+      "radius": 1.0,
+      "strength": 1.0
     },
     "impulse": {
       "enabled": true,
-      "radius": 4.0,
-      "strength": 2.0
+      "radius": 1.0,
+      "strength": 1.0
     },
     "explosive": {
       "enabled": true,
@@ -64,7 +64,8 @@
     }
   },
   "fletching": {
-    "recipe_output_count": 4
+    "recipe_output_count": 4,
+    "allow_modded_arrow_inputs": true
   },
   "headshot": {
     "enableHeadshot": false,

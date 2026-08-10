@@ -4,6 +4,23 @@ All notable changes to Archery Revamped are documented here.
 
 ---
 
+## 1.6.2 - Fletching Table Parity and Polish
+
+### Changed
+
+- Updated the Fletching Table to the final click-to-craft flow: four arrows plus a modifier create four special arrows, while eight arrows plus a potion create eight tipped arrows.
+- Added optional support for other mods' `ArrowItem` stacks in the Fletching Table, enabled by default and exposed in Cloth Config.
+- Added normal-level custom enchanted books to the Archery Revamped creative tab. The optional infinite-level setting never affects creative inventory entries.
+- Corrected the bundled Shockwave and Impulse defaults to `radius: 1.0` and `strength: 1.0`, matching the current area-force baseline.
+
+### Fixed
+
+- Removed automatic per-tick Fletching crafting and the associated output-duplication risk.
+- Fletching output is now a virtual preview: closing the screen returns only the two real input stacks.
+- Reserved tipped-arrow conversion for the Fletching Table; ordinary crafting tables only create standard vanilla arrows.
+
+---
+
 ## 1.5 - Quiver and Projectile Polish
 
 ### Added

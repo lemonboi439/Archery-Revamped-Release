@@ -8,20 +8,21 @@ import net.minecraft.item.ArrowItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 
 import java.util.List;
 
 public final class FletchingRecipeRegistry {
     private static final List<FletchingRecipe> RECIPES = List.of(
-            new FletchingRecipe("ender_arrow", Items.ENDER_PEARL, ModItems.ENDER_ARROW, 1, false),
-            new FletchingRecipe("shockwave_arrow", Items.WIND_CHARGE, ModItems.SHOCKWAVE_ARROW, 1, false),
-            new FletchingRecipe("impulse_arrow", Items.IRON_NUGGET, ModItems.IMPULSE_ARROW, 1, false),
-            new FletchingRecipe("explosive_arrow", Items.GUNPOWDER, ModItems.EXPLOSIVE_ARROW, 1, false),
-            new FletchingRecipe("tidal_arrow", Items.HEART_OF_THE_SEA, ModItems.TIDAL_ARROW, 1, false),
-            new FletchingRecipe("shattering_arrow", Items.AMETHYST_SHARD, ModItems.SHATTERING_ARROW, 1, false),
-            new FletchingRecipe("echo_arrow", Items.ECHO_SHARD, ModItems.ECHO_ARROW, 1, false),
-            new FletchingRecipe("tipped_arrow", Items.POTION, Items.TIPPED_ARROW, 4, true)
+            new FletchingRecipe("ender_arrow", Items.ENDER_PEARL, ModItems.ENDER_ARROW, 4, false),
+            new FletchingRecipe("shockwave_arrow", Items.WIND_CHARGE, ModItems.SHOCKWAVE_ARROW, 4, false),
+            new FletchingRecipe("impulse_arrow", Items.IRON_NUGGET, ModItems.IMPULSE_ARROW, 4, false),
+            new FletchingRecipe("explosive_arrow", Items.GUNPOWDER, ModItems.EXPLOSIVE_ARROW, 4, false),
+            new FletchingRecipe("tidal_arrow", Items.HEART_OF_THE_SEA, ModItems.TIDAL_ARROW, 4, false),
+            new FletchingRecipe("shattering_arrow", Items.AMETHYST_SHARD, ModItems.SHATTERING_ARROW, 4, false),
+            new FletchingRecipe("echo_arrow", Items.ECHO_SHARD, ModItems.ECHO_ARROW, 4, false),
+            new FletchingRecipe("tipped_arrow", Items.POTION, Items.TIPPED_ARROW, 8, true)
     );
 
     private FletchingRecipeRegistry() {
@@ -46,7 +47,9 @@ public final class FletchingRecipeRegistry {
     }
 
     public static ItemStack createOutput(FletchingRecipe recipe, ItemStack ingredientStack) {
-        int outputCount = Math.max(1, ConfigManager.getFletchingRecipeOutputCount());
+        int outputCount = recipe.copiesPotion()
+                ? 8
+                : Math.max(1, ConfigManager.getFletchingRecipeOutputCount());
         ItemStack output = new ItemStack(recipe.outputItem(), outputCount);
         if (recipe.copiesPotion() && ingredientStack.contains(DataComponentTypes.POTION_CONTENTS)) {
             PotionContentsComponent potion = ingredientStack.get(DataComponentTypes.POTION_CONTENTS);
@@ -57,6 +60,26 @@ public final class FletchingRecipeRegistry {
         return output;
     }
 
+    /** Accepts vanilla arrows and, when enabled, ArrowItem stacks from other mods. */
+    public static boolean isAcceptedArrowInput(ItemStack stack) {
+        if (!(stack.getItem() instanceof ArrowItem)) {
+            return false;
+        }
+        return ConfigManager.allowsModdedFletchingArrowInputs()
+                || "minecraft".equals(Registries.ITEM.getId(stack.getItem()).getNamespace());
+    }
+
+    /** True only for a valid modifier stack, including a potion with contents. */
+    public static boolean isModifier(ItemStack stack) {
+        for (FletchingRecipe recipe : RECIPES) {
+            if (stack.isOf(recipe.ingredient())
+                    && (!recipe.copiesPotion() || stack.contains(DataComponentTypes.POTION_CONTENTS))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public record FletchingRecipe(
             String name,
             Item ingredient,
@@ -65,7 +88,7 @@ public final class FletchingRecipeRegistry {
             boolean copiesPotion
     ) {
         public boolean matches(ItemStack arrowStack, ItemStack ingredientStack) {
-            if (!(arrowStack.getItem() instanceof ArrowItem)
+            if (!isAcceptedArrowInput(arrowStack)
                     || arrowStack.getCount() < arrowCount
                     || !ingredientStack.isOf(ingredient)) {
                 return false;
