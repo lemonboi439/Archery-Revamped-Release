@@ -41,11 +41,9 @@ public final class OverdrawClientHandler {
             return;
         }
 
-        var enchantments = client.world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
-        int level = enchantments.getOptional(OverdrawEnchantment.KEY)
-                .map(entry -> EnchantmentHelper.getLevel(entry, activeStack))
-                .map(value -> ConfigManager.limitEnchantmentLevel(value, OverdrawEnchantment.MAX_LEVEL))
-                .orElse(0);
+        int level = ConfigManager.limitEnchantmentLevel(
+                EnchantmentHelper.getLevel(OverdrawEnchantment.ENCHANTMENT, activeStack),
+                OverdrawEnchantment.MAX_LEVEL);
         int overdrawTicks = client.player.getItemUseTime() - 20;
         if (level <= 0 || overdrawTicks <= 0) {
             fadeEffects();
@@ -65,7 +63,7 @@ public final class OverdrawClientHandler {
         if (shakeIntensity < 0.001F) shakeIntensity = 0.0F;
     }
 
-    private static void renderVignette(DrawContext context, net.minecraft.client.render.RenderTickCounter tickCounter) {
+    private static void renderVignette(DrawContext context, float tickDelta) {
         if (vignette <= 0.001F) return;
 
         int width = context.getScaledWindowWidth();

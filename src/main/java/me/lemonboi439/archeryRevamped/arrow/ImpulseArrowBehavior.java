@@ -19,7 +19,7 @@ public final class ImpulseArrowBehavior implements ArrowBehavior {
         if (ConfigManager.isImpulseArrowEnabled()) {
             Direction normal = hit.getSide();
             arrow.scheduleDelayedImpact(ArrowType.IMPULSE,
-                    hit.getPos().add(normal.getDoubleVector().multiply(0.25D)), activationDelay());
+                    hit.getPos().add(new Vec3d(normal.getOffsetX(), normal.getOffsetY(), normal.getOffsetZ()).multiply(0.25D)), activationDelay());
         }
     }
 

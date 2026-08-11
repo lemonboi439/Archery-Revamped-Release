@@ -10,8 +10,6 @@ import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.debug.TrajectoryVisualizer;
 import me.lemonboi439.archeryRevamped.debug.TrajectoryNetworking;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.command.permission.Permission;
-import net.minecraft.command.permission.PermissionLevel;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
@@ -30,8 +28,7 @@ public final class ArcheryCommand {
 
     private static LiteralArgumentBuilder<ServerCommandSource> createRoot(String name) {
         return CommandManager.literal(name)
-                .requires(source -> source.getPermissions()
-                        .hasPermission(new Permission.Level(PermissionLevel.fromLevel(2))))
+                .requires(source -> source.hasPermissionLevel(2))
                 .then(CommandManager.literal("reload")
                         .executes(ArcheryCommand::reload))
                 .then(CommandManager.literal("config")

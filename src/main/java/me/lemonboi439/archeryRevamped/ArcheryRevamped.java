@@ -25,6 +25,7 @@ import me.lemonboi439.archeryRevamped.loot.LateGameLootManager;
 import me.lemonboi439.archeryRevamped.debug.TrajectoryNetworking;
 import me.lemonboi439.archeryRevamped.component.ModDataComponents;
 import me.lemonboi439.archeryRevamped.quiver.QuiverNetworking;
+import me.lemonboi439.archeryRevamped.enchantment.LegacyEnchantmentRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
@@ -34,6 +35,7 @@ public class ArcheryRevamped implements ModInitializer {
     @Override
     public void onInitialize() {
         ConfigManager.load();
+        LegacyEnchantmentRegistry.register();
         ModDataComponents.register();
         ModEntities.register();
         ModItems.register();

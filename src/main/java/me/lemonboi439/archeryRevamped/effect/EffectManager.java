@@ -44,20 +44,9 @@ public final class EffectManager {
         );
     }
 
-    public static void playSound(World world, Vec3d position,
-                                 RegistryEntry<SoundEvent> sound,
+    public static void playSound(World world, Vec3d position, RegistryEntry<SoundEvent> sound,
                                  float volume, float pitch) {
-        if (world.isClient()) {
-            return;
-        }
-
-        world.playSound(
-                null,
-                position.x, position.y, position.z,
-                sound,
-                SoundCategory.PLAYERS,
-                volume,
-                pitch
-        );
+        playSound(world, position, sound.value(), volume, pitch);
     }
+
 }

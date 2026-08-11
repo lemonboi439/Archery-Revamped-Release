@@ -1,0 +1,22 @@
+{
+  "parent": "item/generated",
+  "textures": { "layer0": "item/bow" },
+  "display": {
+    "thirdperson_righthand": { "rotation": [-80, 260, -40], "translation": [-1, -2, 2.5], "scale": [0.9, 0.9, 0.9] },
+    "thirdperson_lefthand": { "rotation": [-80, -280, 40], "translation": [-1, -2, 2.5], "scale": [0.9, 0.9, 0.9] },
+    "firstperson_righthand": { "rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68] },
+    "firstperson_lefthand": { "rotation": [0, 90, -25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68] }
+  },
+  "overrides": [
+    { "predicate": { "pulling": 1 }, "model": "item/bow_pulling_0" },
+    { "predicate": { "pulling": 1, "pull": 0.65 }, "model": "item/bow_pulling_1" },
+    { "predicate": { "pulling": 1, "pull": 0.9 }, "model": "item/bow_pulling_2" },
+    { "predicate": { "custom_model_data": 9101 }, "model": "archery-revamped:item/bow_ender_arrow" },
+    { "predicate": { "custom_model_data": 9102 }, "model": "archery-revamped:item/bow_shockwave_arrow" },
+    { "predicate": { "custom_model_data": 9103 }, "model": "archery-revamped:item/bow_impulse_arrow" },
+    { "predicate": { "custom_model_data": 9104 }, "model": "archery-revamped:item/bow_explosive_arrow" },
+    { "predicate": { "custom_model_data": 9105 }, "model": "archery-revamped:item/bow_tidal_arrow" },
+    { "predicate": { "custom_model_data": 9106 }, "model": "archery-revamped:item/bow_shattering_arrow" },
+    { "predicate": { "custom_model_data": 9107 }, "model": "archery-revamped:item/bow_echo_arrow" }
+  ]
+}

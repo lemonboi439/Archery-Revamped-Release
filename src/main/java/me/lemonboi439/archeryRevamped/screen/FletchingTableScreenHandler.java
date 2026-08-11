@@ -99,7 +99,7 @@ public final class FletchingTableScreenHandler extends ScreenHandler {
         }
 
         ItemStack cursor = getCursorStack();
-        if (!cursor.isEmpty() && !ItemStack.areItemsAndComponentsEqual(cursor, result)) {
+        if (!cursor.isEmpty() && !ItemStack.canCombine(cursor, result)) {
             return false;
         }
         if (!cursor.isEmpty() && cursor.getCount() + result.getCount() > cursor.getMaxCount()) {

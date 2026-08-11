@@ -21,7 +21,7 @@ public final class ShatteringShardEntity extends PersistentProjectileEntity {
     }
 
     @Override
-    protected ItemStack getDefaultItemStack() {
+    protected ItemStack asItemStack() {
         return new ItemStack(Items.AMETHYST_SHARD);
     }
 

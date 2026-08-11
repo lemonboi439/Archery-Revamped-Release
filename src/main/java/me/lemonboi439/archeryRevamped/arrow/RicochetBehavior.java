@@ -27,7 +27,7 @@ public final class RicochetBehavior implements ArrowBehavior {
 
         Vec3d velocity = arrow.getVelocity();
         Direction face = hit.getSide();
-        Vec3d normal = face.getDoubleVector();
+        Vec3d normal = new Vec3d(face.getOffsetX(), face.getOffsetY(), face.getOffsetZ());
         double dot = velocity.dotProduct(normal);
         double velocityLoss = ConfigManager.getRicochetVelocityLossPercent() / 100.0D;
         Vec3d reflected = velocity.subtract(normal.multiply(2.0D * dot))

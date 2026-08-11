@@ -13,7 +13,6 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -46,11 +45,7 @@ public final class BurstArrowHandler {
         // enchantment level needs to be scheduled here.
         int arrowsPerLevel = Math.max(1, ConfigManager.getBurstArrowsPerLevel());
         int totalBurstArrows = Math.max(1, burstLevel * arrowsPerLevel);
-        int multishotLevel = serverWorld.getRegistryManager()
-                .getOrThrow(RegistryKeys.ENCHANTMENT)
-                .getOptional(Enchantments.MULTISHOT)
-                .map(entry -> EnchantmentHelper.getLevel(entry, weaponStack))
-                .orElse(0);
+        int multishotLevel = EnchantmentHelper.getLevel(Enchantments.MULTISHOT, weaponStack);
         // Multishot already creates three base projectiles. Treat the burst
         // level as the total number of shots for each multishot lane so
         // Burst III + Multishot produces 3 x 3 = 9 arrows rather than 12.
@@ -64,7 +59,7 @@ public final class BurstArrowHandler {
         int staggerDelay = Math.max(1, ConfigManager.getBurstStaggerDelayTicks());
         firstArrow.setBurstState(additionalArrows, staggerDelay);
         firstArrow.setBurstScheduled(true);
-        shooter.getItemCooldownManager().set(weaponStack, additionalArrows * staggerDelay + 1);
+        shooter.getItemCooldownManager().set(weaponStack.getItem(), additionalArrows * staggerDelay + 1);
 
         PENDING_BURSTS.add(new PendingBurst(
                 firstArrow,
@@ -147,13 +142,12 @@ public final class BurstArrowHandler {
             // rotation. Set both current and previous rotation before the
             // entity is sent to clients so it never appears sideways first.
             ProjectileUtil.setRotationFromVelocity(child, 0.0F);
-            child.setAngles(child.getYaw(), child.getPitch());
             pending.world.spawnEntity(child);
             Vec3d effectPosition = new Vec3d(child.getX(), child.getY(), child.getZ());
             EffectManager.spawnParticles(pending.world, effectPosition, ParticleTypes.END_ROD, 6);
             EffectManager.playSound(pending.world, effectPosition,
                     SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, 0.35F, 1.45F);
-            pending.weaponStack.damage(1, pending.shooter, EquipmentSlot.MAINHAND);
+            pending.weaponStack.damage(1, pending.shooter, entity -> { });
 
             pending.arrowsRemaining--;
             pending.template.setBurstState(pending.arrowsRemaining, pending.staggerDelayTicks);

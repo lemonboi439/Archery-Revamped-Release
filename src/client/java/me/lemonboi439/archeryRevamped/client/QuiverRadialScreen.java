@@ -4,9 +4,7 @@ import me.lemonboi439.archeryRevamped.quiver.QuiverManager;
 import me.lemonboi439.archeryRevamped.quiver.QuiverNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
@@ -35,20 +33,20 @@ public final class QuiverRadialScreen extends Screen {
         List<ItemStack> contents = QuiverManager.getContents(QuiverManager.getActiveQuiver(client.player));
         int selected = getPendingSlot(contents, QuiverManager.getActiveQuiver(client.player));
         int hovered = getHoveredSlot(mouseX, mouseY, centerX, centerY);
-        context.fill(centerX - 43, centerY - 36, centerX + 43, centerY + 41, 0xD01B1712);
+        context.fill(centerX - 36, centerY - 33, centerX + 36, centerY + 37, 0xD01B1712);
         context.drawCenteredTextWithShadow(this.textRenderer, Text.translatable("container.archery-revamped.quiver"),
-                centerX, centerY - 31, 0xFFFFFFFF);
+                centerX, centerY - 28, 0xFFFFFFFF);
         ItemStack selectedStack = selected >= 0 ? contents.get(selected) : ItemStack.EMPTY;
         if (!selectedStack.isEmpty()) {
-            context.drawItem(selectedStack, centerX - 8, centerY - 13);
-            context.drawCenteredTextWithShadow(this.textRenderer, selectedStack.getName(), centerX, centerY + 8,
-                    0xFFD5C8AC);
+            context.drawItem(selectedStack, centerX - 8, centerY - 10);
+            drawScaledCenteredText(context, Text.literal(getFittingName(selectedStack, 86)), centerX, centerY + 8,
+                    0xFFD5C8AC, 0.75F);
         } else {
             context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("No arrow selected"), centerX,
                     centerY + 2, 0xFFD5C8AC);
         }
-        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("Q / E: select   V: confirm"), centerX,
-                centerY + 25, 0xFFAFA28A);
+        drawScaledCenteredText(context, Text.literal("Q <  > E"), centerX, centerY + 21, 0xFFAFA28A, 0.75F);
+        drawScaledCenteredText(context, Text.literal("Release V"), centerX, centerY + 29, 0xFFAFA28A, 0.75F);
 
         for (int slot = 0; slot < QuiverManager.SLOT_COUNT; slot++) {
             double angle = Math.PI * 2.0D * slot / QuiverManager.SLOT_COUNT - Math.PI / 2.0D;
@@ -60,8 +58,7 @@ public final class QuiverRadialScreen extends Screen {
             ItemStack stack = contents.get(slot);
             if (!stack.isEmpty()) {
                 context.drawItem(stack, x + 1, y + 1);
-                context.drawText(this.textRenderer, Text.literal(Integer.toString(stack.getCount())), x + 10, y + 10,
-                        0xFFFFFFFF, true);
+                context.drawItemInSlot(this.textRenderer, stack, x + 1, y + 1);
             }
         }
         if (hovered >= 0 && !contents.get(hovered).isEmpty()) {
@@ -70,9 +67,9 @@ public final class QuiverRadialScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (click.button() == 0) {
-            int slot = getHoveredSlot(click.x(), click.y(), this.width / 2, this.height / 2);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0) {
+            int slot = getHoveredSlot(mouseX, mouseY, this.width / 2, this.height / 2);
             MinecraftClient client = MinecraftClient.getInstance();
             if (slot >= 0 && client.player != null
                     && !QuiverManager.getContents(QuiverManager.getActiveQuiver(client.player)).get(slot).isEmpty()) {
@@ -80,28 +77,27 @@ public final class QuiverRadialScreen extends Screen {
                 return true;
             }
         }
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean keyPressed(KeyInput input) {
-        if (input.key() == GLFW.GLFW_KEY_Q) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_Q) {
             cycleSelection(-1);
             return true;
         }
-        if (input.key() == GLFW.GLFW_KEY_E) {
+        if (keyCode == GLFW.GLFW_KEY_E) {
             cycleSelection(1);
             return true;
         }
-        if (input.key() == GLFW.GLFW_KEY_V) {
-            confirmSelection();
+        if (keyCode == GLFW.GLFW_KEY_V) {
             return true;
         }
-        if (input.key() == GLFW.GLFW_KEY_ESCAPE) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
             close();
             return true;
         }
-        return super.keyPressed(input);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     private int getPendingSlot(List<ItemStack> contents, ItemStack quiver) {
@@ -129,14 +125,16 @@ public final class QuiverRadialScreen extends Screen {
         }
     }
 
-    private void confirmSelection() {
+    void confirmSelection() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player != null) {
             ItemStack quiver = QuiverManager.getActiveQuiver(client.player);
             List<ItemStack> contents = QuiverManager.getContents(quiver);
             int selected = getPendingSlot(contents, quiver);
             if (selected >= 0 && !contents.get(selected).isEmpty()) {
-                ClientPlayNetworking.send(new QuiverNetworking.SelectQuiverSlotPayload(selected));
+                var buffer = net.fabricmc.fabric.api.networking.v1.PacketByteBufs.create();
+                buffer.writeVarInt(selected);
+                ClientPlayNetworking.send(QuiverNetworking.SELECT_ID, buffer);
             }
         }
         close();
@@ -155,6 +153,27 @@ public final class QuiverRadialScreen extends Screen {
         }
         return (int) Math.floor((angle + Math.PI / QuiverManager.SLOT_COUNT)
                 / (Math.PI * 2.0D) * QuiverManager.SLOT_COUNT) % QuiverManager.SLOT_COUNT;
+    }
+
+    private String getFittingName(ItemStack stack, int maxWidth) {
+        String name = stack.getName().getString();
+        if (this.textRenderer.getWidth(name) <= maxWidth) {
+            return name;
+        }
+        String suffix = "...";
+        int end = name.length();
+        while (end > 0 && this.textRenderer.getWidth(name.substring(0, end) + suffix) > maxWidth) {
+            end--;
+        }
+        return name.substring(0, end) + suffix;
+    }
+
+    private void drawScaledCenteredText(DrawContext context, Text text, int centerX, int y, int color, float scale) {
+        context.getMatrices().push();
+        context.getMatrices().translate(centerX, y, 0.0F);
+        context.getMatrices().scale(scale, scale, 1.0F);
+        context.drawCenteredTextWithShadow(this.textRenderer, text, 0, 0, color);
+        context.getMatrices().pop();
     }
 
     @Override

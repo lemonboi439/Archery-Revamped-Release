@@ -10,7 +10,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.explosion.ExplosionImpl;
+import net.minecraft.world.explosion.Explosion;
 
 /**
  * Shared landing-point force logic for Shockwave and Impulse arrows.
@@ -63,9 +63,9 @@ public final class AreaForceArrowBehavior {
             }
 
             Vec3d direction = entity.getEyePos().subtract(impact).normalize();
-            float exposure = ExplosionImpl.calculateReceivedDamage(impact, entity);
+            float exposure = Explosion.getExposure(impact, entity);
             double resistance = entity instanceof LivingEntity living
-                    ? living.getAttributeValue(EntityAttributes.EXPLOSION_KNOCKBACK_RESISTANCE)
+                    ? living.getAttributeValue(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE)
                     : 0.0D;
             double windChargeForce = (1.0D - normalizedDistance)
                     * exposure
@@ -78,9 +78,9 @@ public final class AreaForceArrowBehavior {
             entity.velocityDirty = true;
         }
 
-        EffectManager.spawnParticles(world, impact, ParticleTypes.GUST, 12);
+        EffectManager.spawnParticles(world, impact, ParticleTypes.CLOUD, 12);
         EffectManager.playSound(world, impact,
-                SoundEvents.ENTITY_WIND_CHARGE_WIND_BURST, 0.7F,
+                SoundEvents.ENTITY_PLAYER_ATTACK_KNOCKBACK, 0.7F,
                 pullInward ? 0.85F : 1.1F);
     }
 }

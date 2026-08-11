@@ -3,7 +3,6 @@ package me.lemonboi439.archeryRevamped.client;
 import me.lemonboi439.archeryRevamped.screen.FletchingTableScreenHandler;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -11,7 +10,7 @@ import net.minecraft.util.Identifier;
 public final class FletchingTableScreen extends HandledScreen<FletchingTableScreenHandler> {
     private static final int BACKGROUND_WIDTH = 176;
     private static final int BACKGROUND_HEIGHT = 166;
-    private static final Identifier TEXTURE = Identifier.of(
+    private static final Identifier TEXTURE = new Identifier(
             "archery-revamped", "textures/gui/fletching_table.png"
     );
 
@@ -25,13 +24,7 @@ public final class FletchingTableScreen extends HandledScreen<FletchingTableScre
     protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
         int left = this.x;
         int top = this.y;
-        context.drawTexture(
-                RenderPipelines.GUI_TEXTURED,
-                TEXTURE,
-                left,
-                top,
-                0.0F,
-                0.0F,
+        context.drawTexture(TEXTURE, left, top, 0, 0,
                 BACKGROUND_WIDTH,
                 BACKGROUND_HEIGHT,
                 256,

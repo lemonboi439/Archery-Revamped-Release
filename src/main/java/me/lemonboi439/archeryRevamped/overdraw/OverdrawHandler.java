@@ -89,7 +89,7 @@ public final class OverdrawHandler {
                 && state.overdrawDuration >= state.failureDelayTicks) {
             state.punishmentApplied = true;
             applyPunishment(player, activeStack, level);
-            player.getItemCooldownManager().set(activeStack, ConfigManager.getOverdrawBowDisableTicks());
+            player.getItemCooldownManager().set(activeStack.getItem(), ConfigManager.getOverdrawBowDisableTicks());
             fireMisfireShot(player, activeStack);
         }
     }
@@ -101,11 +101,9 @@ public final class OverdrawHandler {
     }
 
     private static int getOverdrawLevel(ServerPlayerEntity player, ItemStack bow) {
-        var enchantments = player.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
-        return enchantments.getOptional(OverdrawEnchantment.KEY)
-                .map(entry -> EnchantmentHelper.getLevel(entry, bow))
-                .map(level -> ConfigManager.limitEnchantmentLevel(level, OverdrawEnchantment.MAX_LEVEL))
-                .orElse(0);
+        return ConfigManager.limitEnchantmentLevel(
+                EnchantmentHelper.getLevel(OverdrawEnchantment.ENCHANTMENT, bow),
+                OverdrawEnchantment.MAX_LEVEL);
     }
 
     private static void applyPunishment(ServerPlayerEntity player, ItemStack bow, int level) {
@@ -113,11 +111,11 @@ public final class OverdrawHandler {
         if (durabilityPercent > 0.0D) {
             int durabilityLoss = Math.max(1, (int) Math.ceil(
                     bow.getMaxDamage() * durabilityPercent / 100.0D));
-            bow.damage(durabilityLoss, player, player.getActiveHand().getEquipmentSlot());
+            bow.damage(durabilityLoss, player, entity -> { });
         }
         double selfDamageHearts = ConfigManager.getOverdrawSelfDamageHearts();
         if (selfDamageHearts > 0.0D) {
-            player.damage(player.getEntityWorld(), player.getDamageSources().generic(),
+            player.damage(player.getDamageSources().generic(),
                     (float) (selfDamageHearts * 2.0D * level));
         }
     }

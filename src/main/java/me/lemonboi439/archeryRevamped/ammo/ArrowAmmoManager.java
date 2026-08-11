@@ -1,7 +1,6 @@
 package me.lemonboi439.archeryRevamped.ammo;
 
 import me.lemonboi439.archeryRevamped.quiver.QuiverManager;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -24,8 +23,7 @@ public final class ArrowAmmoManager {
                                                  ServerWorld world,
                                                  ItemStack weaponStack,
                                                  ItemStack projectileStack) {
-        return shooter.isInCreativeMode()
-                || projectileStack.contains(DataComponentTypes.INTANGIBLE_PROJECTILE);
+        return shooter.getAbilities().creativeMode;
     }
 
     /**
@@ -33,7 +31,7 @@ public final class ArrowAmmoManager {
      */
     public static boolean hasExtraArrows(ServerPlayerEntity shooter, ItemStack projectileStack,
                                          int amount) {
-        if (amount <= 0 || shooter.isInCreativeMode()) {
+        if (amount <= 0 || shooter.getAbilities().creativeMode) {
             return true;
         }
 
@@ -45,7 +43,7 @@ public final class ArrowAmmoManager {
         for (int slot = 0; slot < inventory.size(); slot++) {
             ItemStack candidate = inventory.getStack(slot);
             if (!candidate.isEmpty()
-                    && ItemStack.areItemsAndComponentsEqual(candidate, projectileStack)) {
+                    && ItemStack.canCombine(candidate, projectileStack)) {
                 available += candidate.getCount();
                 if (available >= amount) {
                     return true;
@@ -61,7 +59,7 @@ public final class ArrowAmmoManager {
      */
     public static boolean consumeExtraArrows(ServerPlayerEntity shooter, ItemStack projectileStack,
                                              int amount) {
-        if (amount <= 0 || shooter.isInCreativeMode()) {
+        if (amount <= 0 || shooter.getAbilities().creativeMode) {
             return true;
         }
         if (!hasExtraArrows(shooter, projectileStack, amount)) {
@@ -73,7 +71,7 @@ public final class ArrowAmmoManager {
         for (int slot = 0; slot < inventory.size() && remaining > 0; slot++) {
             ItemStack candidate = inventory.getStack(slot);
             if (candidate.isEmpty()
-                    || !ItemStack.areItemsAndComponentsEqual(candidate, projectileStack)) {
+                    || !ItemStack.canCombine(candidate, projectileStack)) {
                 continue;
             }
 

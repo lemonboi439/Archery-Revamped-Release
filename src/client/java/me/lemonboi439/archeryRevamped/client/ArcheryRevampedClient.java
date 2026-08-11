@@ -22,9 +22,11 @@ public class ArcheryRevampedClient implements ClientModInitializer {
         QuiverClientHandler.register();
         OverdrawClientHandler.register();
         ClientTrajectoryPreview.register();
-        ClientPlayNetworking.registerGlobalReceiver(TrajectoryNetworking.TrajectoryStatePayload.ID,
-                (payload, context) -> context.client().execute(
-                        () -> ClientTrajectoryPreview.setTrajectoryState(
-                                payload.enabled(), payload.colourVisualisation())));
+        ClientPlayNetworking.registerGlobalReceiver(TrajectoryNetworking.ID,
+                (client, handler, buffer, responseSender) -> {
+                    boolean enabled = buffer.readBoolean();
+                    boolean colourVisualisation = buffer.readBoolean();
+                    client.execute(() -> ClientTrajectoryPreview.setTrajectoryState(enabled, colourVisualisation));
+                });
     }
 }

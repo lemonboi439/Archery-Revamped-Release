@@ -28,6 +28,14 @@ fabricApi {
 }
 
 repositories {
+    maven {
+        name = "Shedaniel Maven"
+        url = "https://maven.shedaniel.me/"
+    }
+    maven {
+        name = "Terraformers Maven"
+        url = "https://maven.terraformersmc.com/releases/"
+    }
     exclusiveContent {
         forRepository {
             maven {
@@ -51,8 +59,8 @@ dependencies {
 
     // Optional UI integrations. These are compile-only; the base mod still
     // runs without Cloth Config or Mod Menu installed.
-    modCompileOnly "maven.modrinth:9s6osm5g:xuX40TN5" // Cloth Config 21.11.153+fabric
-    modCompileOnly "maven.modrinth:mOgUt4GM:Tyk71iSw" // Mod Menu 17.0.0
+    modCompileOnly "me.shedaniel.cloth:cloth-config-fabric:11.1.118"
+    modCompileOnly "com.terraformersmc:modmenu:7.2.2"
 }
 
 processResources {
@@ -68,7 +76,7 @@ processResources {
     }
 }
 
-def targetJavaVersion = 21
+def targetJavaVersion = 17
 tasks.withType(JavaCompile).configureEach {
     // ensure that the encoding is set to UTF-8, no matter what the system default is
     // this fixes some edge cases with special characters not displaying correctly

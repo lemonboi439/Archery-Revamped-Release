@@ -10,18 +10,17 @@ import me.lemonboi439.archeryRevamped.enchantment.RicochetEnchantment;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public final class ModItemGroups {
-    private static final Identifier ARCHERY_GROUP_ID = Identifier.of(
+    private static final Identifier ARCHERY_GROUP_ID = new Identifier(
             ArcheryRevamped.MOD_ID, "archery_revamped"
     );
 
@@ -41,7 +40,7 @@ public final class ModItemGroups {
                         entries.add(ModItems.SHATTERING_ARROW);
                         entries.add(ModItems.ECHO_ARROW);
                         entries.add(Items.ARROW);
-                        addEnchantmentBooks(entries, displayContext);
+                        addEnchantmentBooks(entries);
                     })
                     .build()
     );
@@ -50,23 +49,19 @@ public final class ModItemGroups {
     }
 
     /** Adds only authored, normal enchantment levels to this mod's own tab. */
-    private static void addEnchantmentBooks(ItemGroup.Entries entries,
-                                            ItemGroup.DisplayContext displayContext) {
-        var enchantments = displayContext.lookup().getOrThrow(RegistryKeys.ENCHANTMENT);
-        addEnchantmentBooks(entries, enchantments, RicochetEnchantment.KEY, RicochetEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, enchantments, OverdrawEnchantment.KEY, OverdrawEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, enchantments, LongshotEnchantment.KEY, LongshotEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, enchantments, FractureEnchantment.KEY, FractureEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, enchantments, BurstEnchantment.KEY, BurstEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, enchantments, HeadshotEnchantment.KEY, HeadshotEnchantment.MAX_LEVEL);
+    private static void addEnchantmentBooks(ItemGroup.Entries entries) {
+        addEnchantmentBooks(entries, RicochetEnchantment.ENCHANTMENT, RicochetEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(entries, OverdrawEnchantment.ENCHANTMENT, OverdrawEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(entries, LongshotEnchantment.ENCHANTMENT, LongshotEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(entries, FractureEnchantment.ENCHANTMENT, FractureEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(entries, BurstEnchantment.ENCHANTMENT, BurstEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(entries, HeadshotEnchantment.ENCHANTMENT, HeadshotEnchantment.MAX_LEVEL);
     }
 
     private static void addEnchantmentBooks(ItemGroup.Entries entries,
-                                            net.minecraft.registry.RegistryWrapper.Impl<Enchantment> enchantments,
-                                            RegistryKey<Enchantment> key, int normalMaximum) {
-        var enchantment = enchantments.getOrThrow(key);
+                                            Enchantment enchantment, int normalMaximum) {
         for (int level = 1; level <= normalMaximum; level++) {
-            entries.add(EnchantmentHelper.getEnchantedBookWith(new EnchantmentLevelEntry(enchantment, level)));
+            entries.add(EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(enchantment, level)));
         }
     }
 
