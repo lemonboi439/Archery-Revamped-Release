@@ -13,6 +13,12 @@
 - [x] Add normal-level custom enchantment books to the dedicated creative tab.
 - [x] Cross-verify Fletching behavior and bundled force-arrow defaults against the 26.1 port.
 
+## v1.6.3 - Creative Tab Hotfix (Complete)
+
+- [x] Prevent component-identical enchanted books from being added twice to the Archery Revamped creative tab.
+- [x] Fix the Creative Inventory crash reported when opening the mod's tab.
+- [x] Publish corrected builds for Minecraft 1.20.1, 1.21.1, 1.21.11, 26.1, and 26.2.
+
 ## v1.5 - Published
 
 - [x] Add a craftable Quiver that holds nine complete arrow stacks.

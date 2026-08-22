@@ -20,6 +20,9 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class ModItemGroups {
     private static final Identifier ARCHERY_GROUP_ID = Identifier.of(
             ArcheryRevamped.MOD_ID, "archery_revamped"
@@ -53,20 +56,26 @@ public final class ModItemGroups {
     private static void addEnchantmentBooks(ItemGroup.Entries entries,
                                             ItemGroup.DisplayContext displayContext) {
         var enchantments = displayContext.lookup().getOrThrow(RegistryKeys.ENCHANTMENT);
-        addEnchantmentBooks(entries, enchantments, RicochetEnchantment.KEY, RicochetEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, enchantments, OverdrawEnchantment.KEY, OverdrawEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, enchantments, LongshotEnchantment.KEY, LongshotEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, enchantments, FractureEnchantment.KEY, FractureEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, enchantments, BurstEnchantment.KEY, BurstEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, enchantments, HeadshotEnchantment.KEY, HeadshotEnchantment.MAX_LEVEL);
+        List<ItemStack> books = new ArrayList<>();
+        addEnchantmentBooks(books, enchantments, RicochetEnchantment.KEY, RicochetEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, enchantments, OverdrawEnchantment.KEY, OverdrawEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, enchantments, LongshotEnchantment.KEY, LongshotEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, enchantments, FractureEnchantment.KEY, FractureEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, enchantments, BurstEnchantment.KEY, BurstEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, enchantments, HeadshotEnchantment.KEY, HeadshotEnchantment.MAX_LEVEL);
+        books.forEach(entries::add);
     }
 
-    private static void addEnchantmentBooks(ItemGroup.Entries entries,
+    /** Creative tabs reject component-identical stacks, so only emit each book once. */
+    private static void addEnchantmentBooks(List<ItemStack> books,
                                             net.minecraft.registry.RegistryWrapper.Impl<Enchantment> enchantments,
                                             RegistryKey<Enchantment> key, int normalMaximum) {
         var enchantment = enchantments.getOrThrow(key);
         for (int level = 1; level <= normalMaximum; level++) {
-            entries.add(EnchantmentHelper.getEnchantedBookWith(new EnchantmentLevelEntry(enchantment, level)));
+            ItemStack book = EnchantmentHelper.getEnchantedBookWith(new EnchantmentLevelEntry(enchantment, level));
+            if (books.stream().noneMatch(existing -> ItemStack.areItemsAndComponentsEqual(existing, book))) {
+                books.add(book);
+            }
         }
     }
 
