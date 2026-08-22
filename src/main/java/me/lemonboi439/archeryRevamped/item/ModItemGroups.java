@@ -21,6 +21,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class ModItemGroups {
     private static final Identifier ARCHERY_GROUP_ID = Identifier.fromNamespaceAndPath(
             ArcheryRevamped.MOD_ID, "archery_revamped"
@@ -57,15 +60,18 @@ public final class ModItemGroups {
      */
     private static void addEnchantmentBooks(CreativeModeTab.Output entries,
                                             HolderLookup.Provider registries) {
-        addEnchantmentBooks(entries, registries, RicochetEnchantment.KEY, RicochetEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, registries, OverdrawEnchantment.KEY, OverdrawEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, registries, LongshotEnchantment.KEY, LongshotEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, registries, FractureEnchantment.KEY, FractureEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, registries, BurstEnchantment.KEY, BurstEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, registries, HeadshotEnchantment.KEY, HeadshotEnchantment.MAX_LEVEL);
+        List<ItemStack> books = new ArrayList<>();
+        addEnchantmentBooks(books, registries, RicochetEnchantment.KEY, RicochetEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, registries, OverdrawEnchantment.KEY, OverdrawEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, registries, LongshotEnchantment.KEY, LongshotEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, registries, FractureEnchantment.KEY, FractureEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, registries, BurstEnchantment.KEY, BurstEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, registries, HeadshotEnchantment.KEY, HeadshotEnchantment.MAX_LEVEL);
+        books.forEach(entries::accept);
     }
 
-    private static void addEnchantmentBooks(CreativeModeTab.Output entries,
+    /** Creative tabs reject component-identical stacks, so only emit each book once. */
+    private static void addEnchantmentBooks(List<ItemStack> books,
                                             HolderLookup.Provider registries,
                                             ResourceKey<Enchantment> key, int normalMaximum) {
         Holder<Enchantment> enchantment = registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key);
@@ -74,7 +80,9 @@ public final class ModItemGroups {
             int bookLevel = level;
             EnchantmentHelper.updateEnchantments(book,
                     enchantments -> enchantments.set(enchantment, bookLevel));
-            entries.accept(book);
+            if (books.stream().noneMatch(existing -> ItemStack.isSameItemSameComponents(existing, book))) {
+                books.add(book);
+            }
         }
     }
 
