@@ -19,6 +19,9 @@ import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class ModItemGroups {
     private static final Identifier ARCHERY_GROUP_ID = new Identifier(
             ArcheryRevamped.MOD_ID, "archery_revamped"
@@ -50,18 +53,24 @@ public final class ModItemGroups {
 
     /** Adds only authored, normal enchantment levels to this mod's own tab. */
     private static void addEnchantmentBooks(ItemGroup.Entries entries) {
-        addEnchantmentBooks(entries, RicochetEnchantment.ENCHANTMENT, RicochetEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, OverdrawEnchantment.ENCHANTMENT, OverdrawEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, LongshotEnchantment.ENCHANTMENT, LongshotEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, FractureEnchantment.ENCHANTMENT, FractureEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, BurstEnchantment.ENCHANTMENT, BurstEnchantment.MAX_LEVEL);
-        addEnchantmentBooks(entries, HeadshotEnchantment.ENCHANTMENT, HeadshotEnchantment.MAX_LEVEL);
+        List<ItemStack> books = new ArrayList<>();
+        addEnchantmentBooks(books, RicochetEnchantment.ENCHANTMENT, RicochetEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, OverdrawEnchantment.ENCHANTMENT, OverdrawEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, LongshotEnchantment.ENCHANTMENT, LongshotEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, FractureEnchantment.ENCHANTMENT, FractureEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, BurstEnchantment.ENCHANTMENT, BurstEnchantment.MAX_LEVEL);
+        addEnchantmentBooks(books, HeadshotEnchantment.ENCHANTMENT, HeadshotEnchantment.MAX_LEVEL);
+        books.forEach(entries::add);
     }
 
-    private static void addEnchantmentBooks(ItemGroup.Entries entries,
+    /** Creative tabs reject component-identical stacks, so only emit each book once. */
+    private static void addEnchantmentBooks(List<ItemStack> books,
                                             Enchantment enchantment, int normalMaximum) {
         for (int level = 1; level <= normalMaximum; level++) {
-            entries.add(EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(enchantment, level)));
+            ItemStack book = EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(enchantment, level));
+            if (books.stream().noneMatch(existing -> ItemStack.canCombine(existing, book))) {
+                books.add(book);
+            }
         }
     }
 
