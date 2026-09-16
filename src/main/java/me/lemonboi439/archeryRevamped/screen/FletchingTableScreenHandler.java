@@ -10,6 +10,7 @@ import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.level.block.Blocks;
 
 /**
@@ -216,7 +217,7 @@ public final class FletchingTableScreenHandler extends AbstractContainerMenu {
                     // handler's own slots are being torn down at this point.
                     player.getInventory().add(stack);
                     if (!stack.isEmpty()) {
-                        player.drop(stack, false);
+                        player.drop(stack, false, Prediction.SERVER_ONLY);
                     }
                 }
             }

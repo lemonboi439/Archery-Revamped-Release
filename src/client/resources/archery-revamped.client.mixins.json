@@ -3,9 +3,7 @@
   "minVersion": "0.8",
   "package": "me.lemonboi439.archeryRevamped.mixin.client",
   "compatibilityLevel": "JAVA_21",
-  "client": [
-    "HeldItemRendererMixin"
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   },

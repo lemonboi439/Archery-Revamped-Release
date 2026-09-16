@@ -1,12 +1,18 @@
 # Archery Revamped Roadmap
 
-## Minecraft 26.2 Port (In Progress)
+## Minecraft 26.3 Port (In Progress)
+
+- [x] Update Minecraft, Fabric Loader, and Fabric API build coordinates.
+- [ ] Resolve 26.3 rendering and vanilla API changes.
+- [ ] Compile the full common and client source sets.
+- [ ] Launch and playtest the 26.3 development client.
+- [ ] Package and publish the 26.3 branch.
+
+## Minecraft 26.2 Port (Complete)
 
 - [x] Update Minecraft and Fabric API build coordinates.
 - [x] Resolve 26.2 GUI, camera, and world-render submission API changes.
 - [x] Compile the full common and client source sets.
-- [ ] Launch and playtest the 26.2 development client.
-- [ ] Package and publish the 26.2 branch.
 
 ## v1.6 - Fletching Table Rework (Complete)
 

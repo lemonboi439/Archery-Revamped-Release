@@ -55,14 +55,14 @@ dependencies {
     // Optional UI integrations. They are present in the development client,
     // but remain optional for players using the published mod.
     implementation "maven.modrinth:9s6osm5g:GFM8zh9J" // Cloth Config 26.1.154+fabric
-    implementation "maven.modrinth:mOgUt4GM:3rsoV1bk" // Mod Menu 18.0.0 for 26.1
+    implementation "maven.modrinth:mOgUt4GM:3rsoV1bk" // Mod Menu 18.0.0; optional integration
     compileOnly "maven.modrinth:XaT8sLP6:DHE2OnLP" // Trinkets Updated 3.11.0-beta.2+1.21.11
     compileOnly "org.ladysnake.cardinal-components-api:cardinal-components-base:7.3.0"
     compileOnly "org.ladysnake.cardinal-components-api:cardinal-components-entity:7.3.0"
 }
 
 // The published 1.21.11 Trinkets Updated binary is Yarn-mapped and cannot be
-// loaded by a Mojang-mapped 26.1 build. Villager trades are also being moved
+// loaded by a Mojang-mapped 26.3 build. Villager trades are also being moved
 // away from Fabric's removed TradeOfferHelper API in a later migration slice.
 // Keep both integrations out of this first, testable core baseline.
 sourceSets {
@@ -76,10 +76,13 @@ sourceSets {
         java {
             // These use the 1.21.11 GUI extraction and Fabric rendering APIs.
             // They return in a dedicated client/UI migration slice after the
-            // basic custom projectile client is verified on 26.1.
+            // basic custom projectile client is verified on 26.3.
             exclude 'me/lemonboi439/archeryRevamped/client/QuiverScreen.java'
             exclude 'me/lemonboi439/archeryRevamped/client/OverdrawClientHandler.java'
             exclude 'me/lemonboi439/archeryRevamped/mixin/CameraMixin.java'
+            // 26.3 replaced ItemInHandRenderer with FirstPersonHandsAndItemsRenderer.
+            // Keep this pre-26.3 visual-only mixin out until it is migrated.
+            exclude 'me/lemonboi439/archeryRevamped/mixin/client/HeldItemRendererMixin.java'
         }
     }
 }

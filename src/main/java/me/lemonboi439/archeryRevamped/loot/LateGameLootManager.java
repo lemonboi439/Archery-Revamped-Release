@@ -19,7 +19,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.EnchantRandomlyFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ConstantValue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -92,13 +92,13 @@ public final class LateGameLootManager {
         }
 
         EnchantRandomlyFunction.Builder enchantmentFunction =
-                EnchantRandomlyFunction.randomApplicableEnchantment(registries);
+                EnchantRandomlyFunction.randomApplicableEnchantment(enchantmentLookup.get());
         for (Holder<Enchantment> enchantment : availableEnchantments) {
             enchantmentFunction.withEnchantment(enchantment);
         }
 
         LootPool.Builder pool = LootPool.lootPool()
-                .setRolls(ConstantValue.exactly(1.0F))
+                .setRolls(Holder.direct(new ConstantValue(1)))
                 .when(LootItemRandomChanceCondition.randomChance(chance))
                 .add(LootItem.lootTableItem(Items.BOOK)
                         .setWeight(1)

@@ -4,6 +4,16 @@ All notable changes to Archery Revamped are documented here.
 
 ---
 
+## 1.6.4 - Minecraft 26.3 Port
+
+### Changed
+
+- Ported the official-mapping build from Minecraft 26.2 to 26.3.
+- Updated Fabric Loader to `0.19.5` and Fabric API to `0.160.6+26.3`.
+- Retained Java 25 and Loom 1.17 for the 26.3 toolchain.
+
+---
+
 ## 1.6.2 - Minecraft 26.2 Port
 
 ### Changed

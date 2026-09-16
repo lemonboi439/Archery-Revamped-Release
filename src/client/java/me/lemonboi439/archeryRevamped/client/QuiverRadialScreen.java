@@ -10,7 +10,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import java.util.List;
 
@@ -87,18 +87,18 @@ public final class QuiverRadialScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent input) {
-        if (input.key() == GLFW.GLFW_KEY_Q) {
+        if (input.key() == InputConstants.KEY_Q) {
             cycleSelection(-1);
             return true;
         }
-        if (input.key() == GLFW.GLFW_KEY_E) {
+        if (input.key() == InputConstants.KEY_E) {
             cycleSelection(1);
             return true;
         }
-        if (input.key() == GLFW.GLFW_KEY_V) {
+        if (input.key() == InputConstants.KEY_V) {
             return true;
         }
-        if (input.key() == GLFW.GLFW_KEY_ESCAPE) {
+        if (input.key() == InputConstants.KEY_ESCAPE) {
             onClose();
             return true;
         }

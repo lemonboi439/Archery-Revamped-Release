@@ -69,11 +69,11 @@ public final class ArcheryArrowEntityRenderer extends ArrowRenderer<ArcheryArrow
         // ArrowRenderer has no axial rotation hook. Reproduce its normal pose
         // and add a roll around the arrow's travel axis for the tidal torpedo.
         matrices.pushPose();
-        matrices.mulPose(Axis.YP.rotationDegrees(state.yRot - 90.0F));
-        matrices.mulPose(Axis.ZP.rotationDegrees(state.xRot));
-        matrices.mulPose(Axis.XP.rotationDegrees(state.tidalSpin));
+        matrices.rotateDegrees(Axis.YP, state.yRot - 90.0F);
+        matrices.rotateDegrees(Axis.ZP, state.xRot);
+        matrices.rotateDegrees(Axis.XP, state.tidalSpin);
         queue.submitModel(model, state, matrices, state.texture, state.lightCoords,
-                OverlayTexture.NO_OVERLAY, state.outlineColor, null);
+                OverlayTexture.NO_OVERLAY, state.outlineColor);
         matrices.popPose();
     }
 

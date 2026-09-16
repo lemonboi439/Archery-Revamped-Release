@@ -1,25 +1,25 @@
 # Archery Revamped
 
-Archery Revamped is a vanilla+ Fabric mod for Minecraft 26.2. It adds custom arrow entities, special arrow types, configurable projectile physics, archery enchantments, a fletching table, villager trades, trajectory debugging, and optional recipe-viewer compatibility.
+Archery Revamped is a vanilla+ Fabric mod for Minecraft 26.3. It adds custom arrow entities, special arrow types, configurable projectile physics, archery enchantments, a fletching table, villager trades, trajectory debugging, and optional recipe-viewer compatibility.
 
 ## Compatibility
 
-- Minecraft: `26.2`
+- Minecraft: `26.3`
 - Official Mojang mappings
-- Fabric Loader: `0.19.3` or newer
-- Fabric API: `0.154.2+26.2`
+- Fabric Loader: `0.19.5` or newer
+- Fabric API: `0.160.6+26.3`
 - Java: `25`
 
 The mod is server-safe and does not require JEI, REI, EMI, Cloth Config, or Mod Menu. Those mods are optional suggestions in `fabric.mod.json`.
 
 ## Installation
 
-1. Install Fabric Loader for Minecraft 26.2 and Java 25.
-2. Put `archery-revamped-1.6.2.jar` in the `mods` directory.
-3. Install Fabric API for 26.1.
+1. Install Fabric Loader for Minecraft 26.3 and Java 25.
+2. Put `archery-revamped-1.6.4.jar` in the `mods` directory.
+3. Install Fabric API for 26.3.
 4. Start the game. The mod creates `config/archery_revamped-config.json` on the first server start.
 
-The current built JAR is produced at `build/libs/archery-revamped-1.6.2.jar`.
+The current built JAR is produced at `build/libs/archery-revamped-1.6.4.jar`.
 
 ## Features
 
@@ -193,4 +193,4 @@ $env:JAVA_HOME = 'C:\Program Files\Java\jdk-25'
 ./gradlew.bat clean build --no-daemon
 ```
 
-The build produces the remapped runtime JAR and a sources JAR in `build/libs`. Before publishing, test the runtime JAR in a clean Fabric 26.2 instance with a new world and an existing test world containing arrows.
+The build produces the remapped runtime JAR and a sources JAR in `build/libs`. Before publishing, test the runtime JAR in a clean Fabric 26.3 instance with a new world and an existing test world containing arrows.
