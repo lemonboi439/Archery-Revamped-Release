@@ -11,6 +11,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import me.lemonboi439.archeryRevamped.physics.ArrowPhysicsEngine;
 import me.lemonboi439.archeryRevamped.mixin.PersistentProjectileEntityAccessor;
+import me.lemonboi439.archeryRevamped.mixin.EntityAccessor;
+import me.lemonboi439.archeryRevamped.mixin.LivingEntityAccessor;
 import me.lemonboi439.archeryRevamped.fracture.FractureScheduler;
 import me.lemonboi439.archeryRevamped.burst.BurstArrowHandler;
 import me.lemonboi439.archeryRevamped.debug.TrajectoryVisualizer;
@@ -62,7 +64,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private static final TrackedData<Float> TRACKED_TRAJECTORY_VELOCITY_Z = DataTracker.registerData(
             ArcheryArrowEntity.class, TrackedDataHandlerRegistry.FLOAT
     );
-    private static final int CURRENT_DATA_VERSION = 5;
+    private static final int CURRENT_DATA_VERSION = 6;
     private static final String DATA_VERSION_KEY = "archeryRevampedDataVersion";
     private static final String ARROW_TYPE_KEY = "arrowType";
     private static final String RICOCHET_LEVEL_KEY = "ricochetLevel";
@@ -93,6 +95,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private static final String BURST_ARROWS_REMAINING_KEY = "burstArrowsRemaining";
     private static final String BURST_STAGGER_DELAY_KEY = "burstStaggerDelay";
     private static final String BURST_STAGGER_TIMER_KEY = "burstStaggerTimer";
+    private static final String BURST_CHILD_KEY = "burstChild";
     private static final String TRAJECTORY_FINISHED_KEY = "trajectoryFinished";
     private static final String HEADSHOT_LEVEL_KEY = "headshotLevel";
     private static final String DELAYED_IMPACT_DELAY_KEY = "delayedImpactDelay";
@@ -133,6 +136,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     private int burstStaggerDelay;
     private int burstStaggerTimer;
     private boolean burstScheduled;
+    private boolean burstChild;
     private int headshotLevel;
     private double pendingHeadshotDamageMultiplier = 1.0D;
     private int delayedImpactDelay;
@@ -516,6 +520,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         child.burstStaggerDelay = 0;
         child.burstStaggerTimer = 0;
         child.burstScheduled = false;
+        child.burstChild = true;
         return child;
     }
 
@@ -682,6 +687,10 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
     @Override
     protected void onEntityHit(EntityHitResult hit) {
         this.updateDistanceTravelled();
+        if (this.burstChild && hit.getEntity() instanceof LivingEntity living) {
+            ((EntityAccessor) living).archeryRevamped$setTimeUntilRegen(0);
+            ((LivingEntityAccessor) living).archeryRevamped$setLastDamageTaken(0.0F);
+        }
         this.applyImpactDamageModifiers();
         this.prepareHeadshot(hit);
         double headshotMultiplier = this.consumeHeadshotDamageMultiplier();
@@ -734,6 +743,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         tag.putInt(BURST_ARROWS_REMAINING_KEY, Math.max(0, this.burstArrowsRemaining));
         tag.putInt(BURST_STAGGER_DELAY_KEY, Math.max(1, this.burstStaggerDelay));
         tag.putInt(BURST_STAGGER_TIMER_KEY, Math.max(0, this.burstStaggerTimer));
+        tag.putBoolean(BURST_CHILD_KEY, this.burstChild);
         tag.putBoolean(TRAJECTORY_FINISHED_KEY, this.isTrajectoryFinished());
         tag.putInt(HEADSHOT_LEVEL_KEY, ConfigManager.limitEnchantmentLevel(this.headshotLevel, 3));
         writeDelayedImpact(tag);
@@ -782,6 +792,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         this.burstArrowsRemaining = Math.max(0, tag.getInt(BURST_ARROWS_REMAINING_KEY));
         this.burstStaggerDelay = Math.max(1, tag.getInt(BURST_STAGGER_DELAY_KEY));
         this.burstStaggerTimer = Math.max(0, tag.getInt(BURST_STAGGER_TIMER_KEY));
+        this.burstChild = tag.getBoolean(BURST_CHILD_KEY);
         this.burstScheduled = false;
         this.setTrajectoryFinished(tag.contains(TRAJECTORY_FINISHED_KEY)
                 ? tag.getBoolean(TRAJECTORY_FINISHED_KEY) : this.inGround);

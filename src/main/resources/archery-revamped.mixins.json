@@ -6,6 +6,8 @@
   "mixins": [
     "RangedWeaponItemMixin",
     "PersistentProjectileEntityAccessor",
+    "EntityAccessor",
+    "LivingEntityAccessor",
     "PlayerEntityQuiverMixin",
     "FletchingTableBlockMixin",
     "CraftingScreenHandlerMixin"
