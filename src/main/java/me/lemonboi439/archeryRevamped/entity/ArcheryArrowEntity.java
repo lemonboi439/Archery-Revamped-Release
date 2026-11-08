@@ -189,6 +189,11 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         return this.projectileStack.copy();
     }
 
+    @Override
+    protected float getDragInWater() {
+        return this.getArrowType() == ArrowType.TIDAL ? 0.99F : super.getDragInWater();
+    }
+
     /** Never let a child arrow immediately collide with the shooter it inherits. */
     @Override
     protected boolean canHit(Entity entity) {
@@ -690,6 +695,7 @@ public class ArcheryArrowEntity extends PersistentProjectileEntity {
         if (this.burstChild && hit.getEntity() instanceof LivingEntity living) {
             ((EntityAccessor) living).archeryRevamped$setTimeUntilRegen(0);
             ((LivingEntityAccessor) living).archeryRevamped$setLastDamageTaken(0.0F);
+            living.hurtTime = 0;
         }
         this.applyImpactDamageModifiers();
         this.prepareHeadshot(hit);

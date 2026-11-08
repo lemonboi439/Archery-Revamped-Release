@@ -61,6 +61,10 @@
       "enabled": true,
       "explosion_size": 2.5,
       "anti_grief": false
+    },
+    "echo": {
+      "sonic_boom_chance_percent": 10.0,
+      "sonic_boom_damage": 10.0
     }
   },
   "fletching": {
@@ -82,7 +86,8 @@
     "colour_visualisation": false
   },
   "general": {
-    "mod_enabled": true
+    "mod_enabled": true,
+    "limitless_anvil": false
   },
   "regular": {
     "infinite_levels": false

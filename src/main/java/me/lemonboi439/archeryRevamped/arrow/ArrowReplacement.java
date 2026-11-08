@@ -12,9 +12,11 @@ import me.lemonboi439.archeryRevamped.item.ModItems;
 import me.lemonboi439.archeryRevamped.overdraw.OverdrawHandler;
 import me.lemonboi439.archeryRevamped.quiver.QuiverManager;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.world.World;
 
@@ -40,7 +42,12 @@ public final class ArrowReplacement {
         arrow.setArrowType(getArrowType(projectileStack));
         arrow.setProjectileStack(projectileStack.copy());
 
-        boolean extraAmmoFree = shooter instanceof PlayerEntity player && player.getAbilities().creativeMode;
+        // 1.20.1 has no INTANGIBLE_PROJECTILE component; Infinity is the only
+        // vanilla case where follow-up Burst/Fracture arrows must not consume ammo.
+        boolean infinityArrow = projectileStack.isOf(Items.ARROW)
+                && EnchantmentHelper.getLevel(Enchantments.INFINITY, weaponStack) > 0;
+        boolean extraAmmoFree = infinityArrow
+                || shooter instanceof PlayerEntity player && player.getAbilities().creativeMode;
         arrow.setExtraAmmoFree(extraAmmoFree);
         if (!world.isClient() && shooter instanceof PlayerEntity player
                 && !extraAmmoFree && QuiverManager.isSelectedArrow(player, projectileStack)) {

@@ -43,7 +43,11 @@ public final class ArcheryCommand {
                 .then(CommandManager.literal("trajectory")
                         .executes(ArcheryCommand::showTrajectory)
                         .then(CommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(ArcheryCommand::setTrajectory)));
+                                .executes(ArcheryCommand::setTrajectory))
+                        .then(CommandManager.literal("colour")
+                                .executes(ArcheryCommand::showTrajectoryColour)
+                                .then(CommandManager.argument("enabled", BoolArgumentType.bool())
+                                        .executes(ArcheryCommand::setTrajectoryColour))));
     }
 
     private static LiteralArgumentBuilder<ServerCommandSource> createPhysicsCommand() {
@@ -96,6 +100,7 @@ public final class ArcheryCommand {
 
         helpHeader(source, "Trajectory");
         helpLine(source, "/archeryrevamped trajectory <true|false>", "show or hide fired-arrow trajectory trails and forward predictions");
+        helpLine(source, "/archeryrevamped trajectory colour <true|false>", "toggle the experimental smooth speed-colour gradient");
 
         return 1;
     }
@@ -226,6 +231,25 @@ public final class ArcheryCommand {
                 .forEach(player -> TrajectoryNetworking.send(player, enabled));
         context.getSource().sendFeedback(
                 () -> Text.literal("Trajectory visualization " + (enabled ? "enabled" : "disabled") + "."), true);
+        return 1;
+    }
+
+    private static int showTrajectoryColour(CommandContext<ServerCommandSource> context) {
+        boolean enabled = TrajectoryVisualizer.isColourVisualisationEnabled();
+        context.getSource().sendFeedback(
+                () -> Text.literal("Trajectory speed-colour visualisation is "
+                        + (enabled ? "enabled" : "disabled") + "."), false);
+        return 1;
+    }
+
+    private static int setTrajectoryColour(CommandContext<ServerCommandSource> context) {
+        boolean enabled = BoolArgumentType.getBool(context, "enabled");
+        TrajectoryVisualizer.setColourVisualisationEnabled(enabled);
+        context.getSource().getServer().getPlayerManager().getPlayerList()
+                .forEach(player -> TrajectoryNetworking.send(player, TrajectoryVisualizer.isEnabled()));
+        context.getSource().sendFeedback(
+                () -> Text.literal("Trajectory speed-colour visualisation "
+                        + (enabled ? "enabled" : "disabled") + "."), true);
         return 1;
     }
 

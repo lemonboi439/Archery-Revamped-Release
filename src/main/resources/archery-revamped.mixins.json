@@ -10,7 +10,8 @@
     "LivingEntityAccessor",
     "PlayerEntityQuiverMixin",
     "FletchingTableBlockMixin",
-    "CraftingScreenHandlerMixin"
+    "CraftingScreenHandlerMixin",
+    "AnvilScreenHandlerMixin"
   ],
   "client": [
     "CameraMixin"

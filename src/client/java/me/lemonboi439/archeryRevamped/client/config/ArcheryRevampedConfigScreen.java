@@ -250,6 +250,9 @@ public final class ArcheryRevampedConfigScreen {
         category.addEntry(entries.startBooleanToggle(Text.literal("Infinite Archery Revamped enchantment levels"),
                         ConfigManager.isInfiniteLevels())
                 .setDefaultValue(false).setSaveConsumer(ConfigManager::setInfiniteLevels).build());
+        category.addEntry(entries.startBooleanToggle(Text.literal("Limitless anvil (removes Too Expensive gate)"),
+                        ConfigManager.isLimitlessAnvilEnabled())
+                .setDefaultValue(false).setSaveConsumer(ConfigManager::setLimitlessAnvilEnabled).build());
         category.addEntry(entries.startBooleanToggle(Text.literal("Mod enabled"), ConfigManager.isModEnabled())
                 .setDefaultValue(true).setSaveConsumer(ConfigManager::setModEnabled).build());
     }
