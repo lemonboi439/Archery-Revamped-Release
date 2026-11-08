@@ -1,22 +1,21 @@
 package me.lemonboi439.archeryRevamped.quiver;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.collection.DefaultedList;
-
 import java.util.List;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 /** Screen-handler inventory backed by a quiver ItemStack's container component. */
-public final class QuiverInventory implements Inventory {
-    private final PlayerEntity owner;
+public final class QuiverInventory implements Container {
+    private final Player owner;
     private final ItemStack quiver;
-    private final DefaultedList<ItemStack> contents;
+    private final NonNullList<ItemStack> contents;
 
-    public QuiverInventory(PlayerEntity owner, ItemStack quiver) {
+    public QuiverInventory(Player owner, ItemStack quiver) {
         this.owner = owner;
         this.quiver = quiver;
-        this.contents = DefaultedList.ofSize(QuiverManager.SLOT_COUNT, ItemStack.EMPTY);
+        this.contents = NonNullList.withSize(QuiverManager.SLOT_COUNT, ItemStack.EMPTY);
         List<ItemStack> savedContents = QuiverManager.getContents(quiver);
         for (int slot = 0; slot < QuiverManager.SLOT_COUNT; slot++) {
             this.contents.set(slot, savedContents.get(slot));
@@ -24,7 +23,7 @@ public final class QuiverInventory implements Inventory {
     }
 
     @Override
-    public int size() {
+    public int getContainerSize() {
         return QuiverManager.SLOT_COUNT;
     }
 
@@ -34,51 +33,51 @@ public final class QuiverInventory implements Inventory {
     }
 
     @Override
-    public ItemStack getStack(int slot) {
+    public ItemStack getItem(int slot) {
         return this.contents.get(slot);
     }
 
     @Override
-    public ItemStack removeStack(int slot, int amount) {
+    public ItemStack removeItem(int slot, int amount) {
         ItemStack result = this.contents.get(slot).split(amount);
         if (!result.isEmpty()) {
-            markDirty();
+            setChanged();
         }
         return result;
     }
 
     @Override
-    public ItemStack removeStack(int slot) {
+    public ItemStack removeItemNoUpdate(int slot) {
         ItemStack result = this.contents.set(slot, ItemStack.EMPTY);
         if (!result.isEmpty()) {
-            markDirty();
+            setChanged();
         }
         return result;
     }
 
     @Override
-    public void setStack(int slot, ItemStack stack) {
+    public void setItem(int slot, ItemStack stack) {
         this.contents.set(slot, stack);
-        markDirty();
+        setChanged();
     }
 
     @Override
-    public void markDirty() {
+    public void setChanged() {
         QuiverManager.setContents(this.quiver, this.contents);
     }
 
     @Override
-    public boolean canPlayerUse(PlayerEntity player) {
+    public boolean stillValid(Player player) {
         return player == this.owner && !this.quiver.isEmpty();
     }
 
     @Override
-    public void clear() {
+    public void clearContent() {
         this.contents.clear();
         for (int slot = 0; slot < QuiverManager.SLOT_COUNT; slot++) {
             this.contents.add(ItemStack.EMPTY);
         }
-        markDirty();
+        setChanged();
     }
 
     public ItemStack getQuiver() {

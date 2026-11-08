@@ -26,15 +26,18 @@ import me.lemonboi439.archeryRevamped.debug.TrajectoryNetworking;
 import me.lemonboi439.archeryRevamped.component.ModDataComponents;
 import me.lemonboi439.archeryRevamped.quiver.QuiverNetworking;
 import me.lemonboi439.archeryRevamped.enchantment.LegacyEnchantmentRegistry;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import me.lemonboi439.archeryRevamped.network.ModNetwork;
+import net.minecraftforge.fml.common.Mod;
 
-public class ArcheryRevamped implements ModInitializer {
+@Mod(ArcheryRevamped.FORGE_MOD_ID)
+public class ArcheryRevamped {
+    /** Forge mod id; resource paths keep the hyphenated Fabric namespace. */
+    public static final String FORGE_MOD_ID = "archery_revamped";
     public static final String MOD_ID = "archery-revamped";
 
-    @Override
-    public void onInitialize() {
+    public ArcheryRevamped() {
         ConfigManager.load();
+        ModNetwork.register();
         LegacyEnchantmentRegistry.register();
         ModDataComponents.register();
         ModEntities.register();

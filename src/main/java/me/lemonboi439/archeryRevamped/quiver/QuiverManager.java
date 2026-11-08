@@ -1,15 +1,14 @@
 package me.lemonboi439.archeryRevamped.quiver;
 
 import me.lemonboi439.archeryRevamped.item.ModItems;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ArrowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.MathHelper;
-
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArrowItem;
+import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,50 +22,50 @@ public final class QuiverManager {
     private QuiverManager() {
     }
 
-    public static ItemStack getActiveQuiver(PlayerEntity player) {
-        PlayerInventory inventory = player.getInventory();
-        for (int slot = 0; slot < inventory.size(); slot++) {
-            ItemStack stack = inventory.getStack(slot);
-            if (stack.isOf(ModItems.QUIVER)) return stack;
+    public static ItemStack getActiveQuiver(Player player) {
+        Inventory inventory = player.getInventory();
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            ItemStack stack = inventory.getItem(slot);
+            if (stack.is(ModItems.QUIVER)) return stack;
         }
         return ItemStack.EMPTY;
     }
 
     public static List<ItemStack> getContents(ItemStack quiver) {
-        DefaultedList<ItemStack> contents = DefaultedList.ofSize(SLOT_COUNT, ItemStack.EMPTY);
-        if (!quiver.hasNbt()) return contents;
-        NbtList serialized = quiver.getNbt().getList(CONTENTS_KEY, NbtCompound.COMPOUND_TYPE);
+        NonNullList<ItemStack> contents = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+        if (!quiver.hasTag()) return contents;
+        ListTag serialized = quiver.getTag().getList(CONTENTS_KEY, CompoundTag.TAG_COMPOUND);
         for (int slot = 0; slot < Math.min(SLOT_COUNT, serialized.size()); slot++) {
-            contents.set(slot, ItemStack.fromNbt(serialized.getCompound(slot)));
+            contents.set(slot, ItemStack.of(serialized.getCompound(slot)));
         }
         return contents;
     }
 
     public static void setContents(ItemStack quiver, List<ItemStack> contents) {
-        NbtList serialized = new NbtList();
+        ListTag serialized = new ListTag();
         for (int slot = 0; slot < SLOT_COUNT; slot++) {
             ItemStack stack = slot < contents.size() ? contents.get(slot) : ItemStack.EMPTY;
-            NbtCompound saved = new NbtCompound();
-            stack.writeNbt(saved);
+            CompoundTag saved = new CompoundTag();
+            stack.save(saved);
             serialized.add(saved);
         }
-        quiver.getOrCreateNbt().put(CONTENTS_KEY, serialized);
+        quiver.getOrCreateTag().put(CONTENTS_KEY, serialized);
     }
 
     public static int getSelectedSlot(ItemStack quiver) {
-        return MathHelper.clamp(quiver.getOrCreateNbt().getInt(SELECTED_SLOT_KEY), 0, SLOT_COUNT - 1);
+        return Mth.clamp(quiver.getOrCreateTag().getInt(SELECTED_SLOT_KEY), 0, SLOT_COUNT - 1);
     }
 
     public static void setSelectedSlot(ItemStack quiver, int slot) {
-        quiver.getOrCreateNbt().putInt(SELECTED_SLOT_KEY, MathHelper.clamp(slot, 0, SLOT_COUNT - 1));
+        quiver.getOrCreateTag().putInt(SELECTED_SLOT_KEY, Mth.clamp(slot, 0, SLOT_COUNT - 1));
     }
 
     private static int getNextSlot(ItemStack quiver) {
-        return MathHelper.floorMod(quiver.getOrCreateNbt().getInt(NEXT_SLOT_KEY), SLOT_COUNT);
+        return Mth.positiveModulo(quiver.getOrCreateTag().getInt(NEXT_SLOT_KEY), SLOT_COUNT);
     }
 
     private static void setNextSlot(ItemStack quiver, int slot) {
-        quiver.getOrCreateNbt().putInt(NEXT_SLOT_KEY, MathHelper.floorMod(slot, SLOT_COUNT));
+        quiver.getOrCreateTag().putInt(NEXT_SLOT_KEY, Mth.positiveModulo(slot, SLOT_COUNT));
     }
 
     public static boolean insertNextArrowStack(ItemStack quiver, ItemStack arrowStack) {
@@ -101,7 +100,7 @@ public final class QuiverManager {
         return ItemStack.EMPTY;
     }
 
-    public static void cycleSelectedSlot(PlayerEntity player) {
+    public static void cycleSelectedSlot(Player player) {
         ItemStack quiver = getActiveQuiver(player);
         if (quiver.isEmpty()) return;
         List<ItemStack> contents = getContents(quiver);
@@ -115,28 +114,28 @@ public final class QuiverManager {
         }
     }
 
-    public static ItemStack getSelectedArrow(PlayerEntity player) {
+    public static ItemStack getSelectedArrow(Player player) {
         ItemStack quiver = getActiveQuiver(player);
         if (quiver.isEmpty()) return ItemStack.EMPTY;
         ItemStack selected = getContents(quiver).get(getSelectedSlot(quiver));
         return isArrow(selected) ? selected.copy() : ItemStack.EMPTY;
     }
 
-    public static boolean isSelectedArrow(PlayerEntity player, ItemStack arrow) {
+    public static boolean isSelectedArrow(Player player, ItemStack arrow) {
         ItemStack selected = getSelectedArrow(player);
-        return !selected.isEmpty() && ItemStack.canCombine(selected, arrow);
+        return !selected.isEmpty() && ItemStack.isSameItemSameTags(selected, arrow);
     }
 
-    public static int countArrow(PlayerEntity player, ItemStack arrow) {
+    public static int countArrow(Player player, ItemStack arrow) {
         int available = 0;
         ItemStack quiver = getActiveQuiver(player);
         if (!quiver.isEmpty()) for (ItemStack stack : getContents(quiver)) {
-            if (ItemStack.canCombine(stack, arrow)) available += stack.getCount();
+            if (ItemStack.isSameItemSameTags(stack, arrow)) available += stack.getCount();
         }
         return available;
     }
 
-    public static int consumeArrow(PlayerEntity player, ItemStack arrow, int amount) {
+    public static int consumeArrow(Player player, ItemStack arrow, int amount) {
         if (amount <= 0) return 0;
         ItemStack quiver = getActiveQuiver(player);
         if (quiver.isEmpty()) return 0;
@@ -151,9 +150,9 @@ public final class QuiverManager {
 
     private static int consumeSlot(List<ItemStack> contents, int slot, ItemStack arrow, int remaining) {
         ItemStack candidate = contents.get(slot);
-        if (candidate.isEmpty() || !ItemStack.canCombine(candidate, arrow)) return remaining;
+        if (candidate.isEmpty() || !ItemStack.isSameItemSameTags(candidate, arrow)) return remaining;
         int removed = Math.min(remaining, candidate.getCount());
-        candidate.decrement(removed);
+        candidate.shrink(removed);
         if (candidate.isEmpty()) contents.set(slot, ItemStack.EMPTY);
         return remaining - removed;
     }

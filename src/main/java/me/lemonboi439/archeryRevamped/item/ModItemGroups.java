@@ -7,52 +7,62 @@ import me.lemonboi439.archeryRevamped.enchantment.HeadshotEnchantment;
 import me.lemonboi439.archeryRevamped.enchantment.LongshotEnchantment;
 import me.lemonboi439.archeryRevamped.enchantment.OverdrawEnchantment;
 import me.lemonboi439.archeryRevamped.enchantment.RicochetEnchantment;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.item.EnchantedBookItem;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.RegisterEvent;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class ModItemGroups {
-    private static final Identifier ARCHERY_GROUP_ID = new Identifier(
+    private static final ResourceLocation ARCHERY_GROUP_ID = new ResourceLocation(
             ArcheryRevamped.MOD_ID, "archery_revamped"
     );
 
-    public static final ItemGroup ARCHERY_REVAMPED = Registry.register(
-            Registries.ITEM_GROUP,
-            ARCHERY_GROUP_ID,
-            ItemGroup.create(ItemGroup.Row.TOP, 7)
-                    .displayName(Text.translatable("itemGroup.archery-revamped"))
-                    .icon(() -> new ItemStack(ModItems.ENDER_ARROW))
-                    .entries((displayContext, entries) -> {
-                        entries.add(ModItems.QUIVER);
-                        entries.add(ModItems.ENDER_ARROW);
-                        entries.add(ModItems.SHOCKWAVE_ARROW);
-                        entries.add(ModItems.IMPULSE_ARROW);
-                        entries.add(ModItems.EXPLOSIVE_ARROW);
-                        entries.add(ModItems.TIDAL_ARROW);
-                        entries.add(ModItems.SHATTERING_ARROW);
-                        entries.add(ModItems.ECHO_ARROW);
-                        entries.add(Items.ARROW);
-                        addEnchantmentBooks(entries);
-                    })
-                    .build()
-    );
+    public static CreativeModeTab ARCHERY_REVAMPED;
 
     private ModItemGroups() {
     }
 
+    public static void register() {
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(ModItemGroups::onRegister);
+    }
+
+    private static void onRegister(RegisterEvent event) {
+        if (!event.getRegistryKey().equals(Registries.CREATIVE_MODE_TAB)) {
+            return;
+        }
+
+        ARCHERY_REVAMPED = CreativeModeTab.builder(CreativeModeTab.Row.TOP, 7)
+                .title(Component.translatable("itemGroup.archery-revamped"))
+                .icon(() -> new ItemStack(ModItems.ENDER_ARROW))
+                .displayItems((displayContext, entries) -> {
+                    entries.accept(ModItems.QUIVER);
+                    entries.accept(ModItems.ENDER_ARROW);
+                    entries.accept(ModItems.SHOCKWAVE_ARROW);
+                    entries.accept(ModItems.IMPULSE_ARROW);
+                    entries.accept(ModItems.EXPLOSIVE_ARROW);
+                    entries.accept(ModItems.TIDAL_ARROW);
+                    entries.accept(ModItems.SHATTERING_ARROW);
+                    entries.accept(ModItems.ECHO_ARROW);
+                    entries.accept(Items.ARROW);
+                    addEnchantmentBooks(entries);
+                })
+                .build();
+
+        event.register(Registries.CREATIVE_MODE_TAB, helper ->
+                helper.register(ARCHERY_GROUP_ID, ARCHERY_REVAMPED));
+    }
+
     /** Adds only authored, normal enchantment levels to this mod's own tab. */
-    private static void addEnchantmentBooks(ItemGroup.Entries entries) {
+    private static void addEnchantmentBooks(CreativeModeTab.Output entries) {
         List<ItemStack> books = new ArrayList<>();
         addEnchantmentBooks(books, RicochetEnchantment.ENCHANTMENT, RicochetEnchantment.MAX_LEVEL);
         addEnchantmentBooks(books, OverdrawEnchantment.ENCHANTMENT, OverdrawEnchantment.MAX_LEVEL);
@@ -60,21 +70,17 @@ public final class ModItemGroups {
         addEnchantmentBooks(books, FractureEnchantment.ENCHANTMENT, FractureEnchantment.MAX_LEVEL);
         addEnchantmentBooks(books, BurstEnchantment.ENCHANTMENT, BurstEnchantment.MAX_LEVEL);
         addEnchantmentBooks(books, HeadshotEnchantment.ENCHANTMENT, HeadshotEnchantment.MAX_LEVEL);
-        books.forEach(entries::add);
+        books.forEach(entries::accept);
     }
 
     /** Creative tabs reject component-identical stacks, so only emit each book once. */
     private static void addEnchantmentBooks(List<ItemStack> books,
                                             Enchantment enchantment, int normalMaximum) {
         for (int level = 1; level <= normalMaximum; level++) {
-            ItemStack book = EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(enchantment, level));
-            if (books.stream().noneMatch(existing -> ItemStack.canCombine(existing, book))) {
+            ItemStack book = EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, level));
+            if (books.stream().noneMatch(existing -> ItemStack.isSameItemSameTags(existing, book))) {
                 books.add(book);
             }
         }
-    }
-
-    public static void register() {
-        // Static initialization performs the registry insertion.
     }
 }

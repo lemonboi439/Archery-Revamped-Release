@@ -2,27 +2,34 @@ package me.lemonboi439.archeryRevamped.screen;
 
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.item.ModItems;
-import net.minecraft.item.ArrowItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.text.Text;
-
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ArrowItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionUtils;
 import java.util.List;
 
 public final class FletchingRecipeRegistry {
-    private static final List<FletchingRecipe> RECIPES = List.of(
-            new FletchingRecipe("ender_arrow", Items.ENDER_PEARL, ModItems.ENDER_ARROW, 4, false),
-            new FletchingRecipe("shockwave_arrow", Items.FIREWORK_STAR, ModItems.SHOCKWAVE_ARROW, 4, false),
-            new FletchingRecipe("impulse_arrow", Items.IRON_NUGGET, ModItems.IMPULSE_ARROW, 4, false),
-            new FletchingRecipe("explosive_arrow", Items.GUNPOWDER, ModItems.EXPLOSIVE_ARROW, 4, false),
-            new FletchingRecipe("tidal_arrow", Items.HEART_OF_THE_SEA, ModItems.TIDAL_ARROW, 4, false),
-            new FletchingRecipe("shattering_arrow", Items.AMETHYST_SHARD, ModItems.SHATTERING_ARROW, 4, false),
-            new FletchingRecipe("echo_arrow", Items.ECHO_SHARD, ModItems.ECHO_ARROW, 4, false),
-            new FletchingRecipe("tipped_arrow", Items.POTION, Items.TIPPED_ARROW, 8, true)
-    );
+    private static List<FletchingRecipe> recipes;
+
+    /** Built on first use so registry event order cannot capture null item fields. */
+    private static List<FletchingRecipe> recipes() {
+        if (recipes == null) {
+            recipes = List.of(
+                    new FletchingRecipe("ender_arrow", Items.ENDER_PEARL, ModItems.ENDER_ARROW, 4, false),
+                    new FletchingRecipe("shockwave_arrow", Items.FIREWORK_STAR, ModItems.SHOCKWAVE_ARROW, 4, false),
+                    new FletchingRecipe("impulse_arrow", Items.IRON_NUGGET, ModItems.IMPULSE_ARROW, 4, false),
+                    new FletchingRecipe("explosive_arrow", Items.GUNPOWDER, ModItems.EXPLOSIVE_ARROW, 4, false),
+                    new FletchingRecipe("tidal_arrow", Items.HEART_OF_THE_SEA, ModItems.TIDAL_ARROW, 4, false),
+                    new FletchingRecipe("shattering_arrow", Items.AMETHYST_SHARD, ModItems.SHATTERING_ARROW, 4, false),
+                    new FletchingRecipe("echo_arrow", Items.ECHO_SHARD, ModItems.ECHO_ARROW, 4, false),
+                    new FletchingRecipe("tipped_arrow", Items.POTION, Items.TIPPED_ARROW, 8, true)
+            );
+        }
+        return recipes;
+    }
 
     private FletchingRecipeRegistry() {
     }
@@ -33,11 +40,11 @@ public final class FletchingRecipeRegistry {
      * any of those client-only mods a required dependency of this mod.
      */
     public static List<FletchingRecipe> getRecipes() {
-        return RECIPES;
+        return recipes();
     }
 
     public static FletchingRecipe match(ItemStack arrowStack, ItemStack ingredientStack) {
-        for (FletchingRecipe recipe : RECIPES) {
+        for (FletchingRecipe recipe : recipes()) {
             if (recipe.matches(arrowStack, ingredientStack)) {
                 return recipe;
             }
@@ -51,7 +58,7 @@ public final class FletchingRecipeRegistry {
                 : Math.max(1, ConfigManager.getFletchingRecipeOutputCount());
         ItemStack output = new ItemStack(recipe.outputItem(), outputCount);
         if (recipe.copiesPotion()) {
-            PotionUtil.setPotion(output, PotionUtil.getPotion(ingredientStack));
+            PotionUtils.setPotion(output, PotionUtils.getPotion(ingredientStack));
         }
         return output;
     }
@@ -62,14 +69,14 @@ public final class FletchingRecipeRegistry {
             return false;
         }
         return ConfigManager.allowsModdedFletchingArrowInputs()
-                || "minecraft".equals(Registries.ITEM.getId(stack.getItem()).getNamespace());
+                || "minecraft".equals(BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace());
     }
 
     /** True only for a valid modifier stack, including a potion with contents. */
     public static boolean isModifier(ItemStack stack) {
-        for (FletchingRecipe recipe : RECIPES) {
-            if (stack.isOf(recipe.ingredient())
-                    && (!recipe.copiesPotion() || stack.isOf(Items.POTION))) {
+        for (FletchingRecipe recipe : recipes()) {
+            if (stack.is(recipe.ingredient())
+                    && (!recipe.copiesPotion() || stack.is(Items.POTION))) {
                 return true;
             }
         }
@@ -86,14 +93,14 @@ public final class FletchingRecipeRegistry {
         public boolean matches(ItemStack arrowStack, ItemStack ingredientStack) {
             if (!isAcceptedArrowInput(arrowStack)
                     || arrowStack.getCount() < arrowCount
-                    || !ingredientStack.isOf(ingredient)) {
+                    || !ingredientStack.is(ingredient)) {
                 return false;
             }
-            return !copiesPotion || ingredientStack.isOf(Items.POTION);
+            return !copiesPotion || ingredientStack.is(Items.POTION);
         }
 
-        public Text displayName() {
-            return Text.translatable("container.archery-revamped.recipe." + name);
+        public Component displayName() {
+            return Component.translatable("container.archery-revamped.recipe." + name);
         }
     }
 }

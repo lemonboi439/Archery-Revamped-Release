@@ -1,14 +1,13 @@
 package me.lemonboi439.archeryRevamped.enchantment;
 
 import me.lemonboi439.archeryRevamped.ArcheryRevamped;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.enchantment.Enchantment;
 
 public final class OverdrawEnchantment {
-    public static final Identifier ID = new Identifier(ArcheryRevamped.MOD_ID, "overdraw");
+    public static final ResourceLocation ID = new ResourceLocation(ArcheryRevamped.MOD_ID, "overdraw");
     public static final int MAX_LEVEL = 2;
-    public static final Enchantment ENCHANTMENT = LegacyEnchantmentRegistry.registerRanged(
-            ID, Enchantment.Rarity.RARE, MAX_LEVEL, true);
+    public static Enchantment ENCHANTMENT;
 
     private OverdrawEnchantment() {
     }

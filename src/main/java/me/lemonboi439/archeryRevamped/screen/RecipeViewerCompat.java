@@ -1,6 +1,6 @@
 package me.lemonboi439.archeryRevamped.screen;
 
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraftforge.fml.ModList;
 
 import java.util.List;
 
@@ -23,12 +23,12 @@ public final class RecipeViewerCompat {
         // Touching only FabricLoader here is intentional: no optional viewer
         // class is resolved during dedicated-server startup.
         VIEWER_IDS.stream()
-                .filter(id -> FabricLoader.getInstance().isModLoaded(id))
+                .filter(id -> ModList.get().isLoaded(id))
                 .findFirst();
     }
 
     public static boolean isViewerLoaded() {
-        return VIEWER_IDS.stream().anyMatch(id -> FabricLoader.getInstance().isModLoaded(id));
+        return VIEWER_IDS.stream().anyMatch(id -> ModList.get().isLoaded(id));
     }
 
     public static List<FletchingRecipeRegistry.FletchingRecipe> getFletchingRecipes() {

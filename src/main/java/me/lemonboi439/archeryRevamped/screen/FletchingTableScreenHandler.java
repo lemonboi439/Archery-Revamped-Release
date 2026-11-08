@@ -1,54 +1,54 @@
 package me.lemonboi439.archeryRevamped.screen;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 
 /**
  * A two-input crafting table. The result slot is a preview: ingredients are
  * consumed only after the player successfully takes a crafted batch.
  */
-public final class FletchingTableScreenHandler extends ScreenHandler {
+public final class FletchingTableScreenHandler extends AbstractContainerMenu {
     private static final int INPUT_ARROW_SLOT = 0;
     private static final int INPUT_INGREDIENT_SLOT = 1;
     private static final int OUTPUT_SLOT = 2;
 
-    private final SimpleInventory inventory;
-    private final ScreenHandlerContext context;
+    private final SimpleContainer inventory;
+    private final ContainerLevelAccess context;
     private boolean refreshingOutput;
     private FletchingRecipeRegistry.FletchingRecipe activeRecipe;
 
-    public FletchingTableScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, ScreenHandlerContext.EMPTY);
+    public FletchingTableScreenHandler(int syncId, Inventory playerInventory) {
+        this(syncId, playerInventory, ContainerLevelAccess.NULL);
     }
 
-    public FletchingTableScreenHandler(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context) {
+    public FletchingTableScreenHandler(int syncId, Inventory playerInventory, ContainerLevelAccess context) {
         super(ModScreenHandlers.FLETCHING_TABLE, syncId);
-        this.inventory = new SimpleInventory(3);
+        this.inventory = new SimpleContainer(3);
         this.context = context;
 
         this.addSlot(new Slot(inventory, INPUT_ARROW_SLOT, 27, 47) {
             @Override
-            public boolean canInsert(ItemStack stack) {
+            public boolean mayPlace(ItemStack stack) {
                 return FletchingRecipeRegistry.isAcceptedArrowInput(stack);
             }
         });
         this.addSlot(new Slot(inventory, INPUT_INGREDIENT_SLOT, 76, 47) {
             @Override
-            public boolean canInsert(ItemStack stack) {
+            public boolean mayPlace(ItemStack stack) {
                 return FletchingRecipeRegistry.isModifier(stack);
             }
         });
         this.addSlot(new Slot(inventory, OUTPUT_SLOT, 134, 47) {
             @Override
-            public boolean canInsert(ItemStack stack) {
+            public boolean mayPlace(ItemStack stack) {
                 return false;
             }
         });
@@ -58,33 +58,33 @@ public final class FletchingTableScreenHandler extends ScreenHandler {
 
     private FletchingRecipeRegistry.FletchingRecipe getMatchingRecipe() {
         return FletchingRecipeRegistry.match(
-                inventory.getStack(INPUT_ARROW_SLOT),
-                inventory.getStack(INPUT_INGREDIENT_SLOT)
+                inventory.getItem(INPUT_ARROW_SLOT),
+                inventory.getItem(INPUT_INGREDIENT_SLOT)
         );
     }
 
     private ItemStack getResult(FletchingRecipeRegistry.FletchingRecipe recipe) {
         return recipe == null
                 ? ItemStack.EMPTY
-                : FletchingRecipeRegistry.createOutput(recipe, inventory.getStack(INPUT_INGREDIENT_SLOT));
+                : FletchingRecipeRegistry.createOutput(recipe, inventory.getItem(INPUT_INGREDIENT_SLOT));
     }
 
     private void refreshOutput() {
         activeRecipe = getMatchingRecipe();
         refreshingOutput = true;
         try {
-            inventory.setStack(OUTPUT_SLOT, getResult(activeRecipe));
+            inventory.setItem(OUTPUT_SLOT, getResult(activeRecipe));
         } finally {
             refreshingOutput = false;
         }
-        sendContentUpdates();
+        broadcastChanges();
     }
 
     private void consumeRecipe(FletchingRecipeRegistry.FletchingRecipe recipe) {
         refreshingOutput = true;
         try {
-            inventory.removeStack(INPUT_ARROW_SLOT, recipe.arrowCount());
-            inventory.removeStack(INPUT_INGREDIENT_SLOT, 1);
+            inventory.removeItem(INPUT_ARROW_SLOT, recipe.arrowCount());
+            inventory.removeItem(INPUT_INGREDIENT_SLOT, 1);
         } finally {
             refreshingOutput = false;
         }
@@ -98,19 +98,19 @@ public final class FletchingTableScreenHandler extends ScreenHandler {
             return false;
         }
 
-        ItemStack cursor = getCursorStack();
-        if (!cursor.isEmpty() && !ItemStack.canCombine(cursor, result)) {
+        ItemStack cursor = getCarried();
+        if (!cursor.isEmpty() && !ItemStack.isSameItemSameTags(cursor, result)) {
             return false;
         }
-        if (!cursor.isEmpty() && cursor.getCount() + result.getCount() > cursor.getMaxCount()) {
+        if (!cursor.isEmpty() && cursor.getCount() + result.getCount() > cursor.getMaxStackSize()) {
             return false;
         }
 
         if (cursor.isEmpty()) {
-            setCursorStack(result.copy());
+            setCarried(result.copy());
         } else {
-            cursor.increment(result.getCount());
-            setCursorStack(cursor);
+            cursor.grow(result.getCount());
+            setCarried(cursor);
         }
         consumeRecipe(recipe);
         return true;
@@ -126,13 +126,13 @@ public final class FletchingTableScreenHandler extends ScreenHandler {
             }
 
             ItemStack toInsert = result.copy();
-            if (!insertItem(toInsert, OUTPUT_SLOT + 1, slots.size(), true) || !toInsert.isEmpty()) {
+            if (!moveItemStackTo(toInsert, OUTPUT_SLOT + 1, slots.size(), true) || !toInsert.isEmpty()) {
                 break;
             }
             if (crafted.isEmpty()) {
                 crafted = result.copy();
             } else {
-                crafted.increment(result.getCount());
+                crafted.grow(result.getCount());
             }
             consumeRecipe(recipe);
         }
@@ -140,24 +140,24 @@ public final class FletchingTableScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
+    public void clicked(int slotIndex, int button, ClickType actionType, Player player) {
         if (slotIndex == OUTPUT_SLOT) {
-            if (actionType == SlotActionType.QUICK_MOVE) {
+            if (actionType == ClickType.QUICK_MOVE) {
                 craftMaximumToInventory();
-            } else if (actionType == SlotActionType.PICKUP) {
+            } else if (actionType == ClickType.PICKUP) {
                 craftToCursor();
             }
             return;
         }
 
-        super.onSlotClick(slotIndex, button, actionType, player);
+        super.clicked(slotIndex, button, actionType, player);
         if (!refreshingOutput) {
             refreshOutput();
         }
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int slotIndex) {
+    public ItemStack quickMoveStack(Player player, int slotIndex) {
         if (slotIndex < 0 || slotIndex >= slots.size()) {
             return ItemStack.EMPTY;
         }
@@ -166,53 +166,53 @@ public final class FletchingTableScreenHandler extends ScreenHandler {
         }
 
         Slot slot = slots.get(slotIndex);
-        if (!slot.hasStack()) {
+        if (!slot.hasItem()) {
             return ItemStack.EMPTY;
         }
-        ItemStack source = slot.getStack();
+        ItemStack source = slot.getItem();
         ItemStack moved = source.copy();
         if (slotIndex < OUTPUT_SLOT) {
-            if (!insertItem(source, OUTPUT_SLOT + 1, slots.size(), false)) {
+            if (!moveItemStackTo(source, OUTPUT_SLOT + 1, slots.size(), false)) {
                 return ItemStack.EMPTY;
             }
-        } else if (!insertItem(source, INPUT_ARROW_SLOT, OUTPUT_SLOT, false)) {
+        } else if (!moveItemStackTo(source, INPUT_ARROW_SLOT, OUTPUT_SLOT, false)) {
             return ItemStack.EMPTY;
         }
 
         if (source.isEmpty()) {
-            slot.setStack(ItemStack.EMPTY);
+            slot.setByPlayer(ItemStack.EMPTY);
         } else {
-            slot.markDirty();
+            slot.setChanged();
         }
         refreshOutput();
         return moved;
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        return canUse(context, player, Blocks.FLETCHING_TABLE);
+    public boolean stillValid(Player player) {
+        return stillValid(context, player, Blocks.FLETCHING_TABLE);
     }
 
     @Override
-    public void onClosed(PlayerEntity player) {
-        if (!player.getEntityWorld().isClient()) {
+    public void removed(Player player) {
+        if (!player.getCommandSenderWorld().isClientSide()) {
             refreshingOutput = true;
             try {
                 for (int slot = INPUT_ARROW_SLOT; slot <= INPUT_INGREDIENT_SLOT; slot++) {
-                    ItemStack stack = inventory.removeStack(slot);
+                    ItemStack stack = inventory.removeItemNoUpdate(slot);
                     if (!stack.isEmpty()) {
-                        player.getInventory().insertStack(stack);
+                        player.getInventory().add(stack);
                         if (!stack.isEmpty()) {
-                            player.dropItem(stack, false);
+                            player.drop(stack, false);
                         }
                     }
                 }
-                inventory.setStack(OUTPUT_SLOT, ItemStack.EMPTY);
+                inventory.setItem(OUTPUT_SLOT, ItemStack.EMPTY);
             } finally {
                 refreshingOutput = false;
             }
         }
-        super.onClosed(player);
+        super.removed(player);
     }
 
     /** The table is instant; retained for the existing client art API. */
@@ -224,11 +224,11 @@ public final class FletchingTableScreenHandler extends ScreenHandler {
         return 1;
     }
 
-    public Text getRecipeName() {
-        return activeRecipe == null ? Text.empty() : activeRecipe.displayName();
+    public Component getRecipeName() {
+        return activeRecipe == null ? Component.empty() : activeRecipe.displayName();
     }
 
-    private void addPlayerSlots(PlayerInventory playerInventory, int x, int y) {
+    private void addPlayerSlots(Inventory playerInventory, int x, int y) {
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
                 addSlot(new Slot(playerInventory, column + row * 9 + 9, x + column * 18, y + row * 18));

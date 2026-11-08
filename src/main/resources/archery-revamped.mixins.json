@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "me.lemonboi439.archeryRevamped.mixin",
   "compatibilityLevel": "JAVA_17",
+  "refmap": "archery_revamped.refmap.json",
   "mixins": [
     "RangedWeaponItemMixin",
     "PersistentProjectileEntityAccessor",

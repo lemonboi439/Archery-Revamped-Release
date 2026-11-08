@@ -2,15 +2,15 @@ package me.lemonboi439.archeryRevamped.arrow;
 
 import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Shared landing-point force logic for Shockwave and Impulse arrows.
@@ -27,15 +27,15 @@ public final class AreaForceArrowBehavior {
     private AreaForceArrowBehavior() {
     }
 
-    public static void apply(ArcheryArrowEntity arrow, Vec3d impact, double radius,
+    public static void apply(ArcheryArrowEntity arrow, Vec3 impact, double radius,
                              double strength, boolean pullInward) {
-        applyForce(arrow.getEntityWorld(), arrow, impact, radius, strength, pullInward);
+        applyForce(arrow.getCommandSenderWorld(), arrow, impact, radius, strength, pullInward);
         arrow.discard();
     }
 
-    private static void applyForce(World world, Entity source, Vec3d impact, double radius,
+    private static void applyForce(Level world, Entity source, Vec3 impact, double radius,
                                    double strength, boolean pullInward) {
-        if (world.isClient()) {
+        if (world.isClientSide()) {
             return;
         }
 
@@ -46,26 +46,26 @@ public final class AreaForceArrowBehavior {
             return;
         }
 
-        Box area = new Box(
+        AABB area = new AABB(
                 impact.x - range - 1.0D, impact.y - range - 1.0D, impact.z - range - 1.0D,
                 impact.x + range + 1.0D, impact.y + range + 1.0D, impact.z + range + 1.0D
         );
 
-        for (Entity entity : world.getEntitiesByClass(
+        for (Entity entity : world.getEntitiesOfClass(
                 Entity.class,
                 area,
                 candidate -> candidate.isAlive()
                         && candidate != source
         )) {
-            double normalizedDistance = Math.sqrt(entity.squaredDistanceTo(impact)) / range;
+            double normalizedDistance = Math.sqrt(entity.distanceToSqr(impact)) / range;
             if (normalizedDistance > 1.0D) {
                 continue;
             }
 
-            Vec3d direction = entity.getEyePos().subtract(impact).normalize();
-            float exposure = Explosion.getExposure(impact, entity);
+            Vec3 direction = entity.getEyePosition().subtract(impact).normalize();
+            float exposure = Explosion.getSeenPercent(impact, entity);
             double resistance = entity instanceof LivingEntity living
-                    ? living.getAttributeValue(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE)
+                    ? living.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE)
                     : 0.0D;
             double windChargeForce = (1.0D - normalizedDistance)
                     * exposure
@@ -73,14 +73,14 @@ public final class AreaForceArrowBehavior {
                     * Math.max(0.0D, 1.0D - resistance)
                     * forceMultiplier;
             double sign = pullInward ? -1.0D : 1.0D;
-            Vec3d force = direction.multiply(sign * windChargeForce);
-            entity.addVelocity(force.x, force.y, force.z);
-            entity.velocityDirty = true;
+            Vec3 force = direction.scale(sign * windChargeForce);
+            entity.push(force.x, force.y, force.z);
+            entity.hasImpulse = true;
         }
 
         EffectManager.spawnParticles(world, impact, ParticleTypes.CLOUD, 12);
         EffectManager.playSound(world, impact,
-                SoundEvents.ENTITY_PLAYER_ATTACK_KNOCKBACK, 0.7F,
+                SoundEvents.PLAYER_ATTACK_KNOCKBACK, 0.7F,
                 pullInward ? 0.85F : 1.1F);
     }
 }

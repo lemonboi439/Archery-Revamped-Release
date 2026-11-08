@@ -1,20 +1,20 @@
 package me.lemonboi439.archeryRevamped.mixin;
 
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(PersistentProjectileEntity.class)
+@Mixin(AbstractArrow.class)
 public interface PersistentProjectileEntityAccessor {
-    @Accessor("damage")
+    @Accessor("baseDamage")
     double archeryRevamped$getDamage();
 
-    @Accessor("pickupType")
-    PersistentProjectileEntity.PickupPermission archeryRevamped$getPickupType();
+    @Accessor("pickup")
+    AbstractArrow.Pickup archeryRevamped$getPickupType();
 
-    @Accessor("pickupType")
-    void archeryRevamped$setPickupType(PersistentProjectileEntity.PickupPermission pickupType);
+    @Accessor("pickup")
+    void archeryRevamped$setPickupType(AbstractArrow.Pickup pickupType);
 
     @Invoker("setPierceLevel")
     void archeryRevamped$setPierceLevel(byte level);

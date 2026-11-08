@@ -1,34 +1,34 @@
 package me.lemonboi439.archeryRevamped.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.enchantment.RicochetEnchantment;
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
 import me.lemonboi439.archeryRevamped.physics.ArrowPhysicsEngine;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.CrossbowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RaycastContext;
-import net.minecraft.world.World;
-
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -42,7 +42,7 @@ import java.util.UUID;
  * <p>It follows the 1.21.11 implementation's simulation order exactly: move,
  * raycast, reflect when Ricochet can bounce, then apply the shared physics
  * preview. The old Fabric renderer has no render-pipeline API, so this writes
- * a depth-tested line buffer directly during {@link WorldRenderEvents#LAST}.</p>
+ * a depth-tested line buffer at the end of the level render pass.</p>
  */
 public final class ClientTrajectoryPreview {
     private static final int TRAIL_LIFETIME_MILLIS = 10_000;
@@ -58,7 +58,7 @@ public final class ClientTrajectoryPreview {
     };
 
     private static final Map<UUID, PathHistory> PATHS = new HashMap<>();
-    private static World trackedWorld;
+    private static Level trackedWorld;
     private static boolean trajectoryEnabled;
     private static boolean colourVisualisationEnabled;
 
@@ -66,7 +66,7 @@ public final class ClientTrajectoryPreview {
     }
 
     public static void register() {
-        WorldRenderEvents.LAST.register(ClientTrajectoryPreview::render);
+        MinecraftForge.EVENT_BUS.addListener(ClientTrajectoryPreview::onRenderLevelStage);
     }
 
     public static void setTrajectoryEnabled(boolean enabled) {
@@ -89,24 +89,31 @@ public final class ClientTrajectoryPreview {
         return colourVisualisationEnabled;
     }
 
-    private static void render(net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext context) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player == null || client.world == null || context.matrixStack() == null) {
+    private static void onRenderLevelStage(RenderLevelStageEvent event) {
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+            render(event);
+        }
+    }
+
+    private static void render(RenderLevelStageEvent event) {
+        Minecraft client = Minecraft.getInstance();
+        float tickDelta = event.getPartialTick();
+        if (client.player == null || client.level == null) {
             return;
         }
-        if (trackedWorld != client.world) {
+        if (trackedWorld != client.level) {
             PATHS.clear();
-            trackedWorld = client.world;
+            trackedWorld = client.level;
         }
 
         long now = System.currentTimeMillis();
         Map<UUID, ArcheryArrowEntity> visibleArrows = new HashMap<>();
-        for (ArcheryArrowEntity arrow : client.world.getEntitiesByClass(
-                ArcheryArrowEntity.class, client.player.getBoundingBox().expand(512.0D), Entity::isAlive)) {
+        for (ArcheryArrowEntity arrow : client.level.getEntitiesOfClass(
+                ArcheryArrowEntity.class, client.player.getBoundingBox().inflate(512.0D), Entity::isAlive)) {
             if (!arrow.isTrajectoryPreviewEnabled()) {
                 continue;
             }
-            UUID id = arrow.getUuid();
+            UUID id = arrow.getUUID();
             visibleArrows.put(id, arrow);
             PathHistory history = PATHS.get(id);
             if (history == null) {
@@ -118,7 +125,7 @@ public final class ClientTrajectoryPreview {
             }
             history.seedInitialPrediction(client, arrow);
             history.recordActual(arrow.getTrajectorySpawnPosition(),
-                    arrow.getLerpedPos(context.tickDelta()), arrow.age);
+                    arrow.getPosition(tickDelta), arrow.tickCount);
             if (arrow.isTrajectoryFinished() || arrow.isArrowInGround()) {
                 history.finish(now);
             }
@@ -140,26 +147,26 @@ public final class ClientTrajectoryPreview {
             return;
         }
 
-        Camera camera = context.camera();
-        Vec3d cameraPosition = camera.getPos();
-        MatrixStack matrices = context.matrixStack();
-        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+        Camera camera = event.getCamera();
+        Vec3 cameraPosition = camera.getPosition();
+        PoseStack matrices = event.getPoseStack();
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        buffer.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
 
         for (Map.Entry<UUID, PathHistory> entry : PATHS.entrySet()) {
             PathHistory history = entry.getValue();
             if (history.actualPoints.size() < 2) {
                 continue;
             }
-            List<Vec3d> points = new ArrayList<>(history.actualPoints);
+            List<Vec3> points = new ArrayList<>(history.actualPoints);
             ArcheryArrowEntity arrow = visibleArrows.get(entry.getKey());
             if (arrow != null && !history.finished && arrow.isAlive()) {
-                List<Vec3d> prediction = predict(client, arrow, arrow.getLerpedPos(context.tickDelta()),
-                        arrow.getVelocity(), arrow.getBounceCount(), arrow.getRicochetLevel());
+                List<Vec3> prediction = predict(client, arrow, arrow.getPosition(tickDelta),
+                        arrow.getDeltaMovement(), arrow.getBounceCount(), arrow.getRicochetLevel());
                 if (prediction.size() > 1) {
                     points.addAll(prediction.subList(1, prediction.size()));
                 }
@@ -169,111 +176,111 @@ public final class ClientTrajectoryPreview {
         if (trajectoryEnabled) {
             drawAimingPreview(buffer, matrices, client, cameraPosition);
         }
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
+        BufferUploader.drawWithShader(buffer.end());
         RenderSystem.disableBlend();
     }
 
-    private static void drawAimingPreview(BufferBuilder buffer, MatrixStack matrices,
-                                          MinecraftClient client, Vec3d cameraPosition) {
-        PlayerEntity player = client.player;
-        ItemStack weapon = player.getActiveItem();
+    private static void drawAimingPreview(BufferBuilder buffer, PoseStack matrices,
+                                          Minecraft client, Vec3 cameraPosition) {
+        Player player = client.player;
+        ItemStack weapon = player.getUseItem();
         if (!player.isUsingItem()
                 || (!(weapon.getItem() instanceof BowItem) && !(weapon.getItem() instanceof CrossbowItem))) {
             return;
         }
-        Vec3d direction = player.getRotationVector().normalize();
-        Vec3d start = cameraPosition.add(direction.multiply(0.16D));
-        List<Vec3d> points = predict(client, player, start, direction.multiply(getAimingSpeed(player, weapon)),
+        Vec3 direction = player.getLookAngle().normalize();
+        Vec3 start = cameraPosition.add(direction.scale(0.16D));
+        List<Vec3> points = predict(client, player, start, direction.scale(getAimingSpeed(player, weapon)),
                 0, getRicochetLevel(client, weapon));
         drawSmoothPath(buffer, matrices, points, cameraPosition, false, System.currentTimeMillis(), 0L);
     }
 
-    private static List<Vec3d> predict(MinecraftClient client, Entity source, Vec3d start,
-                                        Vec3d initialVelocity, int initialBounces, int ricochetLevel) {
-        List<Vec3d> points = new ArrayList<>();
+    private static List<Vec3> predict(Minecraft client, Entity source, Vec3 start,
+                                        Vec3 initialVelocity, int initialBounces, int ricochetLevel) {
+        List<Vec3> points = new ArrayList<>();
         points.add(start);
-        Vec3d position = start;
-        Vec3d velocity = initialVelocity;
+        Vec3 position = start;
+        Vec3 velocity = initialVelocity;
         int bounces = initialBounces;
         int maxTicks = Math.max(1, Math.min(MAX_PREDICTION_TICKS, ConfigManager.getMaxLifetimeTicks()));
-        for (int tick = 0; tick < maxTicks && velocity.lengthSquared() >= 1.0E-8D; tick++) {
-            Vec3d next = position.add(velocity);
-            BlockHitResult blockHit = client.world.raycast(new RaycastContext(position, next,
-                    RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, source));
-            Vec3d entityHit = findEntityImpact(client, source, position, next);
+        for (int tick = 0; tick < maxTicks && velocity.lengthSqr() >= 1.0E-8D; tick++) {
+            Vec3 next = position.add(velocity);
+            BlockHitResult blockHit = client.level.clip(new ClipContext(position, next,
+                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, source));
+            Vec3 entityHit = findEntityImpact(client, source, position, next);
             if (entityHit != null && (blockHit.getType() == HitResult.Type.MISS
-                    || entityHit.squaredDistanceTo(position) < blockHit.getPos().squaredDistanceTo(position))) {
+                    || entityHit.distanceToSqr(position) < blockHit.getLocation().distanceToSqr(position))) {
                 points.add(entityHit);
                 break;
             }
             if (blockHit.getType() != HitResult.Type.MISS) {
-                Vec3d impact = blockHit.getPos();
+                Vec3 impact = blockHit.getLocation();
                 points.add(impact);
                 if (bounces >= ricochetLevel) {
                     break;
                 }
-                Direction side = blockHit.getSide();
-                Vec3d normal = new Vec3d(side.getOffsetX(), side.getOffsetY(), side.getOffsetZ());
-                double dot = velocity.dotProduct(normal);
-                velocity = velocity.subtract(normal.multiply(2.0D * dot))
-                        .multiply(1.0D - ConfigManager.getRicochetVelocityLossPercent() / 100.0D);
+                Direction side = blockHit.getDirection();
+                Vec3 normal = new Vec3(side.getStepX(), side.getStepY(), side.getStepZ());
+                double dot = velocity.dot(normal);
+                velocity = velocity.subtract(normal.scale(2.0D * dot))
+                        .scale(1.0D - ConfigManager.getRicochetVelocityLossPercent() / 100.0D);
                 bounces++;
-                position = impact.add(normal.multiply(0.01D));
-                velocity = ArrowPhysicsEngine.applyPreviewPhysics(client.world, position, velocity);
+                position = impact.add(normal.scale(0.01D));
+                velocity = ArrowPhysicsEngine.applyPreviewPhysics(client.level, position, velocity);
                 points.add(position);
                 continue;
             }
             points.add(next);
-            velocity = ArrowPhysicsEngine.applyPreviewPhysics(client.world, position, velocity);
+            velocity = ArrowPhysicsEngine.applyPreviewPhysics(client.level, position, velocity);
             position = next;
         }
         return points;
     }
 
-    private static Vec3d findEntityImpact(MinecraftClient client, Entity source, Vec3d start, Vec3d end) {
-        Box search = new Box(start, end).expand(1.0D);
+    private static Vec3 findEntityImpact(Minecraft client, Entity source, Vec3 start, Vec3 end) {
+        AABB search = new AABB(start, end).inflate(1.0D);
         Entity owner = source instanceof ArcheryArrowEntity arrow ? arrow.getOwner() : source;
-        Vec3d closest = null;
+        Vec3 closest = null;
         double closestDistance = Double.POSITIVE_INFINITY;
-        for (Entity candidate : client.world.getOtherEntities(source, search,
+        for (Entity candidate : client.level.getEntities(source, search,
                 entity -> entity.isAlive() && !entity.isSpectator() && entity != owner)) {
-            var hit = candidate.getBoundingBox().expand(candidate.getTargetingMargin()).raycast(start, end);
-            if (hit.isPresent() && hit.get().squaredDistanceTo(start) < closestDistance) {
+            var hit = candidate.getBoundingBox().inflate(candidate.getPickRadius()).clip(start, end);
+            if (hit.isPresent() && hit.get().distanceToSqr(start) < closestDistance) {
                 closest = hit.get();
-                closestDistance = closest.squaredDistanceTo(start);
+                closestDistance = closest.distanceToSqr(start);
             }
         }
         return closest;
     }
 
-    private static double getAimingSpeed(PlayerEntity player, ItemStack weapon) {
+    private static double getAimingSpeed(Player player, ItemStack weapon) {
         if (weapon.getItem() instanceof BowItem) {
-            double charge = Math.min(1.0D, Math.max(0.0D, player.getItemUseTime() / 20.0D));
+            double charge = Math.min(1.0D, Math.max(0.0D, player.getTicksUsingItem() / 20.0D));
             charge = (charge * charge + charge * 2.0D) / 3.0D;
             return Math.max(0.12D, charge * 3.0D);
         }
         if (CrossbowItem.isCharged(weapon)) {
             return 3.15D;
         }
-        return 3.15D * Math.min(1.0D, Math.max(0.05D, player.getItemUseTime() / 25.0D));
+        return 3.15D * Math.min(1.0D, Math.max(0.05D, player.getTicksUsingItem() / 25.0D));
     }
 
-    private static int getRicochetLevel(MinecraftClient client, ItemStack weapon) {
+    private static int getRicochetLevel(Minecraft client, ItemStack weapon) {
         return ConfigManager.limitEnchantmentLevel(
-                EnchantmentHelper.getLevel(RicochetEnchantment.ENCHANTMENT, weapon),
+                EnchantmentHelper.getItemEnchantmentLevel(RicochetEnchantment.ENCHANTMENT, weapon),
                 RicochetEnchantment.MAX_LEVEL);
     }
 
-    private static void drawSmoothPath(BufferBuilder buffer, MatrixStack matrices, List<Vec3d> points,
-                                       Vec3d cameraPosition, boolean finished, long now, long finishedAt) {
+    private static void drawSmoothPath(BufferBuilder buffer, PoseStack matrices, List<Vec3> points,
+                                       Vec3 cameraPosition, boolean finished, long now, long finishedAt) {
         if (points.size() < 2) {
             return;
         }
         int renderedSegments = (points.size() - 1) * CURVE_SUBDIVISIONS;
         for (int segment = 0; segment < points.size() - 1; segment++) {
             for (int part = 0; part < CURVE_SUBDIVISIONS; part++) {
-                Vec3d start = smoothPoint(points, segment, part / (double) CURVE_SUBDIVISIONS).subtract(cameraPosition);
-                Vec3d end = smoothPoint(points, segment, (part + 1.0D) / CURVE_SUBDIVISIONS).subtract(cameraPosition);
+                Vec3 start = smoothPoint(points, segment, part / (double) CURVE_SUBDIVISIONS).subtract(cameraPosition);
+                Vec3 end = smoothPoint(points, segment, (part + 1.0D) / CURVE_SUBDIVISIONS).subtract(cameraPosition);
                 int index = segment * CURVE_SUBDIVISIONS + part;
                 int[] colour = colourForSpeed(points.get(segment + 1).subtract(points.get(segment)).length());
                 putVertex(buffer, matrices, start, colour, alphaFor(index, finished, now, finishedAt));
@@ -282,27 +289,27 @@ public final class ClientTrajectoryPreview {
         }
     }
 
-    private static Vec3d smoothPoint(List<Vec3d> points, int segment, double t) {
-        Vec3d p0 = points.get(Math.max(0, segment - 1));
-        Vec3d p1 = points.get(segment);
-        Vec3d p2 = points.get(segment + 1);
-        Vec3d p3 = points.get(Math.min(points.size() - 1, segment + 2));
-        Vec3d incoming = p1.subtract(p0);
-        Vec3d outgoing = p2.subtract(p1);
-        if (incoming.lengthSquared() < 1.0E-8D || outgoing.lengthSquared() < 1.0E-8D
-                || incoming.normalize().dotProduct(outgoing.normalize()) < 0.35D) {
+    private static Vec3 smoothPoint(List<Vec3> points, int segment, double t) {
+        Vec3 p0 = points.get(Math.max(0, segment - 1));
+        Vec3 p1 = points.get(segment);
+        Vec3 p2 = points.get(segment + 1);
+        Vec3 p3 = points.get(Math.min(points.size() - 1, segment + 2));
+        Vec3 incoming = p1.subtract(p0);
+        Vec3 outgoing = p2.subtract(p1);
+        if (incoming.lengthSqr() < 1.0E-8D || outgoing.lengthSqr() < 1.0E-8D
+                || incoming.normalize().dot(outgoing.normalize()) < 0.35D) {
             return p1.lerp(p2, t);
         }
         double t2 = t * t;
         double t3 = t2 * t;
-        return p1.multiply(2.0D).add(p2.subtract(p0).multiply(t))
-                .add(p0.multiply(2.0D).subtract(p1.multiply(5.0D)).add(p2.multiply(4.0D)).subtract(p3).multiply(t2))
-                .add(p3.subtract(p0).add(p1.multiply(3.0D)).subtract(p2.multiply(3.0D)).multiply(t3)).multiply(0.5D);
+        return p1.scale(2.0D).add(p2.subtract(p0).scale(t))
+                .add(p0.scale(2.0D).subtract(p1.scale(5.0D)).add(p2.scale(4.0D)).subtract(p3).scale(t2))
+                .add(p3.subtract(p0).add(p1.scale(3.0D)).subtract(p2.scale(3.0D)).scale(t3)).scale(0.5D);
     }
 
-    private static void putVertex(BufferBuilder buffer, MatrixStack matrices, Vec3d point, int[] colour, int alpha) {
-        buffer.vertex(matrices.peek().getPositionMatrix(), (float) point.x, (float) point.y, (float) point.z)
-                .color(colour[0], colour[1], colour[2], alpha).next();
+    private static void putVertex(BufferBuilder buffer, PoseStack matrices, Vec3 point, int[] colour, int alpha) {
+        buffer.vertex(matrices.last().pose(), (float) point.x, (float) point.y, (float) point.z)
+                .color(colour[0], colour[1], colour[2], alpha).endVertex();
     }
 
     private static int alphaFor(int index, boolean finished, long now, long finishedAt) {
@@ -333,27 +340,27 @@ public final class ClientTrajectoryPreview {
     }
 
     private static final class PathHistory {
-        private final List<Vec3d> actualPoints = new ArrayList<>();
+        private final List<Vec3> actualPoints = new ArrayList<>();
         private int lastAge = Integer.MIN_VALUE;
         private boolean spawnSeeded;
         private boolean finished;
         private long finishedAtMillis;
 
-        void seedInitialPrediction(MinecraftClient client, ArcheryArrowEntity arrow) {
-            Vec3d spawn = arrow.getTrajectorySpawnPosition();
-            Vec3d velocity = arrow.getTrajectoryInitialVelocity();
-            if (spawn == null || velocity == null || arrow.age <= 0 || spawnSeeded) {
+        void seedInitialPrediction(Minecraft client, ArcheryArrowEntity arrow) {
+            Vec3 spawn = arrow.getTrajectorySpawnPosition();
+            Vec3 velocity = arrow.getTrajectoryInitialVelocity();
+            if (spawn == null || velocity == null || arrow.tickCount <= 0 || spawnSeeded) {
                 return;
             }
-            List<Vec3d> simulated = predict(client, arrow, spawn, velocity, 0, arrow.getRicochetLevel());
-            int endpoint = Math.min(simulated.size() - 1, arrow.age);
+            List<Vec3> simulated = predict(client, arrow, spawn, velocity, 0, arrow.getRicochetLevel());
+            int endpoint = Math.min(simulated.size() - 1, arrow.tickCount);
             actualPoints.clear();
             actualPoints.addAll(simulated.subList(0, endpoint + 1));
             spawnSeeded = true;
             lastAge = endpoint;
         }
 
-        void recordActual(Vec3d spawn, Vec3d current, int age) {
+        void recordActual(Vec3 spawn, Vec3 current, int age) {
             if (!spawnSeeded && spawn != null) {
                 actualPoints.add(spawn);
                 spawnSeeded = true;

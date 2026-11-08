@@ -1,9 +1,9 @@
 package me.lemonboi439.archeryRevamped.arrow;
 
 import me.lemonboi439.archeryRevamped.entity.ArcheryArrowEntity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public interface ArrowBehavior {
     void onTick(ArcheryArrowEntity arrow);
@@ -12,6 +12,6 @@ public interface ArrowBehavior {
 
     void onEntityHit(ArcheryArrowEntity arrow, EntityHitResult hit);
 
-    default void onDelayedImpact(ArcheryArrowEntity arrow, Vec3d impact) {
+    default void onDelayedImpact(ArcheryArrowEntity arrow, Vec3 impact) {
     }
 }

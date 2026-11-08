@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -23,7 +23,7 @@ public final class ConfigManager {
     }
 
     public static void load() {
-        Path configDirectory = FabricLoader.getInstance().getConfigDir();
+        Path configDirectory = FMLPaths.CONFIGDIR.get();
         Path configPath = configDirectory.resolve(FILE_NAME);
 
         try {
@@ -47,7 +47,7 @@ public final class ConfigManager {
 
     public static void save() {
         try {
-            Path configDirectory = FabricLoader.getInstance().getConfigDir();
+            Path configDirectory = FMLPaths.CONFIGDIR.get();
             Files.createDirectories(configDirectory);
             save(configDirectory.resolve(FILE_NAME));
         } catch (IOException exception) {
