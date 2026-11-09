@@ -34,6 +34,11 @@ public final class RicochetBehavior implements ArrowBehavior {
                 .scale(1.0D - velocityLoss);
 
         arrow.setDeltaMovement(reflected);
+        if (!arrow.getCommandSenderWorld().isClientSide()) {
+            // Force the reflected velocity to the clients; otherwise they keep
+            // predicting the pre-bounce path and snap/jitter on position updates.
+            arrow.hurtMarked = true;
+        }
         arrow.clearInGround();
         arrow.incrementBounceCount();
         arrow.setPos(

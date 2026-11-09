@@ -243,7 +243,9 @@ public class ArcheryArrowEntity extends AbstractArrow {
                     this.fractureScheduled = true;
                     FractureScheduler.schedule(this);
                 }
-                ArrowBehaviorRegistry.getBehavior(this.arrowType).onTick(this);
+                if (!this.inGround) {
+                    ArrowBehaviorRegistry.getBehavior(this.arrowType).onTick(this);
+                }
             }
         }
     }

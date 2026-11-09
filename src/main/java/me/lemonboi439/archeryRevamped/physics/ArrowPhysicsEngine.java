@@ -21,6 +21,12 @@ public final class ArrowPhysicsEngine {
             return;
         }
 
+        // Keep aging stuck arrows without letting configured velocity changes
+        // make their vanilla model rotation jitter.
+        if (arrow.isArrowInGround()) {
+            return;
+        }
+
         arrow.setDeltaMovement(applyConfiguredPhysics(arrow.getDeltaMovement()));
     }
 

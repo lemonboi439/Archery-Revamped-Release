@@ -18,6 +18,12 @@ public final class TidalArrowBehavior implements ArrowBehavior {
 
     @Override
     public void onTick(ArcheryArrowEntity arrow) {
+        // AbstractArrow re-reads velocity for its model rotation every tick.
+        // Adding air gravity to a stuck arrow makes it slowly spin and twitch.
+        if (arrow.isArrowInGround()) {
+            return;
+        }
+
         FluidState fluid = arrow.getCommandSenderWorld().getFluidState(BlockPos.containing(arrow.position()));
         if (fluid.is(FluidTags.WATER)) {
             // In water the custom drag override preserves speed and the arrow
