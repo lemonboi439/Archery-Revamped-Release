@@ -21,7 +21,7 @@ public final class RicochetBehavior implements ArrowBehavior {
     }
 
     public static void applyRicochet(ArcheryArrowEntity arrow, BlockHitResult hit) {
-        if (!arrow.canRicochet() || arrow.isArrowInGround()) {
+        if (!arrow.canRicochet()) {
             return;
         }
 
@@ -40,8 +40,10 @@ public final class RicochetBehavior implements ArrowBehavior {
         // onHitBlock returns. Re-apply the reflected state at the end of the
         // tick and place the arrow clear of the block face so it does not
         // immediately re-collide, stick and twitch.
-        Vec3 exitPosition = hit.getLocation().add(normal.scale(0.05D));
-        arrow.queueRicochet(exitPosition, reflected);
+        // Clear the arrow's 0.5-block hitbox from the face instead of leaving
+        // it overlapping and dependent on the grace window.
+        Vec3 exitPosition = hit.getLocation().add(normal.scale(0.26D));
+        arrow.queueRicochet(exitPosition, reflected, hit.getBlockPos());
 
         Vec3 bouncePosition = exitPosition;
         EffectManager.spawnParticles(arrow.getCommandSenderWorld(), bouncePosition,

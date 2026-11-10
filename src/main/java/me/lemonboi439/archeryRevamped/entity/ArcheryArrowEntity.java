@@ -6,6 +6,7 @@ import me.lemonboi439.archeryRevamped.arrow.RicochetBehavior;
 import me.lemonboi439.archeryRevamped.config.ConfigManager;
 import me.lemonboi439.archeryRevamped.effect.EffectManager;
 import me.lemonboi439.archeryRevamped.physics.ArrowPhysicsEngine;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -145,6 +146,7 @@ public class ArcheryArrowEntity extends AbstractArrow {
     private float tidalSpin;
     private boolean pendingRicochet;
     private int ricochetGraceTicks;
+    private BlockPos lastRicochetBlock;
     private Vec3 pendingRicochetPosition;
     private Vec3 pendingRicochetVelocity;
     private ItemStack projectileStack = new ItemStack(Items.ARROW);
@@ -373,9 +375,10 @@ public class ArcheryArrowEntity extends AbstractArrow {
         this.inGround = false;
     }
 
-    public void queueRicochet(Vec3 position, Vec3 velocity) {
+    public void queueRicochet(Vec3 position, Vec3 velocity, BlockPos block) {
         this.pendingRicochet = true;
         this.ricochetGraceTicks = 3;
+        this.lastRicochetBlock = block;
         this.pendingRicochetPosition = position;
         this.pendingRicochetVelocity = velocity;
     }
@@ -711,12 +714,13 @@ public class ArcheryArrowEntity extends AbstractArrow {
     @Override
     protected void onHitBlock(BlockHitResult hit) {
         this.updateDistanceTravelled();
-        if (this.ricochetGraceTicks > 0) {
-            // Let the reflected arrow leave the face before collisions count again.
+        if (this.ricochetGraceTicks > 0 && this.lastRicochetBlock != null
+                && this.lastRicochetBlock.equals(hit.getBlockPos())) {
+            // Let the reflected arrow leave the same face before it counts again.
             this.inGround = false;
             return;
         }
-        if (this.canRicochet() && !this.inGround) {
+        if (this.canRicochet()) {
             RicochetBehavior.applyRicochet(this, hit);
             return;
         }
