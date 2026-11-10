@@ -40,7 +40,7 @@ public final class RicochetBehavior implements ArrowBehavior {
         // onHitBlock returns. Re-apply the reflected state at the end of the
         // tick and place the arrow clear of the block face so it does not
         // immediately re-collide, stick and twitch.
-        Vec3 exitPosition = hit.getLocation().add(normal.scale(0.3D));
+        Vec3 exitPosition = hit.getLocation().add(normal.scale(0.05D));
         arrow.queueRicochet(exitPosition, reflected);
 
         Vec3 bouncePosition = exitPosition;

@@ -144,6 +144,7 @@ public class ArcheryArrowEntity extends AbstractArrow {
     private Vec3 delayedImpactPosition;
     private float tidalSpin;
     private boolean pendingRicochet;
+    private int ricochetGraceTicks;
     private Vec3 pendingRicochetPosition;
     private Vec3 pendingRicochetVelocity;
     private ItemStack projectileStack = new ItemStack(Items.ARROW);
@@ -246,8 +247,10 @@ public class ArcheryArrowEntity extends AbstractArrow {
                     this.fractureScheduled = true;
                     FractureScheduler.schedule(this);
                 }
-                if (!this.inGround) {
-                    if (this.pendingRicochet) {
+                if (this.ricochetGraceTicks > 0) {
+                    this.ricochetGraceTicks--;
+                }
+                if (this.pendingRicochet) {
                     this.pendingRicochet = false;
                     this.inGround = false;
                     this.shakeTime = 0;
@@ -265,7 +268,8 @@ public class ArcheryArrowEntity extends AbstractArrow {
                         this.hurtMarked = true;
                     }
                 }
-                ArrowBehaviorRegistry.getBehavior(this.arrowType).onTick(this);
+                if (!this.inGround) {
+                    ArrowBehaviorRegistry.getBehavior(this.arrowType).onTick(this);
                 }
             }
         }
@@ -371,6 +375,7 @@ public class ArcheryArrowEntity extends AbstractArrow {
 
     public void queueRicochet(Vec3 position, Vec3 velocity) {
         this.pendingRicochet = true;
+        this.ricochetGraceTicks = 3;
         this.pendingRicochetPosition = position;
         this.pendingRicochetVelocity = velocity;
     }
@@ -706,6 +711,11 @@ public class ArcheryArrowEntity extends AbstractArrow {
     @Override
     protected void onHitBlock(BlockHitResult hit) {
         this.updateDistanceTravelled();
+        if (this.ricochetGraceTicks > 0) {
+            // Let the reflected arrow leave the face before collisions count again.
+            this.inGround = false;
+            return;
+        }
         if (this.canRicochet() && !this.inGround) {
             RicochetBehavior.applyRicochet(this, hit);
             return;
