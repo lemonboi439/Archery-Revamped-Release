@@ -29,8 +29,10 @@ public final class ModEntities {
 
         ARCHERY_ARROW = EntityType.Builder.<ArcheryArrowEntity>of(ArcheryArrowEntity::new, MobCategory.MISC)
                 .sized(0.5F, 0.5F)
-                .clientTrackingRange(4)
-                .updateInterval(20)
+                .clientTrackingRange(8)
+                // Custom ricochets and physics diverge quickly from client
+                // prediction; vanilla's 20-tick interval rubber-bands them.
+                .updateInterval(2)
                 .build(arrowId.toString());
         SHATTERING_SHARD = EntityType.Builder.<ShatteringShardEntity>of(ShatteringShardEntity::new, MobCategory.MISC)
                 .sized(0.18F, 0.18F)
