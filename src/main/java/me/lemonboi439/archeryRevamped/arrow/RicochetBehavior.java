@@ -34,20 +34,16 @@ public final class RicochetBehavior implements ArrowBehavior {
                 .scale(1.0D - velocityLoss);
 
         arrow.setDeltaMovement(reflected);
-        if (!arrow.getCommandSenderWorld().isClientSide()) {
-            // Force the reflected velocity to the clients; otherwise they keep
-            // predicting the pre-bounce path and snap/jitter on position updates.
-            arrow.hurtMarked = true;
-        }
-        arrow.clearInGround();
         arrow.incrementBounceCount();
-        arrow.setPos(
-                arrow.getX() + normal.x * 0.01D,
-                arrow.getY() + normal.y * 0.01D,
-                arrow.getZ() + normal.z * 0.01D
-        );
 
-        Vec3 bouncePosition = new Vec3(arrow.getX(), arrow.getY(), arrow.getZ());
+        // Vanilla marks the arrow in-ground and re-reads its position after
+        // onHitBlock returns. Re-apply the reflected state at the end of the
+        // tick and place the arrow clear of the block face so it does not
+        // immediately re-collide, stick and twitch.
+        Vec3 exitPosition = hit.getLocation().add(normal.scale(0.3D));
+        arrow.queueRicochet(exitPosition, reflected);
+
+        Vec3 bouncePosition = exitPosition;
         EffectManager.spawnParticles(arrow.getCommandSenderWorld(), bouncePosition,
                 ParticleTypes.ITEM_SLIME, 12);
         EffectManager.playSound(arrow.getCommandSenderWorld(), bouncePosition,

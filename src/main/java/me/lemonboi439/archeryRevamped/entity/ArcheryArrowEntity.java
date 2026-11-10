@@ -143,6 +143,9 @@ public class ArcheryArrowEntity extends AbstractArrow {
     private ArrowType delayedImpactType;
     private Vec3 delayedImpactPosition;
     private float tidalSpin;
+    private boolean pendingRicochet;
+    private Vec3 pendingRicochetPosition;
+    private Vec3 pendingRicochetVelocity;
     private ItemStack projectileStack = new ItemStack(Items.ARROW);
 
     public ArcheryArrowEntity(Level world) {
@@ -244,7 +247,25 @@ public class ArcheryArrowEntity extends AbstractArrow {
                     FractureScheduler.schedule(this);
                 }
                 if (!this.inGround) {
-                    ArrowBehaviorRegistry.getBehavior(this.arrowType).onTick(this);
+                    if (this.pendingRicochet) {
+                    this.pendingRicochet = false;
+                    this.inGround = false;
+                    this.shakeTime = 0;
+                    if (this.pendingRicochetPosition != null) {
+                        this.setPos(this.pendingRicochetPosition.x,
+                                this.pendingRicochetPosition.y,
+                                this.pendingRicochetPosition.z);
+                        this.pendingRicochetPosition = null;
+                    }
+                    if (this.pendingRicochetVelocity != null) {
+                        this.setDeltaMovement(this.pendingRicochetVelocity);
+                        this.pendingRicochetVelocity = null;
+                    }
+                    if (!this.getCommandSenderWorld().isClientSide()) {
+                        this.hurtMarked = true;
+                    }
+                }
+                ArrowBehaviorRegistry.getBehavior(this.arrowType).onTick(this);
                 }
             }
         }
@@ -346,6 +367,12 @@ public class ArcheryArrowEntity extends AbstractArrow {
 
     public void clearInGround() {
         this.inGround = false;
+    }
+
+    public void queueRicochet(Vec3 position, Vec3 velocity) {
+        this.pendingRicochet = true;
+        this.pendingRicochetPosition = position;
+        this.pendingRicochetVelocity = velocity;
     }
 
     public boolean isArrowInGround() {
